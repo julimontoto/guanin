@@ -6,7 +6,7 @@ import statistics
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from scipy.stats.mstats import gmean
-import ERgene
+from ERgene import FindERG
 from pathlib import Path
 import argparse
 from fpdf import FPDF
@@ -72,9 +72,8 @@ def loadrccs(args, start_time = 0):
             dff = pd.concat([dfend, dfhke]) #dataframe with endogenous and housekeeping gene
 
             names = ['parametro', 'valor']
-            dinf = pd.read_csv(getfolderpath(args.folder) / file, names=names, nrows=30) #dataframe with lane info
+            dinf = pd.read_csv(getfolderpath(args.folder) / file, names=names, nrows=30, on_bad_lines='skip') #dataframe with lane info
             dinf = dinf.dropna()
-
             thislane = [] #info for this lane
 
             #adds id from sample or from file name
@@ -687,7 +686,8 @@ def removelanes(autoremove, manualremove):
     if autoremove == None:
         autoremove = set(manualremove)
     if manualremove != None:
-        manualremove = set(manualremove.split())
+        if type(manualremove) == str:
+            manualremove = set(manualremove.split())
         print('Se retiran manualmente las muestras:', manualremove, '.')
         autoremove.update(manualremove)
 
@@ -1001,7 +1001,7 @@ def findrefend(args, selhkes):
     norm2end2 = norm2end.set_index('Name')
 
     if args.refendgenes == 'endhkes':
-        endge = ERgene.FindERG(norm2end2)
+        endge = FindERG(norm2end2)
 
         bestend = endge[0:args.numend] #n best endogenous to include as reference genes
         print('Most promising endogenous genes: ', bestend)
@@ -1016,7 +1016,8 @@ def findrefend(args, selhkes):
             isbest = norm2end.loc[:,'Name'] == i
             refgen = norm2end.loc[isbest]
             refgen.set_index('Name', drop=True, inplace=True)
-            refgenes = refgenes.append(refgen)
+            refgenes = pd.concat([refgenes, refgen])
+
 
     return refgenes
 
@@ -1192,16 +1193,16 @@ def geNorm(df, avgm=pd.DataFrame()):
     if n <= 2:
         bestgen = result.iat[0,0]
         newrow = pd.DataFrame([[bestgen, result['M'].mean()]])
-        avgm = avgm.append(newrow)
+        avgm = pd.concat([avgm, newrow])
         lastrow = pd.DataFrame([[result.iat[1,0], result.iat[1,1]]])
-        avgm = avgm.append(lastrow)
+        avgm = pd.concat([avgm, lastrow])
         newindex2 = np.arange(start=1, stop = len(avgm[0])+1)
         avgm.index = newindex2
         return avgm
     else:
         bestgen = result.iat[0,0]
         newrow = pd.DataFrame([[bestgen, result['M'].mean()]])
-        avgm = avgm.append(newrow)
+        avgm = pd.concat([avgm, newrow])
         newdf = df.drop(bestgen,axis=1)
         return geNorm(newdf, avgm)
 
@@ -1244,7 +1245,7 @@ def pairwiseV(datarefgenes):
         Vn_n1 = np.std(logmedias, ddof=1)
 
         newvn = pd.DataFrame([[f'V{a}/V{a+1}', Vn_n1]])
-        Vs = Vs.append(newvn)
+        Vs = pd.concat([Vs, newvn])
 
         newindex = np.arange(start=1, stop = len(Vs[0])+1)
         Vs.index = newindex
@@ -1316,7 +1317,6 @@ def rankfeaturegenes(data, targets, args, verbose=0):
     '''
     num_neighbors_neighbors = args.featureselectionneighbors
     knn = KNeighborsClassifier(n_neighbors=num_neighbors_neighbors)
-
     targets.set_index('SAMPLE', inplace=True)
 
     stargets = set(targets.index)
@@ -1625,7 +1625,7 @@ def plotevalraw(matrix, what, meaniqrraw):
 
 def argParser():
     parser = argparse.ArgumentParser(description="Nanostring quality control analysis")
-    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.home() / 'data', help='relative folder where RCC set is located. Default: /data')
+    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.cwd() / 'data', help='relative folder where RCC set is located. Default: /data')
     parser.add_argument('-minf', '--minfov', type=float, default=0.75, help='set manually min fov for QC')
     parser.add_argument('-maxf', '--maxfov', type=float, default=1, help='set manually max fov for QC')
     parser.add_argument('-minbd', '--minbd', type=float, default=0.1, help='set manually min binding density for QC')
@@ -1640,7 +1640,7 @@ def argParser():
     parser.add_argument('-mv', '--modeview', type=str, default='view', choices=['justrun', 'view'], help='choose if plot graphs or just run calculations')
     parser.add_argument('-tnm', '--tecnormeth', type=str, default='posgeomean', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
     parser.add_argument('-reg', '--refendgenes', type=str, default= 'endhkes', choices=['hkes', 'endhkes'], help='choose refgenes, housekeeping, or hkes and endogenous')
-    parser.add_argument('-re', '--remove', type=str, default=None, help='lanes to be removed from the analysis')
+    parser.add_argument('-re', '--remove', type=str, nargs='+', default=None, help='lanes to be removed from the analysis')
     parser.add_argument('-bg', '--background', type=str, default= 'Background', choices=['Background', 'Background2', 'Background3', 'Backgroundalt'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=')
     parser.add_argument('-pbb', '--pbelowbackground', type=int, default=85, help='if more than %bb genes are below background, sample gets removed from analysis')
     parser.add_argument('-mbg', '--manualbackground', type=float, default=None, help='set manually background')
@@ -1659,7 +1659,7 @@ def argParser():
     parser.add_argument('-grn', '--groupsinrnormgenes', type=str, default='no', choices=['yes', 'no'], help='want groups to be specified in last column of rnormgenes dataframe?')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
-    parser.add_argument('-gf', '--groupsfile', type=str, default='groups_s5.csv', help='enter file name where groups are defined')
+    parser.add_argument('-gf', '--groupsfile', type=str, default='groups_d24.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     return parser.parse_args()
@@ -1869,7 +1869,10 @@ def contnorm(args):
             args.current_state = 'Ref. genes selected (n_manual): ' + str(names)
             print(args.current_state)
     else:
-        names = args.chooserefgenes.split()
+        if type(args.chooserefgenes) == str:
+            names = args.chooserefgenes.split()
+        else:
+            names = args.chooserefgenes
 
         args.current_state = 'Ref. genes selected (manual): ' + str(names)
         print(args.current_state)

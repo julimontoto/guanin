@@ -141,8 +141,8 @@ class CentralWidget(QWidget):
 
 
         sampleidentifier = QComboBox()
-        sampleidentifier.addItem('Sample ID')
         sampleidentifier.addItem('Filename')
+        sampleidentifier.addItem('Sample ID')
         sampleidentifier.currentIndexChanged.connect(self.changingmodeid)
 
         layload.addRow('Sample identifier', sampleidentifier)
@@ -202,7 +202,7 @@ class CentralWidget(QWidget):
 
         doubleforfov = QHBoxLayout()
         minfovlay = QFormLayout()
-        minfovline = QDoubleSpinBox(singleStep = 0.01)
+        minfovline = QDoubleSpinBox(singleStep = 0.01, )
         minfovline.setValue(0.75)
         minfovline.setMinimum(0)
         minfovline.setMaximum(10)
@@ -359,6 +359,7 @@ class CentralWidget(QWidget):
         laycnorm.addRow('Filter housekeeping panel genes by min counts', filhousekeepingsmincounts)
 
         includeerg = QCheckBox()
+        includeerg.setChecked(True)
         includeerg.stateChanged.connect(self.change_includeerg)
         laycnorm.addRow('Include best endogenous as reference candidates', includeerg)
 
@@ -486,9 +487,9 @@ class CentralWidget(QWidget):
 
     def changingmodeid(self, value):
         if value == 1:
-            self.state.modeid = 'filename'
-        elif value == 0:
             self.state.modeid = 'sampleID'
+        elif value == 0:
+            self.state.modeid = 'filename'
         print(self.state.modeid)
 
     def change_showbrowser(self, checkbox):
@@ -542,35 +543,36 @@ class CentralWidget(QWidget):
         print(self.state.pbelowbackground)
 
     def changeminfov(self, value):
-        self.state.minfov = value
+        print(self.state.minfov)
+        self.state.minfov = float(value.replace(',','.'))
         print(self.state.minfov)
 
     def changemaxfov(self, value):
-        self.state.maxfov = value
+        self.state.maxfov = float(value.replace(',','.'))
         print(self.state.maxfov)
 
     def changeminbd(self, value):
-        self.state.minbd = value
+        self.state.minbd = float(value.replace(',','.'))
         print(self.state.minbd)
 
     def changemaxbd(self, value):
-        self.state.maxbd = value
+        self.state.maxbd = float(value.replace(',','.'))
         print(self.state.maxbd)
 
     def changeminlin(self, value):
-        self.state.minlin = value
+        self.state.minlin = float(value.replace(',','.'))
         print(self.state.minlin)
 
     def changemaxlin(self, value):
-        self.state.maxlin = value
+        self.state.maxlin = float(value.replace(',','.'))
         print(self.state.maxlin)
 
     def changeminscaf(self, value):
-        self.state.minscaf = value
+        self.state.minscaf = float(value.replace(',','.'))
         print(self.state.minscaf)
 
     def changemaxscaf(self, value):
-        self.state.maxscaf = value
+        self.state.maxscaf = float(value.replace(',','.'))
         print(self.state.maxscaf)
 
     def changesampleremoving(self, checkbox):
@@ -618,7 +620,7 @@ class CentralWidget(QWidget):
 
 
     def change_filhousekeepingmincounts(self, value):
-        self.state.mincounthkes = value
+        self.state.mincounthkes = int(value.replace(',','.'))
         print(self.state.mincounthkes)
 
     def change_includeerg(self, checkbox):
@@ -633,7 +635,7 @@ class CentralWidget(QWidget):
         print(self.state)
 
     def change_howmanyergs(self, value):
-        self.state.numend = value
+        self.state.numend = int(value.replace(',','.'))
         print(self.state.numend)
 
     def change_contnormmethod(self, checkbox):
@@ -658,13 +660,13 @@ class CentralWidget(QWidget):
 
     def change_nrefgenes(self, value):
         if self.state.contnorm == 'refgenes':
-            self.state.nrefgenes = value
+            self.state.nrefgenes = int(value)
             print(self.state.nrefgenes)
         elif self.state.contnorm == 'ponderaterefgenes':
-            self.state.nrefgenes = value
+            self.state.nrefgenes = int(value)
             print(self.state.nrefgenes)
         elif self.state.contnorm == 'topn':
-            self.state.topngenestocontnorm = value
+            self.state.topngenestocontnorm = int(value)
             print(self.state.topngenestocontnorm)
 
     def change_inputnamesrefgenes(self, value):
