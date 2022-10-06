@@ -1,12 +1,14 @@
 import sys
 import webbrowser
 import time
+import pathlib
+
 from PyQt6.QtWidgets import (
-    QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QLCDNumber, QSlider, QSpinBox,
+    QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QLCDNumber, QSlider, QSpinBox, QDialog, QSplashScreen,
     QLabel, QToolBar, QStatusBar, QGridLayout, QLineEdit, QTextEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox
 )
-from PyQt6.QtGui import QAction, QIcon, QPalette, QColor, QPixmap, QFont
-from PyQt6.QtCore import Qt, QSize, QThread
+from PyQt6.QtGui import QAction, QIcon, QPalette, QColor, QPixmap, QFont, QGuiApplication
+from PyQt6.QtCore import Qt, QSize, QThread, QTimer
 
 import state
 import guanin
@@ -18,9 +20,13 @@ class MainWindow(QMainWindow):
         self.state = state.ConfigData()
 
         self.setWindowTitle("GUANIN: Nanostring Interactive Normalization")
-        self.setWindowIcon(QIcon('image/logoguanin_156x156.png'))
+        self.setWindowIcon(QIcon(str(pathlib.Path.cwd()/'image/logoguanin_156x156.png')))
         # self.resize(1080,640)
 
+        qtRectangle = self.frameGeometry()
+        centerPoint = QGuiApplication.primaryScreen().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
 
         self.statusbar = QStatusBar(self)
         self.statusbar.showMessage(self.state.current_state)
@@ -40,10 +46,9 @@ class MainWindow(QMainWindow):
         button_action.setCheckable(True)
         toolbar.addAction(button_action)
 
-
         menubar = self.menuBar()
 
-        exitAct = QAction(QIcon('minus_exit.png'), '&Exit', self)
+        exitAct = QAction(QIcon('icons/minus_exit.png'), '&Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(QApplication.instance().quit)
@@ -713,6 +718,11 @@ class CentralWidget(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    pixmap = QPixmap('image/guanin_splashscreen2_640x480.png')
+    splash = QSplashScreen(pixmap)
+    splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
+    splash.show()
+    QTimer.singleShot(2500, splash.close)
     window = MainWindow()
     window.show()
     app.exec()
