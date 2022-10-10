@@ -288,8 +288,12 @@ class CentralWidget(QWidget):
         sampleremovercombobox.addItem('Remove auto-QC flagged')
         sampleremovercombobox.addItem('Keep all samples')
         sampleremovercombobox.addItem('Remove manually selected samples')
+        sampleremovercombobox.addItem('Flag bad samples')
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
         layqc.addRow('Remove bad samples?', sampleremovercombobox)
+
+        # showingflaggedlanes = QLabel(self.state.badlanes)
+        # layqc.addRow('Flagged lanes: ', showingflaggedlanes)
 
         manualremoveselection = QLineEdit()
         manualremoveselection.textChanged.connect(self.changemanualremoveinput)
@@ -301,6 +305,7 @@ class CentralWidget(QWidget):
         runqcfiltering = QPushButton('Run QC filtering')
         runqcfiltering.setIcon(QIcon('image/logoguanin_96x96.png'))
         runqcfiltering.clicked.connect(self.runqc)
+        # runqcfiltering.clicked.connect(self.showflaggedlanes)
         doubleforqcfiltering.addWidget(runqcfiltering)
 
         doubleformtic1qc = QFormLayout()
@@ -582,10 +587,12 @@ class CentralWidget(QWidget):
         elif checkbox == 1:
             self.state.laneremover = 'no'
             print(self.state.laneremover + ' lanes removed')
-        if checkbox == 0:
+        elif checkbox == 0:
             self.state.laneremover = 'yes'
             self.state.remove = None
             print('qc remove')
+        elif checkbox == 3:
+            self.state.laneremover = 'no'
 
     def changemanualremoveinput(self, value):
         self.state.remove = value
