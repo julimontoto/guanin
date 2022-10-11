@@ -929,8 +929,8 @@ def transformlowcounts(args):
     varback = args.lowcounts
     varbg = args.background
 
-    if args.tecnormeth == 'regression':
-        varbg = 'backgr_regr'
+    # if args.tecnormeth == 'regression':
+    #     varbg = 'backgr_regr'
 
     if args.manualbackground != None:
         mvarbg = args.manualbackground
@@ -1766,8 +1766,6 @@ def runQCfilter(args):
     return flagged
 
 def technorm(args):
-
-
 
     dfgenes = pd.read_csv('output/dfgenes.csv')
     if args.tecnormeth != 'regression':

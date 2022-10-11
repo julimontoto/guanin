@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
         self.statusbar.showMessage(self.state.current_state)
         self.setStatusBar(self.statusbar)
 
-
         widget = CentralWidget(self)
         self.setCentralWidget(widget)
 
@@ -766,7 +765,7 @@ def main():
     splash = QSplashScreen(pixmap)
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
     splash.show()
-    QTimer.singleShot(2500, splash.close)
+    QTimer.singleShot(2000, splash.close)
     window = MainWindow()
     window.show()
     app.exec()
