@@ -292,8 +292,7 @@ class CentralWidget(QWidget):
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
         layqc.addRow('Remove bad samples?', sampleremovercombobox)
 
-        # showingflaggedlanes = QLabel(self.state.badlanes)
-        # layqc.addRow('Flagged lanes: ', showingflaggedlanes)
+
 
         manualremoveselection = QLineEdit()
         manualremoveselection.textChanged.connect(self.changemanualremoveinput)
@@ -305,7 +304,7 @@ class CentralWidget(QWidget):
         runqcfiltering = QPushButton('Run QC filtering')
         runqcfiltering.setIcon(QIcon('image/logoguanin_96x96.png'))
         runqcfiltering.clicked.connect(self.runqc)
-        # runqcfiltering.clicked.connect(self.showflaggedlanes)
+        runqcfiltering.clicked.connect(self.showflaggedlanes)
         doubleforqcfiltering.addWidget(runqcfiltering)
 
         doubleformtic1qc = QFormLayout()
@@ -313,6 +312,9 @@ class CentralWidget(QWidget):
         doubleforticksqcfiltering.addLayout(doubleformtic1qc)
 
         layqc.addRow(doubleforqcfiltering)
+
+        self.showingflaggedlanes = QLabel(self.state.badlanes)
+        layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
 
         layout2.addLayout(layqc)
 
@@ -347,7 +349,7 @@ class CentralWidget(QWidget):
 
         laytnorm.addRow(doublefortechnorm)
 
-        layout2.addLayout(laytnorm)
+        layout3.addLayout(laytnorm)
 
         layout1.addLayout(layout2)
 
@@ -465,12 +467,34 @@ class CentralWidget(QWidget):
 
         doublefortickseval.addLayout(doubleformtic1ev)
 
-        # label1 = QLabel(self)
-        # pixmap = QPixmap('/home/juli/PycharmProjects/guanin/output/images/rlenormplot2.png')
-        # label1.setPixmap(pixmap)
-        # label1.setScaledContents(True)
-
         layeval.addRow(doubleforeval)
+
+        doubleforevaltext = QHBoxLayout()
+        labeltext1 = QLabel('Raw RLE plot')
+        labeltext1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        labeltext2 = QLabel('Normalized RLE plot')
+        labeltext2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        doubleforevaltext.addWidget(labeltext1)
+        doubleforevaltext.addWidget(labeltext2)
+        layeval.addRow(doubleforevaltext)
+
+        doubleforeval2 = QHBoxLayout()
+
+        pixmap1 = QPixmap('/home/juli/PycharmProjects/guanin/output/images/rlenormplot2.png')
+        pixmap2 = QPixmap('/home/juli/PycharmProjects/guanin/output/images/rlenormplot2.png')
+        self.labelpix1 = QLabel('No raw RLE plot generated yet')
+        self.labelpix1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # labelpix1.setPixmap(pixmap1)
+        self.labelpix2 = QLabel('No normalized RLE plot generated yet')
+        self.labelpix2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # labelpix2.setPixmap(pixmap2)
+
+        doubleforeval2.addWidget(self.labelpix1)
+        doubleforeval2.addWidget(self.labelpix2)
+
+        layeval.addRow(doubleforeval2)
+
 
         layout3.addLayout(layeval)
 
@@ -489,6 +513,7 @@ class CentralWidget(QWidget):
         file = QFileDialog.getOpenFileName(self)
         self.state.groupsfile = file[0]
         self.showfiletextbox.setText(self.state.groupsfile)
+        print(self.state.groupsfile)
 
     def changingmodeid(self, value):
         if value == 1:
@@ -507,6 +532,8 @@ class CentralWidget(QWidget):
     def runloadingrccs(self):
         self.parent.statusBar().showMessage('Loading RCC files...')
         self.parent.statusBar().repaint()
+        print(self.state.groupsfile)
+        print(self.state.folder)
         guanin.runQCview(self.state)
         self.parent.statusBar().showMessage('RCC files loaded, ready to perform QC')
 
@@ -705,6 +732,7 @@ class CentralWidget(QWidget):
     def runcnorm(self):
         self.parent.statusBar().showMessage('Performing content normalization...')
         self.parent.statusBar().repaint()
+        print(self.state.groupsfile)
         guanin.contnorm(self.state)
         self.parent.statusBar().showMessage('Content normalization done, ready to evaluate normalization')
 
@@ -714,6 +742,10 @@ class CentralWidget(QWidget):
         guanin.evalnorm(self.state)
         self.parent.statusBar().showMessage('Evaluation and data export ready, check "output" folder')
 
+        pixmap1 = QPixmap('output/images/rlerawplot2.png')
+        pixmap2 = QPixmap('output/images/rlenormplot2.png')
+        self.labelpix1.setPixmap(pixmap1)
+        self.labelpix2.setPixmap(pixmap2)
 
     def change_exportmethod(self, checkbox):
         if checkbox == 0:
@@ -723,6 +755,9 @@ class CentralWidget(QWidget):
         elif checkbox == 2:
             self.state.logarizedoutput = '10'
         print(self.state.logarizedoutput)
+
+    def showflaggedlanes(self):
+        self.showingflaggedlanes.setText(str(self.state.badlanes))
 
 
 def main():

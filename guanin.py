@@ -19,6 +19,8 @@ import time
 import pathlib
 import webbrowser
 
+import state
+
 
 def getfolderpath(folder):
     '''RCC path'''
@@ -677,6 +679,10 @@ def flagqc(args):
     flaggeddf = pd.DataFrame(flagged, columns=['Flagged_samples'])
     flaggeddf.to_csv('output/flagged.csv', index=False)
 
+    if len(flagged) >= 3:
+        args.badlanes = 'Many badlanes detected, check output/flagged.csv'
+    elif len(flagged) <3:
+        args.badlanes = str(flagged)
 
     return flagged
 
@@ -1321,6 +1327,9 @@ def rankfeaturegenes(data, targets, args, verbose=0):
 
     stargets = set(targets.index)
     sdata = set(data.index)
+
+    print(stargets)
+    print(sdata)
     if len(stargets) != len(sdata):
         if len(stargets) > len(sdata):
             notboth = stargets - sdata
@@ -1659,7 +1668,7 @@ def argParser():
     parser.add_argument('-grn', '--groupsinrnormgenes', type=str, default='no', choices=['yes', 'no'], help='want groups to be specified in last column of rnormgenes dataframe?')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
-    parser.add_argument('-gf', '--groupsfile', type=str, default='groups_d24.csv', help='enter file name where groups are defined')
+    parser.add_argument('-gf', '--groupsfile', type=str, default='groups_s5.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     return parser.parse_args()
@@ -1758,7 +1767,7 @@ def runQCfilter(args):
 
 def technorm(args):
 
-    args = argParser()
+
 
     dfgenes = pd.read_csv('output/dfgenes.csv')
     if args.tecnormeth != 'regression':
@@ -1773,7 +1782,7 @@ def technorm(args):
     print('Technical normalization done.')
 
 def contnorm(args):
-    args = argParser()
+
     flagged = pd.read_csv('output/flagged.csv')
     flagged = set(flagged['Flagged_samples'])
 
@@ -1884,7 +1893,9 @@ def contnorm(args):
 
     dataref = pd.read_csv('output/refgenes.csv', index_col=0)
     # dataref.set_index(refgenesshow.index, inplace=True)
-    targets = pd.read_csv(args.groupsfile)  # tuve que refinar a mano quitando las samples eliminadas por QC del csv
+    targets = pd.read_csv(args.groupsfile)
+    print(args.groupsfile)
+
 
     print('--> Performing feature selection for refgenes evaluation and control.')
     if args.groups == 'yes':

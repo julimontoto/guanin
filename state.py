@@ -40,6 +40,7 @@ class ConfigData:
         self.groupsfile = 'groups_s5.csv'
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
+        self.badlanes = 'No bad lanes detected'
 
 
 
