@@ -457,6 +457,7 @@ class CentralWidget(QWidget):
         runevalbutton = QPushButton('Run evaluation')
         runevalbutton.setIcon(QIcon('image/logoguanin_96x96.png'))
         runevalbutton.clicked.connect(self.runeval)
+
         doubleforeval.addWidget(runevalbutton)
 
         doubleformtic1ev = QFormLayout()
@@ -469,13 +470,13 @@ class CentralWidget(QWidget):
         layeval.addRow(doubleforeval)
 
         doubleforevaltext = QHBoxLayout()
-        labeltext1 = QLabel('Raw RLE plot')
-        labeltext1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        labeltext2 = QLabel('Normalized RLE plot')
-        labeltext2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labeltext1 = QLabel('Raw RLE plot')
+        self.labeltext1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labeltext2 = QLabel('Normalized RLE plot')
+        self.labeltext2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        doubleforevaltext.addWidget(labeltext1)
-        doubleforevaltext.addWidget(labeltext2)
+        doubleforevaltext.addWidget(self.labeltext1)
+        doubleforevaltext.addWidget(self.labeltext2)
         layeval.addRow(doubleforevaltext)
 
         doubleforeval2 = QHBoxLayout()
@@ -738,7 +739,9 @@ class CentralWidget(QWidget):
     def runeval(self):
         self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')
         self.parent.statusBar().repaint()
-        guanin.evalnorm(self.state)
+        (rawiqr, normiqr) = guanin.evalnorm(self.state)
+        self.labeltext1.setText('Raw RLE plot, IQR: ' + str(rawiqr))
+        self.labeltext2.setText('Normalized RLE plot, IQR: ' + str(normiqr))
         self.parent.statusBar().showMessage('Evaluation and data export ready, check "output" folder')
 
         pixmap1 = QPixmap('output/images/rlerawplot2.png')
@@ -757,6 +760,12 @@ class CentralWidget(QWidget):
 
     def showflaggedlanes(self):
         self.showingflaggedlanes.setText(str(self.state.badlanes))
+
+    def showingrawIQR(self):
+        self.labeltext1.setText('Raw RLE plot, IQR: ' + str(self.state.rawmeaniqr))
+
+    def showingnormIQR(self):
+        self.labeltext2.setText('Normalized RLE plot, IQR: ' + str(self.state.normmeaniqr))
 
 
 def main():

@@ -681,8 +681,10 @@ def flagqc(args):
 
     if len(flagged) >= 3:
         args.badlanes = 'Many badlanes detected, check output/flagged.csv'
-    elif len(flagged) <3:
+    elif 0>len(flagged) <3:
         args.badlanes = str(flagged)
+    elif len(flagged) == 0:
+        args.badlanes = 'No bad lanes detected from QC'
 
     return flagged
 
@@ -1328,8 +1330,6 @@ def rankfeaturegenes(data, targets, args, verbose=0):
     stargets = set(targets.index)
     sdata = set(data.index)
 
-    print(stargets)
-    print(sdata)
     if len(stargets) != len(sdata):
         if len(stargets) > len(sdata):
             notboth = stargets - sdata
@@ -1984,6 +1984,8 @@ def evalnorm(args):
 
     args.current_state = '--> Finished. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
+
+    return (meaniqrraw, meaniqr)
 
 
 if __name__ == '__main__':

@@ -10,8 +10,8 @@ class ConfigData:
         self.maxbd = 1.8
         self.minlin = 0.75
         self.maxlin = 1
-        self.minscaf = 0.3
-        self.maxscaf = 3
+        self.minscalingfactor = 0.3
+        self.maxscalingfactor = 3
         self.showbrowser = False
         self.lowcounts = 'sustract'
         self.modeid = 'filename'
@@ -41,6 +41,8 @@ class ConfigData:
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'
+        self.rawmeaniqr = 'Raw IQR not calculated yet'
+        self.normmeaniqr = 'Norm IQR not calculated yet'
 
 
 
