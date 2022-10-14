@@ -339,11 +339,21 @@ def summarizerawinfolanes(args):
     rawsummary.loc['0,5 fm'] = rawinfo05fm
     rawsummary.loc['Scaling factor'] = rawinfoscaf
 
+    def condformat(val, colorbien = '#a3c771', colormal = '#f0e986'):
+        color = colormal if val >= 0.95 else colorbien
+        return 'background-color: {}'.format(color)
+
+
     pathoutrawsummary(rawsummary)
+    print(rawsummary)
+    rawsummary = rawsummary.style.applymap(condformat)
+    print(rawsummary)
     rawsummary.to_html('output/rawsummary.html')
+
 
     if args.showbrowser == True:
         webbrowser.open('output/rawsummary.html')
+
 
 def summarizeinfolanes(args):
     infolanes = pd.read_csv('output/infolanes.csv', index_col='ID')
