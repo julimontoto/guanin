@@ -3,7 +3,7 @@ import pathlib
 
 class ConfigData:
     def __init__(self):
-        self.folder = pathlib.Path.home()/'data'
+        self.folder = pathlib.Path.cwd()/'data'
         self.minfov = 0.75
         self.maxfov = 1
         self.minbd = 0.1
@@ -20,7 +20,7 @@ class ConfigData:
         self.refendgenes = 'endhkes'
         self.remove = None
         self.background = 'Background'
-        self.pbelowbackground = 85
+        self.pbelowbackground = 80
         self.manualbackground = None
         self.chooserefgenes = None
         self.filtergroupvariation = 'filterkrus'

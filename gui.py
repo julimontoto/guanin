@@ -307,7 +307,9 @@ class CentralWidget(QWidget):
         doubleforqcfiltering.addWidget(runqcfiltering)
 
         doubleformtic1qc = QFormLayout()
-        doubleformtic1qc.addRow('Pop out new infolanes and QC report', QCheckBox())
+        popoutinfolanescheck = QCheckBox()
+        popoutinfolanescheck.stateChanged.connect(self.change_showbrowser)
+        doubleformtic1qc.addRow('Pop out new infolanes and QC report', popoutinfolanescheck)
         doubleforticksqcfiltering.addLayout(doubleformtic1qc)
 
         layqc.addRow(doubleforqcfiltering)

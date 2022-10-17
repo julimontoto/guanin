@@ -314,6 +314,16 @@ def pathoutsummary (summary):
     pathsummary = pathout / 'summary.csv'
     summary.to_csv(pathsummary, index=True)
 
+def condformat_summary(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
+    if top >= val >= bot:
+        color = colorbien
+    elif top*1.15 >= val >= bot*0.85:
+        color = colorreg
+    elif (bot*0.85 > val) | (val > top*1.15):
+        color = colormal
+
+    return 'background-color: {}'.format(color)
+
 def summarizerawinfolanes(args):
 
     rawinfolanes = pd.read_csv('output/rawinfolanes.csv', index_col='ID')
@@ -339,15 +349,15 @@ def summarizerawinfolanes(args):
     rawsummary.loc['0,5 fm'] = rawinfo05fm
     rawsummary.loc['Scaling factor'] = rawinfoscaf
 
-    def condformat(val, colorbien = '#a3c771', colormal = '#f0e986'):
-        color = colormal if val >= 0.95 else colorbien
-        return 'background-color: {}'.format(color)
-
-
     pathoutrawsummary(rawsummary)
-    print(rawsummary)
-    rawsummary = rawsummary.style.applymap(condformat)
-    print(rawsummary)
+    rawsummary = rawsummary.T
+    rawsummary = rawsummary.style.applymap(condformat_summary, top=args.maxfov, bot=args.minfov, subset='FOV')
+    rawsummary = rawsummary.applymap(condformat_summary, top = args.maxbd, bot=args.minbd, subset='Binding density')
+    rawsummary = rawsummary.applymap(condformat_summary, top= args.maxlin, bot=args.minlin,  subset='R2')
+    rawsummary = rawsummary.applymap(condformat_summary, top= 100-args.pbelowbackground, bot=0,  subset='Genes below background')
+    rawsummary = rawsummary.applymap(condformat_summary, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='Scaling factor')
+
+
     rawsummary.to_html('output/rawsummary.html')
 
 
@@ -378,8 +388,17 @@ def summarizeinfolanes(args):
     summary.loc['0,5 fm'] = info05fm
     summary.loc['Scaling factor'] = infoscaf
 
+    summary = summary.T
+    summary2view = summary.style.applymap(condformat_summary, top=args.maxfov, bot=args.minfov, subset='FOV')
+    summary2view = summary2view.applymap(condformat_summary, top=args.maxbd, bot=args.minbd, subset='Binding density')
+    summary2view = summary2view.applymap(condformat_summary, top=args.maxlin, bot=args.minlin, subset='R2')
+    summary2view = summary2view.applymap(condformat_summary, top=100 - args.pbelowbackground, bot=0,
+                                     subset='Genes below background')
+    summary2view = summary2view.applymap(condformat_summary, top=args.maxscalingfactor, bot=args.minscalingfactor,
+                                     subset='Scaling factor')
+
     pathoutsummary(summary)
-    summary.to_html('output/Summary.html')
+    summary2view.to_html('output/Summary.html')
 
     if args.showbrowser == True:
         webbrowser.open('output/Summary.html')
@@ -1699,6 +1718,33 @@ def showinfolanes(args):
 
     summarizerawinfolanes(args)
 
+    def condformat_infolanes(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
+        if top >= val >= bot:
+            color = colorbien
+        elif top*1.15 >= val >= bot*0.85:
+            color = colorreg
+        elif (bot*0.85 > val) | (val > top*1.15):
+            color = colormal
+
+        return 'background-color: {}'.format(color)
+
+    def condformat_LOD(val, colorbien = '#a3c771', colormal = '#e3689b'):
+        if val == True:
+            color = colormal
+        elif val == False:
+            color = colorbien
+
+        return 'background-color: {}'.format(color)
+
+
+    infolanes = infolanes.style.applymap(condformat_infolanes, top=args.maxfov, bot=args.minfov, subset='FOV value')
+    infolanes = infolanes.applymap(condformat_infolanes, top = args.maxbd, bot=args.minbd, subset='Binding Density')
+    infolanes = infolanes.applymap(condformat_LOD, subset='limit of detection')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.maxlin, bot=args.minlin,  subset='R2')
+    infolanes = infolanes.applymap(condformat_infolanes, top= 100-args.pbelowbackground, bot=0,  subset='Genes below backg %')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
+
+
     infolanes.to_html('output/rawinfolanes.html')
     
     if args.showbrowser == True:
@@ -1769,6 +1815,37 @@ def runQCfilter(args):
 
     infolanes = findaltnegatives()
     pathoutinfolanes(infolanes)
+
+    def condformat_infolanes(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
+        if top >= val >= bot:
+            color = colorbien
+        elif top*1.15 >= val >= bot*0.85:
+            color = colorreg
+        elif (bot*0.85 > val) | (val > top*1.15):
+            color = colormal
+
+        return 'background-color: {}'.format(color)
+
+    def condformat_LOD(val, colorbien = '#a3c771', colormal = '#e3689b'):
+        if val == True:
+            color = colormal
+        elif val == False:
+            color = colorbien
+
+        return 'background-color: {}'.format(color)
+
+
+    infolanes = infolanes.style.applymap(condformat_infolanes, top=args.maxfov, bot=args.minfov, subset='FOV value')
+    infolanes = infolanes.applymap(condformat_infolanes, top = args.maxbd, bot=args.minbd, subset='Binding Density')
+    infolanes = infolanes.applymap(condformat_LOD, subset='limit of detection')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.maxlin, bot=args.minlin,  subset='R2')
+    infolanes = infolanes.applymap(condformat_infolanes, top= 100-args.pbelowbackground, bot=0,  subset='Genes below backg %')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
+
+    infolanes.to_html('output/infolanes.html')
+
+    if args.showbrowser == True:
+        webbrowser.open('output/infolanes.html')
 
     summarizeinfolanes(args)
     print('QC filtering done.')
