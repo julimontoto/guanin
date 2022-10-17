@@ -341,12 +341,11 @@ class CentralWidget(QWidget):
         runtechnorm.clicked.connect(self.runthetechnorm)
         doublefortechnorm.addWidget(runtechnorm)
 
-        doubleformtic1tn = QFormLayout()
-        ticpopupinfolanes2 = QCheckBox()
-        ticpopupinfolanes2.stateChanged.connect(self.change_showbrowser)
-        doubleformtic1tn.addRow('Pop out infolanes and QC report', ticpopupinfolanes2)
-
-        doublefortickstechnorm.addLayout(doubleformtic1tn)
+        # doubleformtic1tn = QFormLayout()
+        blankspaceqlabel = QLabel()
+        # doubleformtic1tn.addRow('Pop out infolanes and QC report', ticpopupinfolanes2)
+        #
+        doublefortickstechnorm.addWidget(blankspaceqlabel)
 
         laytnorm.addRow(doublefortechnorm)
 
@@ -363,6 +362,7 @@ class CentralWidget(QWidget):
 
         filhousekeepingsmincounts = QSpinBox()
         filhousekeepingsmincounts.setValue(50)
+        filhousekeepingsmincounts.setMaximum(1000)
         filhousekeepingsmincounts.textChanged.connect(self.change_filhousekeepingmincounts)
         laycnorm.addRow('Filter housekeeping panel genes by min counts', filhousekeepingsmincounts)
 
@@ -440,7 +440,7 @@ class CentralWidget(QWidget):
         doubleformtic1cn = QFormLayout()
         ticpopupinfolanes3 = QCheckBox()
         ticpopupinfolanes3.stateChanged.connect(self.change_showbrowser)
-        doubleformtic1cn.addRow('Pop out infolanes and QC report', ticpopupinfolanes3)
+        doubleformtic1cn.addRow('Pop out info about ref genes', ticpopupinfolanes3)
         doublefortickscnorm.addLayout(doubleformtic1cn)
 
         laycnorm.addRow(doubleforcnorm)
@@ -465,7 +465,7 @@ class CentralWidget(QWidget):
         doubleformtic1ev = QFormLayout()
         ticpopupinfolanes4 = QCheckBox()
         ticpopupinfolanes4.stateChanged.connect(self.change_showbrowser)
-        doubleformtic1ev.addRow('Pop out infolanes and final report', ticpopupinfolanes4)
+        doubleformtic1ev.addRow(QLabel('Check output/reports for final report'))
 
         doublefortickseval.addLayout(doubleformtic1ev)
 

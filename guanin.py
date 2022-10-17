@@ -169,6 +169,20 @@ def loadrccs(args, start_time = 0):
 
             dff.set_index('Name', inplace=True)
 
+            diff = None
+            if a != 0:
+                if set(dff.index) != set(dfgenes.index):
+                    print('a')
+                    diff = list(set(dff.index) - set(dfgenes.index))
+                    print(diff)
+                if diff != None:
+                    diff.append(list(set(dfgenes.index) - set(dff.index)))
+                common = list(set(list(dff.index)).intersection(list(dfgenes.index)))
+                dff = dff.loc[common]
+                dfgenes = dfgenes.loc[common]
+                if diff != None:
+                    print('Mismatch, genes not present in all samples: ' + str(diff))
+
             dfgenes.index = dff.index
             dfgenes[id1] = dff['Count']
             dfposneg[id1] = dfposneg1
@@ -354,7 +368,7 @@ def summarizerawinfolanes(args):
     rawsummary = rawsummary.style.applymap(condformat_summary, top=args.maxfov, bot=args.minfov, subset='FOV')
     rawsummary = rawsummary.applymap(condformat_summary, top = args.maxbd, bot=args.minbd, subset='Binding density')
     rawsummary = rawsummary.applymap(condformat_summary, top= args.maxlin, bot=args.minlin,  subset='R2')
-    rawsummary = rawsummary.applymap(condformat_summary, top= 100-args.pbelowbackground, bot=0,  subset='Genes below background')
+    rawsummary = rawsummary.applymap(condformat_summary, top= args.pbelowbackground, bot=0,  subset='Genes below background')
     rawsummary = rawsummary.applymap(condformat_summary, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='Scaling factor')
 
 
@@ -392,7 +406,7 @@ def summarizeinfolanes(args):
     summary2view = summary.style.applymap(condformat_summary, top=args.maxfov, bot=args.minfov, subset='FOV')
     summary2view = summary2view.applymap(condformat_summary, top=args.maxbd, bot=args.minbd, subset='Binding density')
     summary2view = summary2view.applymap(condformat_summary, top=args.maxlin, bot=args.minlin, subset='R2')
-    summary2view = summary2view.applymap(condformat_summary, top=100 - args.pbelowbackground, bot=0,
+    summary2view = summary2view.applymap(condformat_summary, top= args.pbelowbackground, bot=0,
                                      subset='Genes below background')
     summary2view = summary2view.applymap(condformat_summary, top=args.maxscalingfactor, bot=args.minscalingfactor,
                                      subset='Scaling factor')
@@ -709,9 +723,9 @@ def flagqc(args):
     flaggeddf.to_csv('output/flagged.csv', index=False)
 
     if len(flagged) >= 3:
-        args.badlanes = 'Many badlanes detected, check output/flagged.csv'
-    elif 0>len(flagged) <3:
-        args.badlanes = str(flagged)
+        args.badlanes = str(len(flagged)) + ' badlanes detected, check output/flagged.csv'
+    elif 0 < len(flagged) < 3:
+        args.badlanes = str(len(flagged)) + ' badlanes detected: ' + str(flagged)
     elif len(flagged) == 0:
         args.badlanes = 'No bad lanes detected from QC'
 
@@ -731,8 +745,11 @@ def removelanes(autoremove, manualremove):
     print(autoremove)
     print(manualremove)
 
-    dfgenes11 = dfgenes.drop(autoremove, axis=1)
-    infolanes = infolanes.drop(autoremove)
+    if all(autoremove) in dfgenes.index:
+        dfgenes11 = dfgenes.drop(autoremove, axis=1)
+        infolanes = infolanes.drop(autoremove)
+    else:
+        dfgenes11 = dfgenes
 
     cwd = Path(__file__).parent.absolute()
     pathout = cwd / 'output'
@@ -887,7 +904,7 @@ def normtecnica(dfgenes):
         j = float(infolanes.loc[infolanes['ID'] == str(i), 'scaling factor2'])
 
         this = []
-
+        print(dfgenes.index)
         for k in dfgenes[str(i)]:
             m = j*k
             this.append(m)
@@ -1038,6 +1055,7 @@ def findrefend(args, selhkes):
     norm2end2 = norm2end.set_index('Name')
 
     if args.refendgenes == 'endhkes':
+        print(norm2end)
         endge = FindERG(norm2end2)
 
         bestend = endge[0:args.numend] #n best endogenous to include as reference genes
@@ -1741,7 +1759,7 @@ def showinfolanes(args):
     infolanes = infolanes.applymap(condformat_infolanes, top = args.maxbd, bot=args.minbd, subset='Binding Density')
     infolanes = infolanes.applymap(condformat_LOD, subset='limit of detection')
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxlin, bot=args.minlin,  subset='R2')
-    infolanes = infolanes.applymap(condformat_infolanes, top= 100-args.pbelowbackground, bot=0,  subset='Genes below backg %')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.pbelowbackground, bot=0,  subset='Genes below backg %')
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
 
 
@@ -1839,7 +1857,7 @@ def runQCfilter(args):
     infolanes = infolanes.applymap(condformat_infolanes, top = args.maxbd, bot=args.minbd, subset='Binding Density')
     infolanes = infolanes.applymap(condformat_LOD, subset='limit of detection')
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxlin, bot=args.minlin,  subset='R2')
-    infolanes = infolanes.applymap(condformat_infolanes, top= 100-args.pbelowbackground, bot=0,  subset='Genes below backg %')
+    infolanes = infolanes.applymap(condformat_infolanes, top= args.pbelowbackground, bot=0,  subset='Genes below backg %')
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
 
     infolanes.to_html('output/infolanes.html')
