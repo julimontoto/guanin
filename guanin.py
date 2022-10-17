@@ -1933,7 +1933,6 @@ def contnorm(args):
         ddfb = list(ddf.values())
         reskrus = calkruskal(*ddfb)
         print('--> Performing kruskal-wallis analysis')
-
         reswilcopairs = calwilcopairs(*ddfb)
         print('--> Performing wilcoxon analysis')
 
@@ -1997,7 +1996,9 @@ def contnorm(args):
     dataref = pd.read_csv('output/refgenes.csv', index_col=0)
     # dataref.set_index(refgenesshow.index, inplace=True)
     targets = pd.read_csv(args.groupsfile)
-    print(args.groupsfile)
+    groups = set(targets['GROUP'])
+    print(targets)
+
 
 
     print('--> Performing feature selection for refgenes evaluation and control.')
@@ -2025,7 +2026,20 @@ def contnorm(args):
     if args.showbrowser == True:
         webbrowser.open('output/ranking_kruskal_wilcox.html')
 
-    metrics.to_html('output/metrics_reverse_feature_selection.html')
+    def condformat_metrics(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
+        if top >= val >= bot:
+            color = colorbien
+        elif top*1.15 >= val >= bot*0.85:
+            color = colorreg
+        elif (bot*0.85 > val) | (val > top*1.15):
+            color = colormal
+
+        return 'background-color: {}'.format(color)
+
+
+    metrics2 = metrics.style.applymap(condformat_metrics, top=1.35/len(groups), bot=0.5/len(groups), subset='avg_score')
+
+    metrics2.to_html('output/metrics_reverse_feature_selection.html')
     metrics.to_csv('output/reports/metrics_reverse_feature_selection.csv')
 
     if args.showbrowser == True:
