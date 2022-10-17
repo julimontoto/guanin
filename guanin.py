@@ -1165,7 +1165,7 @@ def calwilcopairs(*args):
 def flagkrus(reskrus):
     flaggedgenes = []
     for i in reskrus:
-        if reskrus.loc['pvalue',i] <0.05:
+        if reskrus.loc['pvalue',i] < 0.05:
             flaggedgenes.append(i)
     return flaggedgenes
 
@@ -2005,7 +2005,21 @@ def contnorm(args):
         metrics = rankfeaturegenes(dataref, targets, args)
         ranking = rankstatsrefgenes(metrics, reskrus, reswilcopairs)
 
-    ranking.to_html('output/ranking_kruskal_wilcox.html')
+    def condformat_ranking(val, top, bot, colorbien='#a3c771', colorreg='#f0e986', colormal='#e3689b'):
+        if top >= val >= bot:
+            color = colorbien
+        elif top * 1.15 >= val >= bot * 0.85:
+            color = colorreg
+        elif (bot * 0.85 > val) | (val > top * 1.15):
+            color = colormal
+
+        return 'background-color: {}'.format(color)
+
+    ranking2 = ranking.style.applymap(condformat_ranking, top = 1, bot=0.05, subset='Kruskal p-value')
+    for i in ranking2.columns:
+        ranking2 = ranking2.applymap(condformat_ranking, top=1, bot=0.05, subset = i)
+
+    ranking2.to_html('output/ranking_kruskal_wilcox.html')
     ranking.to_csv('output/reports/ranking_kruskal_wilcox.csv')
 
     if args.showbrowser == True:
