@@ -676,7 +676,7 @@ def flagqc(args):
         info = 'Appropiate QC values for all samples. \n'
         args.current_state = info
         print(args.current_state)
-        f.writelines(info)
+        f.writelines(info + '\n')
     else:
         args.current_state = 'Inappropiate QC values in some samples, revise QC report'
         print(args.current_state)
@@ -689,32 +689,32 @@ def flagqc(args):
             thisSF = infolanes.at[i,'scaling factor']
             thisgbb = infolanes.at[i,'Genes below backg %']
             if thisFOV < args.minfov:
-                fovinfo = 'Low FOV value in ' + i + '. Sample is flagged/discarded.'
+                fovinfo = 'Low FOV value (' + str(thisFOV) +') in ' + i + '. Sample is flagged/discarded. \n'
                 print(fovinfo)
                 f.writelines(fovinfo)
                 flagged.add(i)
             if thisBD > args.maxbd or thisBD < args.minbd:
-                bdinfo = 'Low binding density value in ' + i + '. Sample is flagged/discarded.'
+                bdinfo = 'Wrong binding density value (' + str(thisBD) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(bdinfo)
                 f.writelines(bdinfo)
                 flagged.add(i)
             if thisLOD == True:
-                lodinfo = 'Wrong limit of detection value in ' + i + '. Sample is flagged/discarded.'
+                lodinfo = 'Wrong limit of detection value (' + str(thisLOD) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(lodinfo)
                 f.writelines(lodinfo)
                 flagged.add(i)
             if thisBG > this05:
-                bginfo = 'Wrong 0.5fm value in ' + i + '. Sample is flagged/discarded.'
+                bginfo = 'Wrong 0.5fm value (' + str(thisBG) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(bginfo)
                 f.writelines(bginfo)
                 flagged.add(i)
             if thisSF > 3 or thisSF < 0.3:
-                sfinfo = 'Wrong scaling factor value in ' + i + '. Sample is flagged/discarded.'
+                sfinfo = 'Wrong scaling factor value (' + str(thisSF) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(sfinfo)
                 f.writelines(sfinfo)
                 flagged.add(i)
             if thisgbb > args.pbelowbackground:
-                gbbinfo = 'Wrong genes below background value in ' + i + '. Sample is flagged/discarded.'
+                gbbinfo = 'Wrong genes below background value (' + str(thisgbb) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(gbbinfo)
                 f.writelines(gbbinfo)
                 flagged.add(i)
@@ -723,7 +723,7 @@ def flagqc(args):
     flaggeddf.to_csv('output/flagged.csv', index=False)
 
     if len(flagged) >= 3:
-        args.badlanes = str(len(flagged)) + ' badlanes detected, check output/flagged.csv'
+        args.badlanes = str(len(flagged)) + ' badlanes detected, check output/reports/QCflags.txt'
     elif 0 < len(flagged) < 3:
         args.badlanes = str(len(flagged)) + ' badlanes detected: ' + str(flagged)
     elif len(flagged) == 0:
@@ -741,9 +741,6 @@ def removelanes(autoremove, manualremove):
             manualremove = set(manualremove.split())
         print('Se retiran manualmente las muestras:', manualremove, '.')
         autoremove.update(manualremove)
-
-    print(autoremove)
-    print(manualremove)
 
     if all(autoremove) in dfgenes.index:
         dfgenes11 = dfgenes.drop(autoremove, axis=1)
@@ -776,7 +773,6 @@ def rescalingfactor23(args):
         ref = gmean(infolanes[use])
         if args.tecnormeth == 'regression':
             negs = pd.read_csv('output/dfnegcount.csv', index_col=0)
-            print(negs)
             negs = negs.drop('maxoutlier', axis=1)
             corrected_negs = regretnegs(negs)
             backgr_regr = []
@@ -819,7 +815,6 @@ def regretnegs(negs):
         gmeans.append(thisgmean)
 
     posneg['mean'] = gmeans
-    print(posneg['mean'])
     xmean = sorted(posneg['mean'])
     ymean = [31, 125, 500, 2000, 8000, 32000]
 
@@ -904,7 +899,7 @@ def normtecnica(dfgenes):
         j = float(infolanes.loc[infolanes['ID'] == str(i), 'scaling factor2'])
 
         this = []
-        print(dfgenes.index)
+
         for k in dfgenes[str(i)]:
             m = j*k
             this.append(m)
@@ -930,12 +925,12 @@ def regresion(dfgenes):
     posneg2 = posneg2.drop('CodeClass', axis=1)
     gmeans = []
     for i in posneg2.index:
-        print(posneg2)
+
         thisgmean = gmean(posneg2.loc[i])
         gmeans.append(thisgmean)
 
     posneg['mean'] = gmeans
-    print(posneg['mean'])
+
     xmean = sorted(posneg['mean'])
     ymean = [31, 125, 500, 2000, 8000, 32000]
 
@@ -1055,7 +1050,7 @@ def findrefend(args, selhkes):
     norm2end2 = norm2end.set_index('Name')
 
     if args.refendgenes == 'endhkes':
-        print(norm2end)
+
         endge = FindERG(norm2end2)
 
         bestend = endge[0:args.numend] #n best endogenous to include as reference genes
@@ -1997,7 +1992,7 @@ def contnorm(args):
     # dataref.set_index(refgenesshow.index, inplace=True)
     targets = pd.read_csv(args.groupsfile)
     groups = set(targets['GROUP'])
-    print(targets)
+
 
 
 

@@ -184,8 +184,8 @@ class CentralWidget(QWidget):
         layqc.addRow('Set manual background', manualbackground)
 
         backgroundcorrection = QComboBox()
-        backgroundcorrection.addItem('Set as background')
         backgroundcorrection.addItem('Sustract background value')
+        backgroundcorrection.addItem('Set as background')
         backgroundcorrection.addItem('Skip background correction')
         backgroundcorrection.currentIndexChanged.connect(self.changingbackgroundcorrection)
 
@@ -406,10 +406,6 @@ class CentralWidget(QWidget):
         howtofilter.currentIndexChanged.connect(self.change_howtofilter)
         laycnorm.addRow('How to filter/flag reference genes', howtofilter)
 
-        showreversefeatureselectionranking = QCheckBox()
-        showreversefeatureselectionranking.stateChanged.connect(self.change_showbrowser)
-        laycnorm.addRow('Show reverse feature selection ranking?', showreversefeatureselectionranking)
-
         additionalnormalization = QComboBox()
         additionalnormalization.addItem('No')
         additionalnormalization.addItem('Quantile normalization')
@@ -563,10 +559,10 @@ class CentralWidget(QWidget):
 
     def changingbackgroundcorrection(self, checkbox):
         if checkbox == 0:
-            self.state.lowcounts = 'asim'
+            self.state.lowcounts = 'sustract'
             print(self.state.lowcounts)
         elif checkbox == 1:
-            self.state.lowcounts = 'sustract'
+            self.state.lowcounts = 'asim'
             print(self.state.lowcounts)
         elif checkbox == 2:
             self.state.lowcounts = 'skip'
@@ -772,7 +768,7 @@ class CentralWidget(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    pixmap = QPixmap('image/guanin_splashscreen2_640x480.png')
+    pixmap = QPixmap('image/guanin_splashscreen2_HQ-01_640x480.png')
     splash = QSplashScreen(pixmap)
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
     splash.show()
