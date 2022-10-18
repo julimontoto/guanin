@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/julimontoto/guanin">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKOzmYNQc7IuIhUtOykuxd-qwvRgDE-XXt5TqsWFYxVw&s" alt="Logo" width="80" height="80">
+    <img src="[https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKOzmYNQc7IuIhUtOykuxd-qwvRgDE-XXt5TqsWFYxVw&s](https://ibb.co/V9rRj1h)" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">project_title</h3>
