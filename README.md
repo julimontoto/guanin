@@ -3,10 +3,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/julimontoto/guanin">
-    <img src="https://ibb.co/V9rRj1h" alt="Logo" width="80" height="80">
+    <img src=![image/logoguanin.png]("image/logoguanin.png") width="156" height="156">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">GUANIN</h3>
 
   <p align="center">
     project_description
