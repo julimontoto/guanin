@@ -9,9 +9,9 @@
 <h3 align="center">GUANIN</h3>
 
   <p align="center">
-    project_description
+    | GUi-driven Analyser for Nanostring Interactive Normalization |
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/julimontoto/guanin"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/github_username/repo_name">View Demo</a>
@@ -31,7 +31,6 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
     <li>
@@ -52,30 +51,14 @@
 
 
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email`, `email_client`, `project_title`, `project_description`
-
-<p align="right">(<a href="#top">back to top</a>)</p>
+<!-- ABOUT GUANIN -->
 
 
+[![Product Name Screen Shot][product-screenshot]]([https://example.com](https://i.imgur.com/TBTcTnm.png))
 
-### Built With
-
-* [Next.js](https://nextjs.org/)
-* [React.js](https://reactjs.org/)
-* [Vue.js](https://vuejs.org/)
-* [Angular](https://angular.io/)
-* [Svelte](https://svelte.dev/)
-* [Laravel](https://laravel.com)
-* [Bootstrap](https://getbootstrap.com)
-* [JQuery](https://jquery.com)
+Aquí hay una captura representativa de GUANIN (que no se ve)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- GETTING STARTED -->
@@ -201,3 +184,78 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png
+
+
+
+
+
+
+GUANIN OLDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+# GUANIN
+GUI-driven Analysis for Nanostring Interactive Normalization.
+
+## What does
+
+WIP
+
+## Install
+
+Assuming you have a Python >= 3.9 installed:
+
+    $ pip install --user https://github.com/julimontoto/nanostringqc/releases/download/0.1.0/NanostringQC-0.1.0.tar.gz
+
+## Running
+
+### The CLI
+
+Open a console and from any path, run the following:
+
+    $ NanoQC
+
+### The GUI
+
+A simple GUI is included using [pyQT6](https://pypi.org/project/PyQt6/).
+
+From a console, launch the GUI with:
+
+WIP
+
+This *executable* is installed in your PATH (TBD!). You can find it and launch
+it with a double-click.
+
+## For developers
+
+Pull requests are only welcome if both the following are true:
+
+1. They include at least some test.
+
+2. They solve a bug.
+
+We don't accept pull requests of enhancements, new requirements, "It would be
+nice if...", and so on. If that is your case, fork and develop.
+
+### For internal usage only
+
+To create a new release, follow the steps:
+
+1. Bump the version at `nqcview/__init__.py`.
+
+2. Create a new bundle **locally** with `python -m build`.
+
+3. Check you can install the bundle **locally**, in a fresh Virtualenv, with:
+
+    `$ pip install NanostringQC-0.1.0.tar.gz`
+
+    **AND**
+
+     `$ pip install NanostringQC-0.1.0-py3-none-any.whl`
+
+4. Check it's working as expected, both the CLI and the GUI.
+
+5. Bump the version in this Readme, in the install link above.
+
+6. Put the code under the CVS, **tag it with version**, and push.
+
+7. At Github, create a new Release, selecting the tag from above, and attach
+  the binaries tested in [3].
+
