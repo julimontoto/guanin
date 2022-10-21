@@ -1145,15 +1145,21 @@ def calwilco(dfa,dfb):
     lw = lw.rename(index={0:'Result', 1: 'pvalue'})
     return lw
 
-def calwilcopairs(*args):
+def calwilcopairs(*ddfc):
+    print(type(ddfc))
+    name = ddfc[0][0]
+    df = ddfc[0][1]
+    print(name)
+    print(df)
 
-    lenargs = np.arange(0,len(args))
+    lenargs = np.arange(0,len(ddfc))
+    print(lenargs)
     lw = {}
     for i in lenargs:
         for j in lenargs:
             if i < j:
-                w = calwilco(args[i], args[j])
-                pair = 'wilcox: g' + str(i) + '/' + 'g' + str(j)
+                w = calwilco(ddfc[i][1], ddfc[j][1])
+                pair = 'wilcox: ' + str(ddfc[i][0]) + '/' + str(ddfc[j][0])
                 lw[pair] = w
     return lw
 
@@ -1924,11 +1930,13 @@ def contnorm(args):
                     time.time() - args.start_time))
 
     if args.groups == 'yes':
+        global ddf
         ddf = getgroups(args)
+        ddfc = list(ddf.items())
         ddfb = list(ddf.values())
         reskrus = calkruskal(*ddfb)
         print('--> Performing kruskal-wallis analysis')
-        reswilcopairs = calwilcopairs(*ddfb)
+        reswilcopairs = calwilcopairs(*ddfc)
         print('--> Performing wilcoxon analysis')
 
         flaggedgenes = flagkrus(reskrus)
@@ -2032,7 +2040,7 @@ def contnorm(args):
         return 'background-color: {}'.format(color)
 
 
-    metrics2 = metrics.style.applymap(condformat_metrics, top=1.35/len(groups), bot=0.5/len(groups), subset='avg_score')
+    metrics2 = metrics.style.applymap(condformat_metrics, top=1.5/len(groups), bot=0.5/len(groups), subset='avg_score')
 
     metrics2.to_html('output/metrics_reverse_feature_selection.html')
     metrics.to_csv('output/reports/metrics_reverse_feature_selection.csv')
