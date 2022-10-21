@@ -385,7 +385,7 @@ class CentralWidget(QWidget):
         whatrefgenestouse.addItem('Genorm auto selection (default)')
         whatrefgenestouse.addItem('Top best n genes from genorm ranking')
         whatrefgenestouse.addItem('Top n most expressed endogenous')
-        whatrefgenestouse.addItem('All endogenous genes (may be slow)')
+        whatrefgenestouse.addItem('All endogenous genes')
         whatrefgenestouse.addItem('Ponderated genorm selection')
         whatrefgenestouse.addItem('Manual selection of genes')
         whatrefgenestouse.currentIndexChanged.connect(self.change_contnormmethod)
