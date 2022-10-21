@@ -62,110 +62,102 @@ Aquí hay una captura representativa de GUANIN (que no se ve)
 
 
 <!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+GUANIN should run under Linux, MacOS and Windows.
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+Assuming you have a Python >= 3.9 installed:
+   
+    $ pip install --user https://github.com/julimontoto/guanin/releases/download/0.1.0/GUANIN-0.1.0.tar.gz
+
+Check INSTALL.txt for further details.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+## Running
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+### The CLI
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+Open a console and from any path, run the following:
 
+    $ guanin-cli
 
+### The GUI
 
-<!-- ROADMAP -->
-## Roadmap
+A simple GUI is included using [pyQT6](https://pypi.org/project/PyQt6/).
 
-- [] Feature 1
-- [] Feature 2
-- [] Feature 3
-    - [] Nested Feature
+From a console, launch the GUI with:
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+python3 guanin-gui.py
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
+This *executable* is installed in your PATH (TBD!). You can find it and launch
+it with a double-click.
+Although, running it through the console will provide further information about the execution of the program.
 
 
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the GPL License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+
+
+<!-- For developers -->
+## For developers
+
+Pull requests are only welcome if both the following are true:
+
+1. They include at least some test.
+
+2. They solve a bug.
+
+We don't accept pull requests of enhancements, new requirements, "It would be
+nice if...", and so on. If that is your case, fork and develop.
+
+### For internal usage only
+
+To create a new release, follow the steps:
+
+1. Bump the version at `nqcview/__init__.py`.???
+
+2. Create a new bundle **locally** with `python -m build`.
+
+3. Check you can install the bundle **locally**, in a fresh Virtualenv, with:
+
+    `$ pip install NanostringQC-0.1.0.tar.gz`????
+
+    **AND**
+
+     `$ pip install NanostringQC-0.1.0-py3-none-any.whl`????
+
+4. Check it's working as expected, both the CLI and the GUI.
+
+5. Bump the version in this Readme, in the install link above.
+
+6. Put the code under the CVS, **tag it with version**, and push.
+
+7. At Github, create a new Release, selecting the tag from above, and attach
+  the binaries tested in [3].
 
 
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Julián Montoto-Louzao - [@julimontoto](https://twitter.com/julimontoto) - juli.mlouzao@gmail.com
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
+GUANIN: [https://github.com/julimontoto/guanin](https://github.com/julimontoto/guanin)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
 
 
 
@@ -184,78 +176,3 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png
-
-
-
-
-
-
-GUANIN OLDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
-# GUANIN
-GUI-driven Analysis for Nanostring Interactive Normalization.
-
-## What does
-
-WIP
-
-## Install
-
-Assuming you have a Python >= 3.9 installed:
-
-    $ pip install --user https://github.com/julimontoto/nanostringqc/releases/download/0.1.0/NanostringQC-0.1.0.tar.gz
-
-## Running
-
-### The CLI
-
-Open a console and from any path, run the following:
-
-    $ NanoQC
-
-### The GUI
-
-A simple GUI is included using [pyQT6](https://pypi.org/project/PyQt6/).
-
-From a console, launch the GUI with:
-
-WIP
-
-This *executable* is installed in your PATH (TBD!). You can find it and launch
-it with a double-click.
-
-## For developers
-
-Pull requests are only welcome if both the following are true:
-
-1. They include at least some test.
-
-2. They solve a bug.
-
-We don't accept pull requests of enhancements, new requirements, "It would be
-nice if...", and so on. If that is your case, fork and develop.
-
-### For internal usage only
-
-To create a new release, follow the steps:
-
-1. Bump the version at `nqcview/__init__.py`.
-
-2. Create a new bundle **locally** with `python -m build`.
-
-3. Check you can install the bundle **locally**, in a fresh Virtualenv, with:
-
-    `$ pip install NanostringQC-0.1.0.tar.gz`
-
-    **AND**
-
-     `$ pip install NanostringQC-0.1.0-py3-none-any.whl`
-
-4. Check it's working as expected, both the CLI and the GUI.
-
-5. Bump the version in this Readme, in the install link above.
-
-6. Put the code under the CVS, **tag it with version**, and push.
-
-7. At Github, create a new Release, selecting the tag from above, and attach
-  the binaries tested in [3].
-
