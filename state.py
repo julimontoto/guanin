@@ -43,6 +43,7 @@ class ConfigData:
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
+        self.firsttransformlowcounts = True
 
 
 

@@ -336,16 +336,21 @@ class CentralWidget(QWidget):
         doublefortechnorm = QHBoxLayout()
         doublefortickstechnorm = QHBoxLayout()
         doublefortechnorm.addLayout(doublefortickstechnorm)
+
+        doubleformtic1tn = QFormLayout()
+        ticforaftertransformlowcounts = QCheckBox()
+        ticforaftertransformlowcounts.stateChanged.connect(self.changeaftertransformlowcounts)
+        doubleformtic1tn.addRow('Transform low counts after technical normalization', ticforaftertransformlowcounts)
+
+        doublefortechnorm.addLayout(doubleformtic1tn)
+
+
         runtechnorm = QPushButton('Run technical normalization')
         runtechnorm.setIcon(QIcon('image/logoguanin_96x96.png'))
         runtechnorm.clicked.connect(self.runthetechnorm)
+
         doublefortechnorm.addWidget(runtechnorm)
 
-        # doubleformtic1tn = QFormLayout()
-        blankspaceqlabel = QLabel()
-        # doubleformtic1tn.addRow('Pop out infolanes and QC report', ticpopupinfolanes2)
-        #
-        doublefortickstechnorm.addWidget(blankspaceqlabel)
 
         laytnorm.addRow(doublefortechnorm)
 
@@ -662,6 +667,12 @@ class CentralWidget(QWidget):
         elif checkbox == 2:
             self.state.refendgenes = 'endhkes'
             print(self.state.refendgenes)
+
+    def changeaftertransformlowcounts(self, value):
+        if checkbox == 0:
+            self.state.firsttransformlowcounts == True
+        elif checkbox == 2:
+            self.state.firsttransformlowcounts == False
 
     def printconf(self):
         print(self.state)

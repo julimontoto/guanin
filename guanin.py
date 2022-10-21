@@ -1452,7 +1452,7 @@ def getnormfactor(refgenesdf, eme, args):
     for i in refgenesdf.index:
         igeomean = gmean(refgenesdf.loc[i])
         geomeans1[i] = igeomean
-    prenormfactor = gmean(list((geomeans1.values())))
+    prenormfactor = np.mean(list((geomeans1.values())))
     normfactor = {}
     for i,j in geomeans1.items():
         nfactor = prenormfactor/j
@@ -1467,6 +1467,7 @@ def refnorm(normfactor):
     rnormgenes = pd.DataFrame()
     rnormgenes['Name'] = df.loc[:,'Name']
     thisnormgenes = df.drop(['CodeClass','Name','Accession'], axis=1)
+    print(thisnormgenes)
     for i in thisnormgenes:
         nfactor = normfactor[i]
         thisnormed = []
@@ -1475,6 +1476,7 @@ def refnorm(normfactor):
             thisnormed.append(thiscell)
         rnormgenes[i] = thisnormed
     rnormgenes.set_index('Name', inplace=True)
+    print(rnormgenes)
     return rnormgenes
 
 def grouprnormgenes(args, *dfs):
@@ -1719,6 +1721,7 @@ def argParser():
     parser.add_argument('-gf', '--groupsfile', type=str, default='groups_s5.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
+    parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
     return parser.parse_args()
 
 #################BIG BLOCKS -- BUTTONS
@@ -1873,6 +1876,8 @@ def runQCfilter(args):
 
 def technorm(args):
 
+    if args.firsttransformlowcounts == True:
+        transformlowcounts(args)
     dfgenes = pd.read_csv('output/dfgenes.csv')
     if args.tecnormeth != 'regression':
         normgenes = normtecnica(dfgenes)
@@ -1881,8 +1886,9 @@ def technorm(args):
 
     exporttnormgenes(normgenes)
     exportdfgenes(normgenes)
-
-    transformlowcounts(args)
+    if args.firsttransformlowcounts == False:
+        transformlowcounts(args)
+    #aquí estaba transformlowcounts
     print('Technical normalization done.')
 
 def contnorm(args):
