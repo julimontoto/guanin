@@ -378,6 +378,7 @@ class CentralWidget(QWidget):
 
         howmanyergs = QSpinBox()
         howmanyergs.setValue(6)
+        howmanyergs.setMaximum(999)
         howmanyergs.textChanged.connect(self.change_howmanyergs)
         laycnorm.addRow('How many best endogenous genes to include', howmanyergs)
 
