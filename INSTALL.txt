@@ -9,7 +9,7 @@ $ sudo apt install python3-pip
 
 
 Installing dependencies:
-$ pip install numpy pandas matplotlib==3.4.2 scipy ERgene fpdf sklearn mlxtend seaborn PyQt6 
+$ pip install numpy pandas scipy ERgene fpdf sklearn mlxtend seaborn PyQt6
 
 RUN:
 $python3 gui.py
@@ -23,4 +23,4 @@ Install python3 and pip.
 Visual Studio Build Tools 14+ required.
 
 Installing dependencies:
-$ py -m pip install numpy pandas matplotlib==3.4.2 scipy ERgene fpdf sklearn mlxtend seaborn PyQt6 
+$ py -m pip install numpy pandas scipy ERgene fpdf sklearn mlxtend seaborn PyQt6

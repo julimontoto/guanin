@@ -6,6 +6,10 @@ import statistics
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from scipy.stats.mstats import gmean
+# Monkeypath matplotlib to avoid the failing from upsetplot
+from matplotlib import tight_layout
+tight_layout.get_renderer = ""
+##
 from ERgene import FindERG
 from pathlib import Path
 import argparse
@@ -1770,7 +1774,7 @@ def showinfolanes(args):
 
 
     infolanes.to_html('output/rawinfolanes.html')
-    
+
     if args.showbrowserrawqc == True:
         webbrowser.open('output/rawinfolanes.html')
 
@@ -1804,7 +1808,7 @@ def plotandreport(whatinfolanes = 'rawinfolanes'):
     args.current_state = '--> Generating pdf report'
     print(args.current_state)
     pdfreport()
-    
+
 
 def runQCview(args):
         showinfolanes(args)
