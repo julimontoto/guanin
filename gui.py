@@ -157,7 +157,7 @@ class CentralWidget(QWidget):
 
         doubleformtic1 = QFormLayout()
         ticpopupinfolanes = QCheckBox()
-        ticpopupinfolanes.stateChanged.connect(self.change_showbrowser)
+        ticpopupinfolanes.stateChanged.connect(self.change_showbrowserrawqc)
         doubleformtic1.addRow('Pop up infolanes and rawQC report', ticpopupinfolanes)
         doubleforticksloading.addLayout(doubleformtic1)
 
@@ -308,7 +308,7 @@ class CentralWidget(QWidget):
 
         doubleformtic1qc = QFormLayout()
         popoutinfolanescheck = QCheckBox()
-        popoutinfolanescheck.stateChanged.connect(self.change_showbrowser)
+        popoutinfolanescheck.stateChanged.connect(self.change_showbrowserqc)
         doubleformtic1qc.addRow('Pop out new infolanes and QC report', popoutinfolanescheck)
         doubleforticksqcfiltering.addLayout(doubleformtic1qc)
 
@@ -440,7 +440,7 @@ class CentralWidget(QWidget):
 
         doubleformtic1cn = QFormLayout()
         ticpopupinfolanes3 = QCheckBox()
-        ticpopupinfolanes3.stateChanged.connect(self.change_showbrowser)
+        ticpopupinfolanes3.stateChanged.connect(self.change_showbrowsercnorm)
         doubleformtic1cn.addRow('Pop out info about ref genes', ticpopupinfolanes3)
         doublefortickscnorm.addLayout(doubleformtic1cn)
 
@@ -465,7 +465,7 @@ class CentralWidget(QWidget):
 
         doubleformtic1ev = QFormLayout()
         ticpopupinfolanes4 = QCheckBox()
-        ticpopupinfolanes4.stateChanged.connect(self.change_showbrowser)
+        ticpopupinfolanes4.stateChanged.connect(self.change_showbrowsercnorm)
         doubleformtic1ev.addRow(QLabel('Check output/reports for final report'))
 
         doublefortickseval.addLayout(doubleformtic1ev)
@@ -525,12 +525,26 @@ class CentralWidget(QWidget):
             self.state.modeid = 'filename'
         print(self.state.modeid)
 
-    def change_showbrowser(self, checkbox):
+    def change_showbrowserrawqc(self, checkbox):
         if checkbox == 0:
-            self.state.showbrowser = False
+            self.state.showbrowserrawqc = False
         elif checkbox == 2:
-            self.state.showbrowser = True
-        print(self.state.showbrowser)
+            self.state.showbrowserrawqc = True
+        print(self.state.showbrowserrawqc)
+
+    def change_showbrowserqc(self, checkbox):
+        if checkbox == 0:
+            self.state.showbrowserqc = False
+        elif checkbox == 2:
+            self.state.showbrowserqc = True
+        print(self.state.showbrowserqc)
+
+    def change_showbrowsercnorm(self, checkbox):
+        if checkbox == 0:
+            self.state.showbrowsercnorm = False
+        elif checkbox == 2:
+            self.state.showbrowsercnorm = True
+        print(self.state.showbrowsercnorm)
 
     def runloadingrccs(self):
         self.parent.statusBar().showMessage('Loading RCC files...')

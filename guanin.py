@@ -375,7 +375,7 @@ def summarizerawinfolanes(args):
     rawsummary.to_html('output/rawsummary.html')
 
 
-    if args.showbrowser == True:
+    if args.showbrowserrawqc == True:
         webbrowser.open('output/rawsummary.html')
 
 
@@ -414,7 +414,7 @@ def summarizeinfolanes(args):
     pathoutsummary(summary)
     summary2view.to_html('output/Summary.html')
 
-    if args.showbrowser == True:
+    if args.showbrowserqc == True:
         webbrowser.open('output/Summary.html')
 
 def exportposneg(dfposneg):
@@ -635,7 +635,7 @@ def pdfreport():
 
     pdf.output('output/reports/QC_inspection.pdf', 'F')
 
-    if args.showbrowser == True:
+    if args.showbrowserqc == True:
         os.system('output/reports/QC_inspection.pdf')
 
 def pdfreportnorm():
@@ -654,7 +654,7 @@ def pdfreportnorm():
 
     pdf.output('output/reports/norm_report.pdf', 'F')
 
-    if args.showbrowser == True:
+    if args.showbrowserqc == True:
         os.system('output/reports/QC_inspection.pdf')
 
 def flagqc(args):
@@ -1693,7 +1693,9 @@ def argParser():
     parser.add_argument('-maxlin', '--maxlin', type=float, default=1, help='set manually max linearity for QC')
     parser.add_argument('-minscaf', '--minscalingfactor', type=float, default=0.3, help='set manually min scaling factor for QC')
     parser.add_argument('-maxscaf', '--maxscalingfactor', type=float, default=3, help='set manually max scaling factor for QC')
-    parser.add_argument('-swbr', '--showbrowser', type=bool, default=False, help='pops up infolanes and qc summary')
+    parser.add_argument('-swbrrq', '--showbrowserrawqc', type=bool, default=False, help='pops up infolanes and qc summary')
+    parser.add_argument('-swbrq', '--showbrowserqc', type=bool, default=False, help='pops up infolanes and qc summary')
+    parser.add_argument('-swbrcn', '--showbrowsercnorm', type=bool, default=False, help='pops up infolanes and qc summary')
     parser.add_argument('-lc', '--lowcounts', type=str, default='sustract', choices=['skip', 'asim', 'sustract'],  help='what to do with counts below background?')
     parser.add_argument('-mi', '--modeid', type=str, default='filename', choices=['sampleID','filename', 'id+filename'], help='choose sample identifier. sampleID: optimal if assigned in rccs. filenames: easier to be unique. id+filename: care with group assignment coherence')
     parser.add_argument('-mv', '--modeview', type=str, default='view', choices=['justrun', 'view'], help='choose if plot graphs or just run calculations')
@@ -1769,7 +1771,7 @@ def showinfolanes(args):
 
     infolanes.to_html('output/rawinfolanes.html')
     
-    if args.showbrowser == True:
+    if args.showbrowserrawqc == True:
         webbrowser.open('output/rawinfolanes.html')
 
 def plotandreport(whatinfolanes = 'rawinfolanes'):
@@ -1866,7 +1868,7 @@ def runQCfilter(args):
 
     infolanes.to_html('output/infolanes.html')
 
-    if args.showbrowser == True:
+    if args.showbrowserqc == True:
         webbrowser.open('output/infolanes.html')
 
     summarizeinfolanes(args)
@@ -2032,7 +2034,7 @@ def contnorm(args):
     ranking2.to_html('output/ranking_kruskal_wilcox.html')
     ranking.to_csv('output/reports/ranking_kruskal_wilcox.csv')
 
-    if args.showbrowser == True:
+    if args.showbrowsercnorm == True:
         webbrowser.open('output/ranking_kruskal_wilcox.html')
 
     def condformat_metrics(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
@@ -2051,7 +2053,7 @@ def contnorm(args):
     metrics2.to_html('output/metrics_reverse_feature_selection.html')
     metrics.to_csv('output/reports/metrics_reverse_feature_selection.csv')
 
-    if args.showbrowser == True:
+    if args.showbrowsercnorm == True:
         webbrowser.open('output/metrics_reverse_feature_selection.html')
 
 

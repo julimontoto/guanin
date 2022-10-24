@@ -12,7 +12,9 @@ class ConfigData:
         self.maxlin = 1
         self.minscalingfactor = 0.3
         self.maxscalingfactor = 3
-        self.showbrowser = False
+        self.showbrowserrawqc = False
+        self.showbrowserqc = False
+        self.showbrowsercnorm = False
         self.lowcounts = 'sustract'
         self.modeid = 'filename'
         self.modeview = 'view'
