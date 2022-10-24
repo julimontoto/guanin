@@ -266,66 +266,62 @@ def loadrccs(args, start_time = 0):
 
     return infolanes, dfgenes, dfnegcount, dfhkecount, dfposneg
 
-def createoutputfolder():
+def createoutputfolder(args):
     cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
+    pathout = str(args.outputfolder)
     Path(pathout).mkdir(parents=True, exist_ok=True)
-    pathoutimages = cwd / 'output/images'
+    pathoutimages = str(args.outputfolder) + '/images'
     Path(pathoutimages).mkdir(parents=True, exist_ok=True)
-    pathoutreports = cwd / 'output/reports'
+    pathoutreports = str(args.outputfolder) + '/reports'
     Path(pathoutreports).mkdir(parents=True, exist_ok=True)
 
-def exportrawcounts(rawcounts):
+def exportrawcounts(rawcounts, args):
     cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
+    pathout = str(args.outputfolder)
     rawcounts2 = rawcounts
-    pathraw = pathout / 'rawcounts.csv'
+    pathraw = pathout + '/rawcounts.csv'
     rawcounts2.to_csv(pathraw, index=True)
-    pathdfraw = pathout / 'dfgenes.csv'
+    pathdfraw = pathout + '/dfgenes.csv'
     rawcounts2.to_csv(pathdfraw, index=True)
 
     rawcounts3 = rawcounts2.drop(['CodeClass', 'Accession'], axis=1)
-    pathraw3 = pathout / 'rawcounts2.csv'
+    pathraw3 = pathout + '/rawcounts2.csv'
     rawcounts3.to_csv(pathraw3, index=True)
 
-def exportdfgenes(dfgenes):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathdfgenes = pathout / 'dfgenes.csv'
+def exportdfgenes(dfgenes, args):
+    pathout = str(args.outputfolder)
+    pathdfgenes = pathout + '/dfgenes.csv'
     dfgenes.to_csv(pathdfgenes, index=True)
 
-def exportrawinfolanes(infolanes, dfnegcount, dfhkecount, dfposneg):
+def exportrawinfolanes(infolanes, dfnegcount, dfhkecount, dfposneg, args):
     '''
     Exports raw infolanes and dfnegcount, dfhkecount, dfposneg
     '''
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathinfolanes = pathout / 'rawinfolanes.csv'
-    pathdfnegcount = pathout / 'dfnegcount.csv'
-    pathdfhkecount = pathout / 'dfhkecount.csv'
+    pathout = str(args.outputfolder)
+    pathinfolanes = pathout + '/rawinfolanes.csv'
+    print(pathinfolanes)
+    pathdfnegcount = pathout + '/dfnegcount.csv'
+    pathdfhkecount = pathout + '/dfhkecount.csv'
 
-    exportposneg(dfposneg)
+    exportposneg(dfposneg, args)
 
     infolanes.to_csv(pathinfolanes)
     dfnegcount.to_csv(pathdfnegcount)
     dfhkecount.to_csv(pathdfhkecount)
 
-def pathoutinfolanes(infolanes):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathinfolanes = pathout / 'infolanes.csv'
+def pathoutinfolanes(infolanes, args):
+    pathout = str(args.outputfolder)
+    pathinfolanes = pathout + '/infolanes.csv'
     infolanes.to_csv(pathinfolanes, index=True)
 
-def pathoutrawsummary(rawsummary):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output/reports'
-    pathrawsummary = pathout / 'rawsummary.csv'
+def pathoutrawsummary(rawsummary, args):
+    pathout = str(args.outputfolder) + '/reports'
+    pathrawsummary = pathout + '/rawsummary.csv'
     rawsummary.to_csv(pathrawsummary, index=True)
 
-def pathoutsummary (summary):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output/reports'
-    pathsummary = pathout / 'summary.csv'
+def pathoutsummary (summary, args):
+    pathout = str(args.outputfolder) + '/reports'
+    pathsummary = pathout + '/summary.csv'
     summary.to_csv(pathsummary, index=True)
 
 def condformat_summary(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
@@ -340,7 +336,7 @@ def condformat_summary(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986
 
 def summarizerawinfolanes(args):
 
-    rawinfolanes = pd.read_csv('output/rawinfolanes.csv', index_col='ID')
+    rawinfolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col='ID')
 
     rawinfofov = [np.min(rawinfolanes['FOV value']), np.max(rawinfolanes['FOV value']), np.mean(rawinfolanes['FOV value']), np.median(rawinfolanes['FOV value'])]
     rawinfobd = [np.min(rawinfolanes['Binding Density']), np.max(rawinfolanes['Binding Density']), np.mean(rawinfolanes['Binding Density']), np.median(rawinfolanes['Binding Density'])]
@@ -363,7 +359,7 @@ def summarizerawinfolanes(args):
     rawsummary.loc['0,5 fm'] = rawinfo05fm
     rawsummary.loc['Scaling factor'] = rawinfoscaf
 
-    pathoutrawsummary(rawsummary)
+    pathoutrawsummary(rawsummary, args)
     rawsummary = rawsummary.T
     rawsummary = rawsummary.style.applymap(condformat_summary, top=args.maxfov, bot=args.minfov, subset='FOV')
     rawsummary = rawsummary.applymap(condformat_summary, top = args.maxbd, bot=args.minbd, subset='Binding density')
@@ -372,15 +368,15 @@ def summarizerawinfolanes(args):
     rawsummary = rawsummary.applymap(condformat_summary, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='Scaling factor')
 
 
-    rawsummary.to_html('output/rawsummary.html')
+    rawsummary.to_html(str(args.outputfolder) + '/rawsummary.html')
 
 
     if args.showbrowserrawqc == True:
-        webbrowser.open('output/rawsummary.html')
+        webbrowser.open(str(args.outputfolder) + '/rawsummary.html')
 
 
 def summarizeinfolanes(args):
-    infolanes = pd.read_csv('output/infolanes.csv', index_col='ID')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col='ID')
     infofov = [np.min(infolanes['FOV value']), np.max(infolanes['FOV value']), np.mean(infolanes['FOV value']), np.median(infolanes['FOV value'])]
     infobd = [np.min(infolanes['Binding Density']), np.max(infolanes['Binding Density']), np.mean(infolanes['Binding Density']), np.median(infolanes['Binding Density'])]
     infolin = [np.min(infolanes['R2']), np.max(infolanes['R2']), np.mean(infolanes['R2']), np.median(infolanes['R2'])]
@@ -411,13 +407,13 @@ def summarizeinfolanes(args):
     summary2view = summary2view.applymap(condformat_summary, top=args.maxscalingfactor, bot=args.minscalingfactor,
                                      subset='Scaling factor')
 
-    pathoutsummary(summary)
-    summary2view.to_html('output/Summary.html')
+    pathoutsummary(summary, args)
+    summary2view.to_html(str(args.outputfolder) + '/Summary.html')
 
     if args.showbrowserqc == True:
-        webbrowser.open('output/Summary.html')
+        webbrowser.open(str(args.outputfolder) + '/Summary.html')
 
-def exportposneg(dfposneg):
+def exportposneg(dfposneg, args):
     posnegcounts = pd.DataFrame()
 
     for i in dfposneg.keys():
@@ -429,8 +425,8 @@ def exportposneg(dfposneg):
     posnegcounts.set_index('Name', drop=True, inplace=True)
 
     cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathposneg = pathout / 'posnegcounts.csv'
+    pathout = str(args.outputfolder)
+    pathposneg = pathout + '/posnegcounts.csv'
     posnegcounts.to_csv(pathposneg, index=True)
 
 
@@ -451,7 +447,7 @@ def plotfovvalue(args, infolanes):
     plt.title('IMAGE QC')
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.grid(True)
-    plt.savefig('output/images/fovplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/fovplot.png')
 
 def plotbd(args, infolanes):
     minbd = []
@@ -469,7 +465,7 @@ def plotbd(args, infolanes):
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.legend()
     plt.grid(True)
-    plt.savefig('output/images/bdplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/bdplot.png')
 
 def plotgenbackground(args, infolanes):
     ngenlist = []
@@ -484,7 +480,7 @@ def plotgenbackground(args, infolanes):
     plt.xlabel('ID')
     plt.ylabel('genes')
     plt.title('Genes above background')
-    plt.savefig('output/images/genbackground.png')
+    plt.savefig(str(args.outputfolder) + '/images/genbackground.png')
 
 def plotld(args, infolanes):
     plt.figure()
@@ -504,7 +500,7 @@ def plotld(args, infolanes):
     plt.ylabel('0,5 fm')
     plt.legend()
     plt.grid(True)
-    plt.savefig('output/images/ldplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/ldplot.png')
 
 def plotocn(args, infolanes, dfnegcount):
 
@@ -526,7 +522,7 @@ def plotocn(args, infolanes, dfnegcount):
     plt.ylabel('counts')
     plt.legend(loc='lower right', ncol=4, mode='expand')
     plt.title('Outliers in neg_controls')
-    plt.savefig('output/images/ocnplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/ocnplot.png')
 
 def plotlin(args, infolanes):
     minlin = []
@@ -553,7 +549,7 @@ def plotlin(args, infolanes):
     plt.ylabel('genes')
     plt.xticks(rotation=45)
     plt.title('Linearity and genes above background')
-    plt.savefig('output/images/linplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/linplot.png')
 
 def plothke(args, infolanes, dfhkecount):
     '''Housekeeping plot'''
@@ -565,7 +561,7 @@ def plothke(args, infolanes, dfhkecount):
     plt.legend(loc='upper left', ncol=3, mode='expand')
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.title('Housekeeping genes')
-    plt.savefig('output/images/hkeplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/hkeplot.png')
 
 
 def plothkel(args, infolanes, dfhkecount):
@@ -592,7 +588,7 @@ def plothkel(args, infolanes, dfhkecount):
     plt.legend(loc='upper left', ncol=3, mode='expand')
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.title('Housekeeping genes close to background')
-    plt.savefig('output/images/hkelplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/hkelplot.png')
 
 def plotsca(args, infolanes):
     scalingflist = infolanes['scaling factor']
@@ -614,7 +610,7 @@ def plotsca(args, infolanes):
     plt.xlabel('samples')
     plt.ylabel('scaling factor')
     plt.title('scaling factor')
-    plt.savefig('output/images/scaplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/scaplot.png')
 
 def pdfreport():
     args = argParser()
@@ -625,18 +621,18 @@ def pdfreport():
 
     pdf.image('reports/images/genviptemplate.png',0,0,h=297)
 
-    pdf.image('output/images/ldplot.png', 12.5, 42, h=69)
-    pdf.image('output/images/bdplot.png', 110, 42, h=69)
+    pdf.image(str(args.outputfolder) + '/images/ldplot.png', 12.5, 42, h=69)
+    pdf.image(str(args.outputfolder) + '/images/bdplot.png', 110, 42, h=69)
 
-    pdf.image('output/images/fovplot.png', 10.5, 120, h=69)
-    pdf.image('output/images/linplot.png', 10.5, 200, h=69)
-    pdf.image('output/images/hkelplot.png', 110, 120, h=69)
-    pdf.image('output/images/ocnplot.png', 110, 200, h=69)
+    pdf.image(str(args.outputfolder) + '/images/fovplot.png', 10.5, 120, h=69)
+    pdf.image(str(args.outputfolder) + '/images/linplot.png', 10.5, 200, h=69)
+    pdf.image(str(args.outputfolder) + '/images/hkelplot.png', 110, 120, h=69)
+    pdf.image(str(args.outputfolder) + '/images/ocnplot.png', 110, 200, h=69)
 
-    pdf.output('output/reports/QC_inspection.pdf', 'F')
+    pdf.output(str(args.outputfolder) + '/reports/QC_inspection.pdf', 'F')
 
     if args.showbrowserqc == True:
-        os.system('output/reports/QC_inspection.pdf')
+        os.system(str(args.outputfolder) + '/reports/QC_inspection.pdf')
 
 def pdfreportnorm():
     args = argParser()
@@ -646,25 +642,25 @@ def pdfreportnorm():
 
     pdf.image('reports/images/genviptemplate.png',0,0,h=297)
 
-    pdf.image('output/images/avgm.png', 12.5, 42, h=69)
-    pdf.image('output/images/uve.png', 110, 42, h=69)
+    pdf.image(str(args.outputfolder) + '/images/avgm.png', 12.5, 42, h=69)
+    pdf.image(str(args.outputfolder) + '/images/uve.png', 110, 42, h=69)
 
-    pdf.image('output/images/rlerawplot.png', 10.5, 119, h=77.5)
-    pdf.image('output/images/rlenormplot.png', 10.5, 199, h=77.5)
+    pdf.image(str(args.outputfolder) + '/images/rlerawplot.png', 10.5, 119, h=77.5)
+    pdf.image(str(args.outputfolder) + '/images/rlenormplot.png', 10.5, 199, h=77.5)
 
-    pdf.output('output/reports/norm_report.pdf', 'F')
+    pdf.output(str(args.outputfolder) + '/reports/norm_report.pdf', 'F')
 
     if args.showbrowserqc == True:
-        os.system('output/reports/QC_inspection.pdf')
+        os.system(str(args.outputfolder) + '/reports/QC_inspection.pdf')
 
 def flagqc(args):
-    infolanes = pd.read_csv('output/rawinfolanes.csv', index_col='ID')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col='ID')
 
     flagged = set([])
-    if os.path.exists("output/reports/QCflags.txt"):
-        os.remove("output/reports/QCflags.txt")
+    if os.path.exists(str(args.outputfolder) + '/reports/QCflags.txt'):
+        os.remove(str(args.outputfolder) + '/reports/QCflags.txt')
 
-    f = open('output/reports/QCflags.txt', 'a')
+    f = open(str(args.outputfolder) + '/reports/QCflags.txt', 'a')
     print('--> QC flagging:')
     if (
         all(i >= args.minfov for i in infolanes['FOV value']) and
@@ -720,7 +716,7 @@ def flagqc(args):
                 flagged.add(i)
     f.close()
     flaggeddf = pd.DataFrame(flagged, columns=['Flagged_samples'])
-    flaggeddf.to_csv('output/flagged.csv', index=False)
+    flaggeddf.to_csv(str(args.outputfolder) + '/flagged.csv', index=False)
 
     if len(flagged) >= 3:
         args.badlanes = str(len(flagged)) + ' badlanes detected, check output/reports/QCflags.txt'
@@ -731,9 +727,11 @@ def flagqc(args):
 
     return flagged
 
-def removelanes(autoremove, manualremove):
-    infolanes = pd.read_csv('output/rawinfolanes.csv', index_col='ID')
-    dfgenes = pd.read_csv('output/dfgenes.csv')
+def removelanes(autoremove, args):
+    infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col='ID')
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv', index_col='Name')
+    print(dfgenes)
+    manualremove = args.remove
     if autoremove == None:
         autoremove = set(manualremove)
     if manualremove != None:
@@ -743,36 +741,36 @@ def removelanes(autoremove, manualremove):
         autoremove.update(manualremove)
 
     if all(autoremove) in dfgenes.index:
+        print(autoremove)
+        print(list(dfgenes.index))
         dfgenes11 = dfgenes.drop(autoremove, axis=1)
         infolanes = infolanes.drop(autoremove)
     else:
         dfgenes11 = dfgenes
 
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathinfolanes = pathout / 'infolanes.csv'
+    pathout = str(args.outputfolder)
+    pathinfolanes = pathout + '/infolanes.csv'
     infolanes.to_csv(pathinfolanes, index=True)
 
-    exportdfgenes(dfgenes)
+    exportdfgenes(dfgenes, args)
 
     return dfgenes11, infolanes
 
-def exportfilrawcounts(rawfcounts):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
+def exportfilrawcounts(rawfcounts, args):
+    pathout = str(args.outputfolder)
     rawfcounts2 = rawfcounts
-    pathfraw = pathout / 'rawfcounts.csv'
+    pathfraw = pathout + '/rawfcounts.csv'
     rawfcounts2.to_csv(pathfraw, index=True)
 
 def rescalingfactor23(args):
     """Scaling factor needs to be recalculated after removing samples excluded by QC inspection"""
-    infolanes = pd.read_csv('output/infolanes.csv', index_col=0)
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
 
     if args.tecnormeth == 'posgeomean' or args.tecnormeth == 'regression':
         use = 'posGEOMEAN'
         ref = gmean(infolanes[use])
         if args.tecnormeth == 'regression':
-            negs = pd.read_csv('output/dfnegcount.csv', index_col=0)
+            negs = pd.read_csv(str(args.outputfolder) + '/dfnegcount.csv', index_col=0)
             negs = negs.drop('maxoutlier', axis=1)
             corrected_negs = regretnegs(negs)
             backgr_regr = []
@@ -802,7 +800,7 @@ def rescalingfactor23(args):
 
 def regretnegs(negs):
     corrected_negs = pd.DataFrame()
-    posneg = pd.read_csv('output/posnegcounts.csv', index_col=0)
+    posneg = pd.read_csv(str(args.outputfolder) + '/posnegcounts.csv', index_col=0)
     for i in posneg.index:
         if 'NEG' in i:
             posneg = posneg.drop(i, axis=0)
@@ -820,7 +818,7 @@ def regretnegs(negs):
 
     meaneq_abc = np.polynomial.Polynomial.fit(xmean, ymean, 3)
 
-    infolanes = pd.read_csv('output/infolanes.csv')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
     for i in infolanes['ID']:
         thisx = sorted(posneg[i])
         thiseq_abc = np.polynomial.Polynomial.fit(thisx, ymean, 3)
@@ -846,13 +844,13 @@ def regretnegs(negs):
 
     return corrected_negs.T
 
-def findaltnegatives():
+def findaltnegatives(args):
     '''To find low and stably expressed genes through the endogenous, to use as negative controls
     in case native neg controls are not robust
     Generates new infolanes with background alt in it'''
 
-    infolanes = pd.read_csv('output/infolanes.csv', index_col=0)
-    dfgenes = pd.read_csv('output/rawfcounts.csv', index_col='Name')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/rawfcounts.csv', index_col='Name')
     dfgenes.drop(['CodeClass', 'Accession'], inplace=True, axis=1)
     dfgenes = dfgenes.T
 
@@ -886,9 +884,9 @@ def findaltnegatives():
 
     return infolanes
 
-def normtecnica(dfgenes):
+def normtecnica(dfgenes, args):
 
-    infolanes = pd.read_csv('output/infolanes.csv')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
 
     normgenes = pd.DataFrame()
     normgenes['CodeClass'] = dfgenes['CodeClass']
@@ -916,7 +914,7 @@ def regresion(dfgenes):
     normgenes['Name'] = dfgenes['Name']
     normgenes['Accession'] = dfgenes['Accession']
 
-    posneg = pd.read_csv('output/posnegcounts.csv', index_col=0)
+    posneg = pd.read_csv(str(args.outputfolder) + '/posnegcounts.csv', index_col=0)
     for i in posneg.index:
         if 'NEG' in i:
             posneg = posneg.drop(i, axis=0)
@@ -936,7 +934,7 @@ def regresion(dfgenes):
 
     meaneq_abc = np.polynomial.Polynomial.fit(xmean, ymean, 3)
 
-    infolanes = pd.read_csv('output/infolanes.csv')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
     for i in infolanes['ID']:
         thisx = sorted(posneg[i])
         thiseq_abc = np.polynomial.Polynomial.fit(thisx, ymean, 3)
@@ -962,8 +960,8 @@ def regresion(dfgenes):
 
 def transformlowcounts(args):
 
-    dfgenes = pd.read_csv('output/dfgenes.csv', index_col='Name')
-    infolanes = pd.read_csv('output/infolanes.csv')
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv', index_col='Name')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
 
     ilanes = infolanes.T
 
@@ -1002,22 +1000,22 @@ def transformlowcounts(args):
         elif varback == 'sustract':
             for i in infolanes['ID']:
                 estebg = ilanes.at[varbg,i]
+                print(dfgenes.shape)
                 dfgenes.loc[dfgenes[i] <= estebg, i] = 0
                 dfgenes.loc[dfgenes[i] > estebg, i] = dfgenes[i] - estebg
                 dfgenes.replace(0,1,inplace=True)
 
-    exportdfgenes(dfgenes)
+    exportdfgenes(dfgenes, args)
 
     return dfgenes
 
-def exporttnormgenes(normgenes):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathnormgenes = pathout / 'tnormcounts.csv'
+def exporttnormgenes(normgenes, args):
+    pathout = str(args.outputfolder)
+    pathnormgenes = pathout + '/tnormcounts.csv'
     normgenes.to_csv(pathnormgenes, index=True)
 
-def getallhkes():
-    dfgenes = pd.read_csv('output/dfgenes.csv', index_col='Name')
+def getallhkes(args):
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv', index_col='Name')
 
     allhkes = dfgenes.loc[dfgenes.loc[:,'CodeClass'] == 'Housekeeping']
 
@@ -1025,7 +1023,7 @@ def getallhkes():
 
 def filter50chkes(allhkes, args):
     '''Filters housekeeping genes with less than 50 counts'''
-    infolanes = pd.read_csv('output/infolanes.csv')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
     selhkes = pd.DataFrame()
 
     for i in infolanes['ID']:
@@ -1040,7 +1038,7 @@ def filter50chkes(allhkes, args):
 def findrefend(args, selhkes):
     '''Finds endogenous that can be used as reference genes'''
 
-    dfgenes = pd.read_csv('output/tnormcounts.csv')
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/tnormcounts.csv')
 
     norm2end = dfgenes.loc[dfgenes['CodeClass'] == 'Endogenous']
     norm2end1 = dfgenes.loc[dfgenes['CodeClass'] == 'Endogenous1']
@@ -1071,18 +1069,17 @@ def findrefend(args, selhkes):
 
     return refgenes
 
-def pathoutrefgenes(refgenes):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathrefgenesview = pathout / 'refgenesview.csv'
+def pathoutrefgenes(refgenes, args):
+    pathout = str(args.outputfolder)
+    pathrefgenesview = pathout + '/refgenesview.csv'
     refgenes.to_csv(pathrefgenesview, header=True, index=True)
     refgenes = refgenes.T
-    pathrefgenes = pathout / 'refgenes.csv'
+    pathrefgenes = pathout + '/refgenes.csv'
     refgenes.to_csv(pathrefgenes, header=True, index=True)
 
 def getgroups(args):
-    refgenes = pd.read_csv('output/refgenes.csv', index_col=0)
-    flagged = pd.read_csv('output/flagged.csv')
+    refgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
+    flagged = pd.read_csv(str(args.outputfolder) + '/flagged.csv')
     flagged = set(flagged['Flagged_samples'])
     dfgroups = pd.read_csv(args.groupsfile, header=0, index_col=0)
     if args.laneremover == 'yes':
@@ -1171,7 +1168,7 @@ def flagkrus(reskrus):
     return flaggedgenes
 
 def filterkruskal(flaggedgenes, args):
-    refgenes = pd.read_csv('output/refgenes.csv', index_col=0)
+    refgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
     if args.filtergroupvariation == 'filterkrus':
         if (len(refgenes.columns) - len(flaggedgenes)) <=2:
             args.current_state = 'Too much genes to be removed from kruskal filtering, consider using another refgenes or change settings to "flagkrus".'
@@ -1182,8 +1179,8 @@ def filterkruskal(flaggedgenes, args):
         args.current_state = str('Genes not recommended as refgenes by kruskal: ' + str(flaggedgenes) + '.')
         print(args.current_state)
     cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathrefgenes = pathout / 'refgenes.csv'
+    pathout = str(args.outputfolder)
+    pathrefgenes = pathout + '/refgenes.csv'
     refgenes.to_csv(pathrefgenes, header=True, index=True)
     return refgenes
 
@@ -1197,7 +1194,7 @@ def flagwilcox(reswilcopairs):
     return flaggedwilcox
 
 def filterwilcox(flaggedwilcox, args):
-    refgenes = pd.read_csv('output/refgenes.csv', index_col=0)
+    refgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
     if args.filtergroupvariation == 'filterwilcox':
         if len(flaggedwilcox) < len(refgenes.columns) and (len(refgenes.columns) - len(flaggedwilcox)) > 2:
             refgenes = refgenes.drop(columns=flaggedwilcox)
@@ -1208,8 +1205,8 @@ def filterwilcox(flaggedwilcox, args):
         args.current_state = 'Genes not recommended as refgenes by wilcoxon: ' + str(flaggedwilcox) + '.'
         print(args.current_state)
     cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathrefgenes = pathout / 'refgenes.csv'
+    pathout = str(args.outputfolder)
+    pathrefgenes = pathout + '/refgenes.csv'
     refgenes.to_csv(pathrefgenes, header=True, index=True)
     return refgenes
 
@@ -1309,7 +1306,7 @@ def pairwiseV(datarefgenes):
         a = a+1
     return Vs
 
-def ploteme(eme):
+def ploteme(eme, args):
     plt.figure()
     plt.plot(eme['Genes'], eme['M'], 'o')
     plt.xticks(rotation=45)
@@ -1317,9 +1314,9 @@ def ploteme(eme):
     plt.ylabel('measured M')
     plt.xticks(rotation=45)
     plt.title('measure M')
-    plt.savefig('output/images/eme.png')
+    plt.savefig(str(args.outputfolder) + '/images/eme.png')
 
-def plotavgm(genorm):
+def plotavgm(genorm, args):
     plt.figure()
     plt.plot(genorm[0], genorm[1], 'o')
     plt.xticks(rotation=45)
@@ -1327,9 +1324,9 @@ def plotavgm(genorm):
     plt.ylabel('Avg. M')
     plt.xticks(rotation=45)
     plt.title('Genorm result')
-    plt.savefig('output/images/avgm.png')
+    plt.savefig(str(args.outputfolder) + '/images/avgm.png')
 
-def plotuve(uve):
+def plotuve(uve, args):
     plt.figure()
     plt.bar(uve[0], uve[1])
     plt.xticks(rotation=45)
@@ -1337,7 +1334,7 @@ def plotuve(uve):
     plt.ylabel('pairwise variation')
     plt.xticks(rotation=45)
     plt.title('Pairwise variation')
-    plt.savefig('output/images/uve.png')
+    plt.savefig(str(args.outputfolder) + '/images/uve.png')
 
 def getnrefgenes(uvedf):
     minuve = uvedf[1].min()
@@ -1359,10 +1356,10 @@ def getnamesrefgenes(uvedf, genorm, args):
         names.append(a)
     return names
 
-def takerefgenes(names):
-    datarefgenes = pd.read_csv('output/refgenes.csv')
+def takerefgenes(names, args):
+    datarefgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv')
     bestrefgenes = datarefgenes[names]
-    bestrefgenes.to_csv('output/bestrefgenes.csv', index=False)
+    bestrefgenes.to_csv(str(args.outputfolder) + '/bestrefgenes.csv', index=False)
     return bestrefgenes
 
 def rankfeaturegenes(data, targets, args, verbose=0):
@@ -1416,15 +1413,15 @@ def rankstatsrefgenes(metrics, reskrus, reswilcopairs):
 
      return ranking
 
-def getallgenesdf():
-     df = pd.read_csv('output/tnormcounts.csv')
+def getallgenesdf(args):
+     df = pd.read_csv(str(args.outputfolder) + '/tnormcounts.csv')
      df.drop(['CodeClass', 'Accession'], axis=1, inplace=True)
      df.set_index('Name', inplace=True)
      df = df.T
      return df
 
 def gettopngenesdf(args):
-    df = pd.read_csv('output/tnormcounts.csv')
+    df = pd.read_csv(str(args.outputfolder) + '/tnormcounts.csv')
     df.drop(['CodeClass', 'Accession'], axis=1, inplace=True)
     df.set_index('Name', inplace=True)
     df['mean'] = df.mean(axis=1)
@@ -1436,7 +1433,7 @@ def gettopngenesdf(args):
 
 def getnormfactor(refgenesdf, eme, args):
 
-    infolanes = pd.read_csv('output/infolanes.csv')
+    infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv')
     geomeans1 = {}
     refgenesdf.set_index(infolanes['ID'], inplace=True)
 
@@ -1460,9 +1457,9 @@ def getnormfactor(refgenesdf, eme, args):
 
     return normfactor
 
-def refnorm(normfactor):
+def refnorm(normfactor, args):
 
-    df = pd.read_csv('output/tnormcounts.csv')
+    df = pd.read_csv(str(args.outputfolder) + '/tnormcounts.csv')
 
     rnormgenes = pd.DataFrame()
     rnormgenes['Name'] = df.loc[:,'Name']
@@ -1495,28 +1492,26 @@ def grouprnormgenes(args, *dfs):
             ddf2.append(i)
     return ddf2
 
-def pathoutrnormgenes(df):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathrnorm = pathout / 'rnormcounts.csv'
+def pathoutrnormgenes(df, args):
+    pathout = str(args.outputfolder)
+    pathrnorm = pathout + '/rnormcounts.csv'
     df.to_csv(pathrnorm)
-    path2rnorm = pathout / 'rnormcounts2.csv'
+    path2rnorm = pathout + '/rnormcounts2.csv'
     df2 = df
     df2.to_csv(path2rnorm, index=False, header=False)
 
-def pathoutadnormgenes(df):
-    cwd = Path(__file__).parent.absolute()
-    pathout = cwd / 'output'
-    pathadnorm = pathout / 'adnormcounts.csv'
+def pathoutadnormgenes(df, args):
+    pathout = str(args.outputfolder)
+    pathadnorm = pathout + '/adnormcounts.csv'
     df.to_csv(pathadnorm)
-    path2adnorm = pathout / 'adnormcounts2.csv'
+    path2adnorm = pathout + '/adnormcounts2.csv'
     df2 = df
     df2.to_csv(path2adnorm, index=False, header=False)
 
 def adnormalization(df, args, rnormgenes):
 
     if args.adnormalization == 'no':
-        pathoutrnormgenes(df)
+        pathoutrnormgenes(df, args)
         return df
         df.set_index('Name', inplace=True)
 
@@ -1531,7 +1526,7 @@ def adnormalization(df, args, rnormgenes):
         stdnormgenes.index = rnormgenes.columns
         stdnormgenes.columns = rnormgenes.index
         stdnormgenes = stdnormgenes.T
-        pathoutadnormgenes(stdnormgenes)
+        pathoutadnormgenes(stdnormgenes, args)
         return stdnormgenes
 
     elif args.adnormalization == 'quantile':
@@ -1546,7 +1541,7 @@ def adnormalization(df, args, rnormgenes):
         qnormgenes.index = df.index
         qnormgenes.columns = df.columns
         qnormgenes = qnormgenes.T
-        pathoutadnormgenes(qnormgenes)
+        pathoutadnormgenes(qnormgenes, args)
 
         return qnormgenes
 
@@ -1563,9 +1558,8 @@ def logarizeoutput(rnormgenes, args):
         if args.logarizedoutput == '10':
             logarizedgenes = rnormgenes2.applymap(lambda x: np.log10(x))
 
-        cwd = Path(__file__).parent.absolute()
-        pathout = cwd / 'output'
-        pathlogarized = pathout / 'logarized_rnormcounts.csv'
+        pathout = str(args.outputfolder)
+        pathlogarized = pathout + '/logarized_rnormcounts.csv'
         logarizedgenes.to_csv(pathlogarized)
         return logarizedgenes
 
@@ -1579,8 +1573,8 @@ def logarizegroupedcounts(rnormgenesgroups, args):
 
         rngg.loc['group'] = rnormgenesgroups.loc['group']
         cwd = Path(__file__).parent.absolute()
-        pathout = cwd / 'output'
-        pathlogarizedgrouped = pathout / 'logarized_grouped_rnormcounts.csv'
+        pathout = str(args.outputfolder)
+        pathlogarizedgrouped = pathout + '/logarized_grouped_rnormcounts.csv'
         rngg.to_csv(pathlogarizedgrouped)
 
         return rngg
@@ -1629,7 +1623,7 @@ def logarize(x):
     x  = np.log10(x)
     return x
 
-def plotevalnorm(matrix, what, meaniqr):
+def plotevalnorm(matrix, what, meaniqr, args):
     matrix = matrix.apply(lambda x: x+1)
     matrix = matrix.applymap(lambda x: np.log10(x))
 
@@ -1650,13 +1644,13 @@ def plotevalnorm(matrix, what, meaniqr):
     plt.ylabel('RLE', fontsize=24)
     plt.xlabel('Samples', fontsize=24)
     sns.stripplot(data=matrix, size=2, color='black')
-    plt.savefig('output/images/rlenormplot.png')
-    plt.savefig('output/images/rlenormplot2.png', dpi=15)
+    plt.savefig(str(args.outputfolder) + '/images/rlenormplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/rlenormplot2.png', dpi=15)
 
 
     return estoo
 
-def plotevalraw(matrix, what, meaniqrraw):
+def plotevalraw(matrix, what, meaniqrraw, args):
     matrix = matrix.apply(lambda x: x+1)
     matrix = matrix.applymap(lambda x: np.log10(x))
 
@@ -1677,14 +1671,14 @@ def plotevalraw(matrix, what, meaniqrraw):
     plt.xlabel('Samples', fontsize=24)
     plt.ylim(-1,1)
     sns.stripplot(data=matrix, size=2, color='black')
-    plt.savefig('output/images/rlerawplot.png')
-    plt.savefig('output/images/rlerawplot2.png', dpi=15)
+    plt.savefig(str(args.outputfolder) + '/images/rlerawplot.png')
+    plt.savefig(str(args.outputfolder) + '/images/rlerawplot2.png', dpi=15)
     return estoo
 
 
 def argParser():
     parser = argparse.ArgumentParser(description="Nanostring quality control analysis")
-    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.cwd() / 'data', help='relative folder where RCC set is located. Default: /data')
+    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.cwd() / 'examples/d1_COV_GSE183071', help='relative folder where RCC set is located. Default: /data')
     parser.add_argument('-minf', '--minfov', type=float, default=0.75, help='set manually min fov for QC')
     parser.add_argument('-maxf', '--maxfov', type=float, default=1, help='set manually max fov for QC')
     parser.add_argument('-minbd', '--minbd', type=float, default=0.1, help='set manually min binding density for QC')
@@ -1720,10 +1714,11 @@ def argParser():
     parser.add_argument('-grn', '--groupsinrnormgenes', type=str, default='no', choices=['yes', 'no'], help='want groups to be specified in last column of rnormgenes dataframe?')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
-    parser.add_argument('-gf', '--groupsfile', type=str, default='groups_s5.csv', help='enter file name where groups are defined')
+    parser.add_argument('-gf', '--groupsfile', type=str, default='/examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
+    parser.add_argument('-of', '--outputfolder', type=str, default= pathlib.Path.cwd()/'output')
     return parser.parse_args()
 
 #################BIG BLOCKS -- BUTTONS
@@ -1734,11 +1729,11 @@ def showinfolanes(args):
 
     infolanes, dfgenes, dfnegcount, dfhkecount, dfposneg = loadrccs(args)
 
-    createoutputfolder()
+    createoutputfolder(args)
 
-    exportrawinfolanes(infolanes, dfnegcount, dfhkecount, dfposneg)
+    exportrawinfolanes(infolanes, dfnegcount, dfhkecount, dfposneg, args)
 
-    exportrawcounts(dfgenes)
+    exportrawcounts(dfgenes, args)
 
     summarizerawinfolanes(args)
 
@@ -1769,12 +1764,12 @@ def showinfolanes(args):
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
 
 
-    infolanes.to_html('output/rawinfolanes.html')
+    infolanes.to_html(str(args.outputfolder) + '/rawinfolanes.html')
     
     if args.showbrowserrawqc == True:
-        webbrowser.open('output/rawinfolanes.html')
+        webbrowser.open(str(args.outputfolder) + '/rawinfolanes.html')
 
-def plotandreport(whatinfolanes = 'rawinfolanes'):
+def plotandreport(args, whatinfolanes = 'rawinfolanes'):
     '''
     Plots QC from infolanes or raw info lanes (file)
 
@@ -1782,11 +1777,10 @@ def plotandreport(whatinfolanes = 'rawinfolanes'):
     :return:
     '''
     if whatinfolanes == 'rawinfolanes':
-        infolanes = pd.read_csv('output/rawinfolanes.csv', index_col='ID')
+        infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col='ID')
     elif whatinfolanes == 'infolanes':
-        infolanes = pd.read_csv('output/infolanes.csv', index_col=0)
+        infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
 
-    args = argParser()
     dfnegcount = pd.read_csv('output/dfnegcount.csv', index_col=0)
     dfhkecount = pd.read_csv('output/dfhkecount.csv', index_col=0)
 
@@ -1808,7 +1802,7 @@ def plotandreport(whatinfolanes = 'rawinfolanes'):
 
 def runQCview(args):
         showinfolanes(args)
-        plotandreport()
+        plotandreport(args)
         args.current_state = 'Data loaded succesfuly'
         print(args.current_state)
 
@@ -1818,27 +1812,27 @@ def runQCfilter(args):
     :return:
     '''
 
-    dfgenes = pd.read_csv('output/dfgenes.csv')
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
 
-    if os.path.exists('output/infolanes.csv'):
-        infolanes = pd.read_csv('output/infolanes.csv', index_col=0)
+    if os.path.exists(str(args.outputfolder) + '/infolanes.csv'):
+        infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
     else:
-        infolanes = pd.read_csv('output/rawinfolanes.csv', index_col=0)
+        infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col=0)
 
     flagged = flagqc(args)
 
     if args.laneremover == 'yes':
-        dfgenes, infolanes = removelanes(flagged, args.remove)
-        exportfilrawcounts(dfgenes)
+        dfgenes, infolanes = removelanes(flagged, args)
+        exportfilrawcounts(dfgenes, args)
     elif args.laneremover =='no':
         dfgenes.reset_index(inplace=True)
         exportdfgenes(dfgenes)
 
     infolanes = rescalingfactor23(args)
-    pathoutinfolanes(infolanes)
+    pathoutinfolanes(infolanes, args)
 
-    infolanes = findaltnegatives()
-    pathoutinfolanes(infolanes)
+    infolanes = findaltnegatives(args)
+    pathoutinfolanes(infolanes, args)
 
     def condformat_infolanes(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
         if top >= val >= bot:
@@ -1866,10 +1860,10 @@ def runQCfilter(args):
     infolanes = infolanes.applymap(condformat_infolanes, top= args.pbelowbackground, bot=0,  subset='Genes below backg %')
     infolanes = infolanes.applymap(condformat_infolanes, top= args.maxscalingfactor, bot=args.minscalingfactor,  subset='scaling factor')
 
-    infolanes.to_html('output/infolanes.html')
+    infolanes.to_html(str(args.outputfolder) + '/infolanes.html')
 
     if args.showbrowserqc == True:
-        webbrowser.open('output/infolanes.html')
+        webbrowser.open(str(args.outputfolder) + '/infolanes.html')
 
     summarizeinfolanes(args)
     print('QC filtering done.')
@@ -1880,14 +1874,14 @@ def technorm(args):
 
     if args.firsttransformlowcounts == True:
         transformlowcounts(args)
-    dfgenes = pd.read_csv('output/dfgenes.csv')
+    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
     if args.tecnormeth != 'regression':
-        normgenes = normtecnica(dfgenes)
+        normgenes = normtecnica(dfgenes, args)
     elif args.tecnormeth == 'regression':
         normgenes = regresion(dfgenes)
 
-    exporttnormgenes(normgenes)
-    exportdfgenes(normgenes)
+    exporttnormgenes(normgenes, args)
+    exportdfgenes(normgenes, args)
     if args.firsttransformlowcounts == False:
         transformlowcounts(args)
     #aquí estaba transformlowcounts
@@ -1895,10 +1889,10 @@ def technorm(args):
 
 def contnorm(args):
 
-    flagged = pd.read_csv('output/flagged.csv')
+    flagged = pd.read_csv(str(args.outputfolder) + '/flagged.csv')
     flagged = set(flagged['Flagged_samples'])
 
-    allhkes = getallhkes()
+    allhkes = getallhkes(args)
     args.current_state = '--> Selecting refgenes. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
     print('Housekeeping genes present in analysis: ', list(allhkes.index))
@@ -1930,7 +1924,7 @@ def contnorm(args):
     refgenesinfo['std/mean'] = refgenesinfo['std'] / refgenesinfo['mean']
     refgenesinfo.sort_values('std/mean', inplace=True)
 
-    pathoutrefgenes(refgenes)
+    pathoutrefgenes(refgenes, args)
     print('Saca a un archivo refgenes')
 
     print(
@@ -1964,7 +1958,7 @@ def contnorm(args):
     print(
         '--> Applying genorm to select best ranking selection of refgenes from candidate refgenes. Elapsed %s seconds ' % (
                     time.time() - args.start_time))
-    datarefgenes = pd.read_csv('output/refgenes.csv', index_col=0)
+    datarefgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
     eme = measureM(datarefgenes)
 
     genorm = geNorm(datarefgenes)
@@ -1973,11 +1967,11 @@ def contnorm(args):
 
     print('--> Performing geNorm calculations')
 
-    ploteme(eme)
+    ploteme(eme, args)
 
-    plotavgm(genorm)
+    plotavgm(genorm, args)
 
-    plotuve(uve)
+    plotuve(uve, args)
 
     args.current_state = '--> Calculating optimal number of reference genes'
     print('--> Calculating optimal number of reference genes')
@@ -1999,12 +1993,12 @@ def contnorm(args):
         args.current_state = 'Ref. genes selected (manual): ' + str(names)
         print(args.current_state)
 
-    bestrefgenes = takerefgenes(names)
+    bestrefgenes = takerefgenes(names, args)
 
     ###Método wrapper de feature selection para ver qué genes ayudan al método a clasificar mejor por grupos
     ###POR ORDENAR Y CREAR UNA FUNCIÓN TODAVÍA
 
-    dataref = pd.read_csv('output/refgenes.csv', index_col=0)
+    dataref = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
     # dataref.set_index(refgenesshow.index, inplace=True)
     targets = pd.read_csv(args.groupsfile)
     groups = set(targets['GROUP'])
@@ -2031,11 +2025,11 @@ def contnorm(args):
     for i in ranking2.columns:
         ranking2 = ranking2.applymap(condformat_ranking, top=1, bot=0.05, subset = i)
 
-    ranking2.to_html('output/ranking_kruskal_wilcox.html')
-    ranking.to_csv('output/reports/ranking_kruskal_wilcox.csv')
+    ranking2.to_html(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
+    ranking.to_csv(str(args.outputfolder) + '/reports/ranking_kruskal_wilcox.csv')
 
     if args.showbrowsercnorm == True:
-        webbrowser.open('output/ranking_kruskal_wilcox.html')
+        webbrowser.open(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
 
     def condformat_metrics(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
         if top >= val >= bot:
@@ -2050,17 +2044,17 @@ def contnorm(args):
 
     metrics2 = metrics.style.applymap(condformat_metrics, top=1.5/len(groups), bot=0.5/len(groups), subset='avg_score')
 
-    metrics2.to_html('output/metrics_reverse_feature_selection.html')
-    metrics.to_csv('output/reports/metrics_reverse_feature_selection.csv')
+    metrics2.to_html(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
+    metrics.to_csv(str(args.outputfolder) + '/reports/metrics_reverse_feature_selection.csv')
 
     if args.showbrowsercnorm == True:
-        webbrowser.open('output/metrics_reverse_feature_selection.html')
+        webbrowser.open(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
 
 
     print('--> Getting lane-specific normfactor and applying content normalization. Elapsed %s seconds ' % (
                 time.time() - args.start_time))
 
-    allgenes = getallgenesdf()
+    allgenes = getallgenesdf(args)
     if args.groups == 'yes':
         ddf2 = grouprnormgenes(args, *ddfb)
 
@@ -2072,8 +2066,8 @@ def contnorm(args):
         topngenes = gettopngenesdf(args)
         normfactor = getnormfactor(topngenes, eme, args)
 
-    rnormgenes = refnorm(normfactor)
-    pathoutrnormgenes(rnormgenes)
+    rnormgenes = refnorm(normfactor, args)
+    pathoutrnormgenes(rnormgenes, args)
 
     print('--> Performing additional normalization. Elapsed %s seconds ' % (time.time() - args.start_time))
 
@@ -2083,7 +2077,7 @@ def contnorm(args):
         adnormgenes = adnormalization(rnormgenes, args, rnormgenes)
 
     print('--> Exporting normalization results. Elapsed %s seconds ' % (time.time() - args.start_time))
-    pathoutadnormgenes(adnormgenes)
+    pathoutadnormgenes(adnormgenes, args)
 
     if args.groups == 'yes' and args.groupsinrnormgenes == 'yes':
         rngg = logarizegroupedcounts(rnormgenesgroups, args)
@@ -2092,14 +2086,14 @@ def contnorm(args):
     else:
         rngg = logarizeoutput(adnormgenes, args)
 
-    rngg.to_csv('output/rngg.csv', index=True)
+    rngg.to_csv(str(args.outputfolder) + '/rngg.csv', index=True)
     return rngg
 
 def evalnorm(args):
     args.current_state = '--> Evaluating and plotting normalization results. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
-    rngg = pd.read_csv('output/rngg.csv', index_col = 'Name')
-    rawcounts = pd.read_csv('output/rawcounts2.csv', index_col=0)
+    rngg = pd.read_csv(str(args.outputfolder) + '/rngg.csv', index_col = 'Name')
+    rawcounts = pd.read_csv(str(args.outputfolder) + '/rawcounts2.csv', index_col=0)
     args = argParser()
     rlegenes = RLEcal(rngg, args)
     rleraw = RLEcal(logarizeoutput(rawcounts, args), args)
@@ -2107,22 +2101,22 @@ def evalnorm(args):
     meaniqr = getmeaniqr(rlegenes)
     meaniqrraw = getmeaniqr(rleraw)
 
-    rawcounts = pd.read_csv('output/rawcounts.csv', index_col='Name')
+    rawcounts = pd.read_csv(str(args.outputfolder) + '/rawcounts.csv', index_col='Name')
     rawcounts.drop(['CodeClass', 'Accession'], inplace=True, axis=1)
 
-    rawfcounts = pd.read_csv('output/rawfcounts.csv', index_col='Name')
-    rawfcounts.drop(['CodeClass', 'Accession', 'Unnamed: 0'], inplace=True, axis=1)
+    rawfcounts = pd.read_csv(str(args.outputfolder) + '/rawfcounts.csv', index_col='Name')
+    rawfcounts.drop(['CodeClass', 'Accession'], inplace=True, axis=1)
 
-    tnormcounts = pd.read_csv('output/tnormcounts.csv', index_col='Name')
+    tnormcounts = pd.read_csv(str(args.outputfolder) + '/tnormcounts.csv', index_col='Name')
     tnormcounts.drop(['CodeClass', 'Accession'], inplace=True, axis=1)
 
-    rnormcounts = pd.read_csv('output/rnormcounts.csv', index_col='Name')
+    rnormcounts = pd.read_csv(str(args.outputfolder) + '/rnormcounts.csv', index_col='Name')
 
     print('Plotting raw RLE plot...')
-    plotevalraw(rawcounts, 'RAW counts', meaniqrraw)
+    plotevalraw(rawcounts, 'RAW counts', meaniqrraw, args)
 
     print('Plotting normalized RLE plot...')
-    plotevalnorm(rnormcounts, 'fully normalized counts', meaniqr)
+    plotevalnorm(rnormcounts, 'fully normalized counts', meaniqr, args)
 
     pdfreportnorm()
 
