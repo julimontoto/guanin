@@ -1,9 +1,7 @@
 import sys
 import webbrowser
-import time
 import pathlib
 import logging
-
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QLCDNumber, QSlider, QSpinBox, QDialog, QSplashScreen,
     QLabel, QToolBar, QStatusBar, QGridLayout, QLineEdit, QTextEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit
@@ -11,8 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction, QIcon, QPalette, QColor, QPixmap, QFont, QGuiApplication
 from PyQt6.QtCore import Qt, QSize, QThread, QTimer
 
-import state
-import guanin
+import state, guanin
 
 
 class MainWindow(QMainWindow):

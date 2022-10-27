@@ -6,16 +6,13 @@ import statistics
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from scipy.stats.mstats import gmean
-# Monkeypath matplotlib to avoid the failing from upsetplot
+from scipy import stats
+# Monkeypatch matplotlib to avoid the failing from upsetplot
 from matplotlib import tight_layout
 tight_layout.get_renderer = ""
-
 import logging
-from ERgene import FindERG
-from pathlib import Path
 import argparse
 from fpdf import FPDF
-from scipy import stats
 from sklearn.preprocessing import StandardScaler, quantile_transform
 from sklearn.neighbors import KNeighborsClassifier
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
@@ -23,13 +20,14 @@ import seaborn as sns
 import time
 import pathlib
 import webbrowser
+from ERgene import FindERG
 
 import state
 
 
 def getfolderpath(folder):
     '''RCC path'''
-    cwd = Path(__file__).parent.absolute()
+    cwd = pathlib.Path(__file__).parent.absolute()
     path = cwd / folder
     return path
 
@@ -274,14 +272,13 @@ def loadrccs(args, start_time = 0):
 
 def createoutputfolder(args):
     pathout = str(args.outputfolder)
-    Path(pathout).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(pathout).mkdir(parents=True, exist_ok=True)
     pathoutimages = str(args.outputfolder) + '/images'
-    Path(pathoutimages).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(pathoutimages).mkdir(parents=True, exist_ok=True)
     pathoutreports = str(args.outputfolder) + '/reports'
-    Path(pathoutreports).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(pathoutreports).mkdir(parents=True, exist_ok=True)
 
 def exportrawcounts(rawcounts, args):
-    cwd = Path(__file__).parent.absolute()
     pathout = str(args.outputfolder)
     rawcounts2 = rawcounts
     pathraw = pathout + '/rawcounts.csv'
@@ -430,7 +427,6 @@ def exportposneg(dfposneg, args):
 
     posnegcounts.set_index('Name', drop=True, inplace=True)
 
-    cwd = Path(__file__).parent.absolute()
     pathout = str(args.outputfolder)
     pathposneg = pathout + '/posnegcounts.csv'
     posnegcounts.to_csv(pathposneg, index=True)
@@ -1590,7 +1586,6 @@ def logarizegroupedcounts(rnormgenesgroups, args):
             rngg = rngg.applymap(lambda x: np.log10(x))
 
         rngg.loc['group'] = rnormgenesgroups.loc['group']
-        cwd = Path(__file__).parent.absolute()
         pathout = str(args.outputfolder)
         pathlogarizedgrouped = pathout + '/logarized_grouped_rnormcounts.csv'
         rngg.to_csv(pathlogarizedgrouped)
