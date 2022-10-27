@@ -1,9 +1,10 @@
 import time
 import pathlib
+import tempfile
 
 class ConfigData:
     def __init__(self):
-        self.folder = pathlib.Path.cwd()/'data'
+        self.folder = pathlib.Path.cwd()/'examples/d1_COV_GSE183071'
         self.minfov = 0.75
         self.maxfov = 1
         self.minbd = 0.1
@@ -27,7 +28,7 @@ class ConfigData:
         self.chooserefgenes = None
         self.filtergroupvariation = 'filterkrus'
         self.featureselectionneighbors = 4
-        self.groups = 'yes'
+        self.groups = 'no'
         self.numend = 9
         self.autorename = 'off'
         self.contnorm = 'refgenes'
@@ -39,13 +40,15 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = 'groups_s5.csv'
+        self.groupsfile = 'No groups defined'
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
         self.firsttransformlowcounts = True
+        self.outputfolder = tempfile.gettempdir() + '/guanin_output'
+        self.showlastlog = False
 
 
 

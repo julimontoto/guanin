@@ -9,7 +9,8 @@ from scipy.stats.mstats import gmean
 # Monkeypath matplotlib to avoid the failing from upsetplot
 from matplotlib import tight_layout
 tight_layout.get_renderer = ""
-##
+
+import logging
 from ERgene import FindERG
 from pathlib import Path
 import argparse
@@ -95,6 +96,7 @@ def loadrccs(args, start_time = 0):
 
             args.current_state = str(' Loading RCC... ' + id1)
             print(args.current_state)
+            logging.info(args.current_state)
 
             if args.autorename == 'on':
                 id1 = 'Renamed'
@@ -176,16 +178,14 @@ def loadrccs(args, start_time = 0):
             diff = None
             if a != 0:
                 if set(dff.index) != set(dfgenes.index):
-                    print('a')
                     diff = list(set(dff.index) - set(dfgenes.index))
-                    print(diff)
                 if diff != None:
                     diff.append(list(set(dfgenes.index) - set(dff.index)))
                 common = list(set(list(dff.index)).intersection(list(dfgenes.index)))
                 dff = dff.loc[common]
                 dfgenes = dfgenes.loc[common]
                 if diff != None:
-                    print('Mismatch, genes not present in all samples: ' + str(diff))
+                    logging.warning('Mismatch, genes not present in all samples: ' + str(diff))
 
             dfgenes.index = dff.index
             dfgenes[id1] = dff['Count']
@@ -238,9 +238,11 @@ def loadrccs(args, start_time = 0):
     ##CHECK FOR DUPLICATED IDS
     if all(infolanes.duplicated(subset=['ID']) == False):
         args.current_state = str('--> All ' +  str(len(infolanes['ID'])) + ' IDs are unique, proceeding with analysis. Elapsed %s seconds ' % (time.time() - args.start_time))
+        logging.info(args.current_state)
         print(args.current_state)
     elif any(infolanes.duplicated(subset=['ID']) == True):
         args.current_state = str('WARNING ERROR! --> Duplicated IDs, rename samples with unique names or turn on autorename option')
+        logging.warning(args.current_state)
         print(args.current_state)
 
     '''Adding calculated params to infolanes'''
@@ -271,7 +273,6 @@ def loadrccs(args, start_time = 0):
     return infolanes, dfgenes, dfnegcount, dfhkecount, dfposneg
 
 def createoutputfolder(args):
-    cwd = Path(__file__).parent.absolute()
     pathout = str(args.outputfolder)
     Path(pathout).mkdir(parents=True, exist_ok=True)
     pathoutimages = str(args.outputfolder) + '/images'
@@ -303,7 +304,6 @@ def exportrawinfolanes(infolanes, dfnegcount, dfhkecount, dfposneg, args):
     '''
     pathout = str(args.outputfolder)
     pathinfolanes = pathout + '/rawinfolanes.csv'
-    print(pathinfolanes)
     pathdfnegcount = pathout + '/dfnegcount.csv'
     pathdfhkecount = pathout + '/dfhkecount.csv'
 
@@ -377,6 +377,8 @@ def summarizerawinfolanes(args):
 
     if args.showbrowserrawqc == True:
         webbrowser.open(str(args.outputfolder) + '/rawsummary.html')
+
+
 
 
 def summarizeinfolanes(args):
@@ -665,7 +667,10 @@ def flagqc(args):
         os.remove(str(args.outputfolder) + '/reports/QCflags.txt')
 
     f = open(str(args.outputfolder) + '/reports/QCflags.txt', 'a')
-    print('--> QC flagging:')
+    args.current_state = '--> Starting QC flagging:'
+    logging.info(args.current_state)
+    print(args.current_state)
+
     if (
         all(i >= args.minfov for i in infolanes['FOV value']) and
         all( args.maxbd >= float(i) >= args.minbd for i in infolanes.loc[:,'Binding Density']) and
@@ -676,9 +681,11 @@ def flagqc(args):
         info = 'Appropiate QC values for all samples. \n'
         args.current_state = info
         print(args.current_state)
+        logging.info(args.current_state)
         f.writelines(info + '\n')
     else:
         args.current_state = 'Inappropiate QC values in some samples, revise QC report'
+        logging.warning(args.current_state)
         print(args.current_state)
         for i in infolanes.index:
             thisFOV = infolanes.at[i,'FOV value']
@@ -691,31 +698,37 @@ def flagqc(args):
             if thisFOV < args.minfov:
                 fovinfo = 'Low FOV value (' + str(thisFOV) +') in ' + i + '. Sample is flagged/discarded. \n'
                 print(fovinfo)
+                logging.warning(fovinfo)
                 f.writelines(fovinfo)
                 flagged.add(i)
             if thisBD > args.maxbd or thisBD < args.minbd:
                 bdinfo = 'Wrong binding density value (' + str(thisBD) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(bdinfo)
+                logging.warning(bdinfo)
                 f.writelines(bdinfo)
                 flagged.add(i)
             if thisLOD == True:
                 lodinfo = 'Wrong limit of detection value (' + str(thisLOD) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(lodinfo)
+                logging.warning(lodinfo)
                 f.writelines(lodinfo)
                 flagged.add(i)
             if thisBG > this05:
                 bginfo = 'Wrong 0.5fm value (' + str(thisBG) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(bginfo)
+                logging.warning(bginfo)
                 f.writelines(bginfo)
                 flagged.add(i)
             if thisSF > 3 or thisSF < 0.3:
                 sfinfo = 'Wrong scaling factor value (' + str(thisSF) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(sfinfo)
+                logging.warning(sfinfo)
                 f.writelines(sfinfo)
                 flagged.add(i)
             if thisgbb > args.pbelowbackground:
                 gbbinfo = 'Wrong genes below background value (' + str(thisgbb) +') in ' + i + '. Sample is flagged/discarded.\n'
                 print(gbbinfo)
+                logging.warning(gbbinfo)
                 f.writelines(gbbinfo)
                 flagged.add(i)
     f.close()
@@ -734,7 +747,6 @@ def flagqc(args):
 def removelanes(autoremove, args):
     infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col='ID')
     dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv', index_col='Name')
-    print(dfgenes)
     manualremove = args.remove
     if autoremove == None:
         autoremove = set(manualremove)
@@ -742,15 +754,19 @@ def removelanes(autoremove, args):
         if type(manualremove) == str:
             manualremove = set(manualremove.split())
         print('Se retiran manualmente las muestras:', manualremove, '.')
+        logging.info('Se retiran manualmente las muestras:' + str(manualremove) + '.')
         autoremove.update(manualremove)
+    dfgenes = dfgenes.T
 
-    if all(autoremove) in dfgenes.index:
-        print(autoremove)
-        print(list(dfgenes.index))
+    if set(dfgenes.index.intersection(autoremove)) == autoremove:
+        dfgenes = dfgenes.T
         dfgenes11 = dfgenes.drop(autoremove, axis=1)
         infolanes = infolanes.drop(autoremove)
     else:
-        dfgenes11 = dfgenes
+        dfgenes11 = dfgenes.T
+        args.current_state = 'Lanes set to remove not present in analysis.'
+        print('Error: ' + args.curent_state)
+        logging.error(args.current_state)
 
     pathout = str(args.outputfolder)
     pathinfolanes = pathout + '/infolanes.csv'
@@ -1004,7 +1020,6 @@ def transformlowcounts(args):
         elif varback == 'sustract':
             for i in infolanes['ID']:
                 estebg = ilanes.at[varbg,i]
-                print(dfgenes.shape)
                 dfgenes.loc[dfgenes[i] <= estebg, i] = 0
                 dfgenes.loc[dfgenes[i] > estebg, i] = dfgenes[i] - estebg
                 dfgenes.replace(0,1,inplace=True)
@@ -1056,6 +1071,7 @@ def findrefend(args, selhkes):
         endge = FindERG(norm2end2)
 
         bestend = endge[0:args.numend] #n best endogenous to include as reference genes
+        logging.info('Most promising endogenous genes: ' +  str(bestend))
         print('Most promising endogenous genes: ', bestend)
     refgenes = selhkes
     if 'CodeClass' in refgenes.columns:
@@ -1147,14 +1163,12 @@ def calwilco(dfa,dfb):
     return lw
 
 def calwilcopairs(*ddfc):
-    print(type(ddfc))
     name = ddfc[0][0]
     df = ddfc[0][1]
-    print(name)
-    print(df)
+
 
     lenargs = np.arange(0,len(ddfc))
-    print(lenargs)
+
     lw = {}
     for i in lenargs:
         for j in lenargs:
@@ -1177,12 +1191,13 @@ def filterkruskal(flaggedgenes, args):
         if (len(refgenes.columns) - len(flaggedgenes)) <=2:
             args.current_state = 'Too much genes to be removed from kruskal filtering, consider using another refgenes or change settings to "flagkrus".'
             print(args.current_state)
+            logging.warning(args.current_state)
         else:
             refgenes = refgenes.drop(columns=flaggedgenes)
     elif args.filtergroupvariation == 'flagkrus':
         args.current_state = str('Genes not recommended as refgenes by kruskal: ' + str(flaggedgenes) + '.')
+        logging.warning(args.current_state)
         print(args.current_state)
-    cwd = Path(__file__).parent.absolute()
     pathout = str(args.outputfolder)
     pathrefgenes = pathout + '/refgenes.csv'
     refgenes.to_csv(pathrefgenes, header=True, index=True)
@@ -1205,10 +1220,11 @@ def filterwilcox(flaggedwilcox, args):
         else:
             args.current_state = 'Too many ref genes filtered by wilcox, skipping filtering. Consider re-designing reference/housekeeping genes.'
             print(args.current_state)
+            logging.warning(args.current_state)
     elif args.filtergroupvariation == 'flagwilcox':
         args.current_state = 'Genes not recommended as refgenes by wilcoxon: ' + str(flaggedwilcox) + '.'
         print(args.current_state)
-    cwd = Path(__file__).parent.absolute()
+        logging.warning(args.current_state)
     pathout = str(args.outputfolder)
     pathrefgenes = pathout + '/refgenes.csv'
     refgenes.to_csv(pathrefgenes, header=True, index=True)
@@ -1468,7 +1484,6 @@ def refnorm(normfactor, args):
     rnormgenes = pd.DataFrame()
     rnormgenes['Name'] = df.loc[:,'Name']
     thisnormgenes = df.drop(['CodeClass','Name','Accession'], axis=1)
-    print(thisnormgenes)
     for i in thisnormgenes:
         nfactor = normfactor[i]
         thisnormed = []
@@ -1477,7 +1492,6 @@ def refnorm(normfactor, args):
             thisnormed.append(thiscell)
         rnormgenes[i] = thisnormed
     rnormgenes.set_index('Name', inplace=True)
-    print(rnormgenes)
     return rnormgenes
 
 def grouprnormgenes(args, *dfs):
@@ -1718,11 +1732,12 @@ def argParser():
     parser.add_argument('-grn', '--groupsinrnormgenes', type=str, default='no', choices=['yes', 'no'], help='want groups to be specified in last column of rnormgenes dataframe?')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
-    parser.add_argument('-gf', '--groupsfile', type=str, default='/examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
+    parser.add_argument('-gf', '--groupsfile', type=str, default='examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
     parser.add_argument('-of', '--outputfolder', type=str, default= pathlib.Path.cwd()/'output')
+    parser.add_argument('-sll', '--showlastlog', type=bool, default = False)
     return parser.parse_args()
 
 #################BIG BLOCKS -- BUTTONS
@@ -1801,28 +1816,48 @@ def plotandreport(args, whatinfolanes = 'rawinfolanes'):
 
     args.current_state = '--> Generating pdf report'
     print(args.current_state)
+    logging.info(args.current_state)
     pdfreport()
 
 
 def runQCview(args):
+    try:
         showinfolanes(args)
+        state = 'All RCCs loaded succesfully'
+        args.current_state = state
+        print(state)
+        logging.info(state)
+    except Exception as e:
+        state = 'Something went wrong loading files, check input folder. Error: ' + str(e)
+        args.current_state = state
+        logging.error(args.current_state)
+        print(args.current_state)
+        if args.showbrowserrawqc == True:
+            webbrowser.open('analysis_description.log')
+        return
+    try:
         plotandreport(args)
-        args.current_state = 'Data loaded succesfuly'
+        state = 'Data loaded succesfuly, preliminary analysis and plots ready to inspect'
+        args.current_state = state
+        print(args.current_state)
+        logging.info(state)
+
+
+    except Exception as e:
+        state = 'Something went wrong with preliminary analysis and/or plotting. Error: ' + str(e)
+        args.current_state = state
+        logging.error(args.current_state)
         print(args.current_state)
 
-def runQCfilter(args):
+    if args.showbrowserrawqc == True:
+        webbrowser.open('analysis_description.log')
+
+
+def runQCfilterpre(args):
     '''
     This func assumes you have run runQCview and selected some filtering and configuration parameters
-    :return:
     '''
-
     dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
-
-    if os.path.exists(str(args.outputfolder) + '/infolanes.csv'):
-        infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
-    else:
-        infolanes = pd.read_csv(str(args.outputfolder) + '/rawinfolanes.csv', index_col=0)
-
     flagged = flagqc(args)
 
     if args.laneremover == 'yes':
@@ -1830,7 +1865,7 @@ def runQCfilter(args):
         exportfilrawcounts(dfgenes, args)
     elif args.laneremover =='no':
         dfgenes.reset_index(inplace=True)
-        exportdfgenes(dfgenes)
+        exportdfgenes(dfgenes, args)
 
     infolanes = rescalingfactor23(args)
     pathoutinfolanes(infolanes, args)
@@ -1870,28 +1905,56 @@ def runQCfilter(args):
         webbrowser.open(str(args.outputfolder) + '/infolanes.html')
 
     summarizeinfolanes(args)
-    print('QC filtering done.')
 
     return flagged
 
+def runQCfilter(args):
+    try:
+        runQCfilterpre(args)
+        args.current_state = 'QC filter applied, ready to perform technical normalization'
+        print(args.current_state)
+        logging.info(args.current_state)
+
+
+    except Exception as e:
+        args.current_state = 'Unknown error while QC filtering, check input data and parameters. Error: ' + str(e)
+        print(args.current_state)
+        logging.info(args.current_state)
+
+    if args.showbrowserqc == True:
+        webbrowser.open('analysis_description.log')
+
+
 def technorm(args):
 
-    if args.firsttransformlowcounts == True:
-        transformlowcounts(args)
-    dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
-    if args.tecnormeth != 'regression':
-        normgenes = normtecnica(dfgenes, args)
-    elif args.tecnormeth == 'regression':
-        normgenes = regresion(dfgenes)
+    try:
+        if args.firsttransformlowcounts == True:
+            transformlowcounts(args)
+        dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
+        if args.tecnormeth != 'regression':
+            normgenes = normtecnica(dfgenes, args)
+        elif args.tecnormeth == 'regression':
+            normgenes = regresion(dfgenes)
 
-    exporttnormgenes(normgenes, args)
-    exportdfgenes(normgenes, args)
-    if args.firsttransformlowcounts == False:
-        transformlowcounts(args)
-    #aquí estaba transformlowcounts
-    print('Technical normalization done.')
+        exporttnormgenes(normgenes, args)
+        exportdfgenes(normgenes, args)
+        if args.firsttransformlowcounts == False:
+            transformlowcounts(args)
+
+        args.current_state = 'Technical normalization done'
+        print(args.current_state)
+        logging.info(args.current_state)
+
+    except Exception as e:
+        args.current_state = 'Failed technical normalization'
+        print(args.current_state)
+        logging.error(args.current_state)
+
+
+
 
 def contnorm(args):
+    logging.info('Starting content normalization')
 
     flagged = pd.read_csv(str(args.outputfolder) + '/flagged.csv')
     flagged = set(flagged['Flagged_samples'])
@@ -1899,6 +1962,7 @@ def contnorm(args):
     allhkes = getallhkes(args)
     args.current_state = '--> Selecting refgenes. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
+    logging.info(args.current_state)
     print('Housekeeping genes present in analysis: ', list(allhkes.index))
 
     selhkes = filter50chkes(allhkes, args)
@@ -1906,12 +1970,20 @@ def contnorm(args):
         selhkes = allhkes
         args.current_state = 'All or almost all housekeeping genes are low expressed. Consider re-design experiment'
         print(args.current_state)
+        logging.warning(args.current_state)
     else:
         args.current_state = 'Housekeeping genes with more than 50 counts for all lanes: ' + str(list(selhkes.index))
         print(args.current_state)
+        logging.info(args.current_state)
 
-    refgenes = findrefend(args, selhkes)
-    print('Refgenes in analysis including hkes + best endogenous selected: ', list(refgenes.index))
+    try:
+        refgenes = findrefend(args, selhkes)
+        args.current_state = 'Refgenes in analysis including housekeepings + best endogenous selected: ' +  str(list(refgenes.index))
+        print(args.current_state)
+        logging.info(args.current_state)
+    except Exception as e:
+        logging.warning('Unable to retrieve candidate ref genes from endogenous, ERROR: ', e)
+
     refgenesshow = refgenes.copy()
 
     refgenesshow = refgenesshow.T
@@ -1929,24 +2001,34 @@ def contnorm(args):
     refgenesinfo.sort_values('std/mean', inplace=True)
 
     pathoutrefgenes(refgenes, args)
-    print('Saca a un archivo refgenes')
 
-    print(
-        '--> Group-driven refining candidate reference genes selection through kruskal, wilcoxon and feature selection. Elapsed %s seconds ' % (
-                    time.time() - args.start_time))
+
+    args.current_state = str(('--> Group-driven refining candidate reference genes selection through kruskal, wilcoxon and feature selection. Elapsed %s seconds ' % (time.time() - args.start_time)))
+    print(args.current_state)
+    logging.info(args.current_state)
 
     if args.groups == 'yes':
+        args.current_state = '--> Performing kruskal-wallis analysis'
+        print(args.current_state)
+        logging.info(args.current_state)
         global ddf
         ddf = getgroups(args)
         ddfc = list(ddf.items())
         ddfb = list(ddf.values())
         reskrus = calkruskal(*ddfb)
-        print('--> Performing kruskal-wallis analysis')
+
+        args.current_state = '--> Performing wilcoxon analysis'
+        print(args.current_state)
+        logging.info(args.current_state)
         reswilcopairs = calwilcopairs(*ddfc)
-        print('--> Performing wilcoxon analysis')
 
         flaggedgenes = flagkrus(reskrus)
         flaggedwilcox = flagwilcox(reswilcopairs)
+
+        flaggedboth = set(flaggedgenes).intersection(set(flaggedwilcox))
+
+        print('Flagged genes by kruskal-wallis and/or wilcoxon: ' + str(flaggedboth))
+        logging.info('Flagged genes by kruskal-wallis and/or wilcoxon: ' + str(flaggedboth))
 
         if args.filtergroupvariation == 'filterkrus' or args.filtergroupvariation == 'flagkrus':
             refgenes = filterkruskal(flaggedgenes, args)
@@ -2004,8 +2086,10 @@ def contnorm(args):
 
     dataref = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
     # dataref.set_index(refgenesshow.index, inplace=True)
-    targets = pd.read_csv(args.groupsfile)
-    groups = set(targets['GROUP'])
+
+    if args.groups == 'yes':
+        targets = pd.read_csv(args.groupsfile)
+        groups = set(targets['GROUP'])
 
 
 
@@ -2015,44 +2099,45 @@ def contnorm(args):
         metrics = rankfeaturegenes(dataref, targets, args)
         ranking = rankstatsrefgenes(metrics, reskrus, reswilcopairs)
 
-    def condformat_ranking(val, top, bot, colorbien='#a3c771', colorreg='#f0e986', colormal='#e3689b'):
-        if top >= val >= bot:
-            color = colorbien
-        elif top * 1.15 >= val >= bot * 0.85:
-            color = colorreg
-        elif (bot * 0.85 > val) | (val > top * 1.15):
-            color = colormal
+        def condformat_ranking(val, top, bot, colorbien='#a3c771', colorreg='#f0e986', colormal='#e3689b'):
+            if top >= val >= bot:
+                color = colorbien
+            elif top * 1.15 >= val >= bot * 0.85:
+                color = colorreg
+            elif (bot * 0.85 > val) | (val > top * 1.15):
+                color = colormal
 
-        return 'background-color: {}'.format(color)
+            return 'background-color: {}'.format(color)
 
-    ranking2 = ranking.style.applymap(condformat_ranking, top = 1, bot=0.05, subset='Kruskal p-value')
-    for i in ranking2.columns:
-        ranking2 = ranking2.applymap(condformat_ranking, top=1, bot=0.05, subset = i)
+        ranking2 = ranking.style.applymap(condformat_ranking, top = 1, bot=0.05, subset='Kruskal p-value')
+        for i in ranking2.columns:
+            ranking2 = ranking2.applymap(condformat_ranking, top=1, bot=0.05, subset = i)
 
-    ranking2.to_html(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
-    ranking.to_csv(str(args.outputfolder) + '/reports/ranking_kruskal_wilcox.csv')
+        ranking2.to_html(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
+        ranking.to_csv(str(args.outputfolder) + '/reports/ranking_kruskal_wilcox.csv')
 
-    if args.showbrowsercnorm == True:
-        webbrowser.open(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
+        if args.showbrowsercnorm == True:
+            webbrowser.open(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
 
-    def condformat_metrics(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
-        if top >= val >= bot:
-            color = colorbien
-        elif top*1.15 >= val >= bot*0.85:
-            color = colorreg
-        elif (bot*0.85 > val) | (val > top*1.15):
-            color = colormal
+    if args.groups == 'yes':
+        def condformat_metrics(val, top, bot, colorbien = '#a3c771', colorreg = '#f0e986', colormal = '#e3689b'):
+            if top >= val >= bot:
+                color = colorbien
+            elif top*1.15 >= val >= bot*0.85:
+                color = colorreg
+            elif (bot*0.85 > val) | (val > top*1.15):
+                color = colormal
 
-        return 'background-color: {}'.format(color)
+            return 'background-color: {}'.format(color)
 
 
-    metrics2 = metrics.style.applymap(condformat_metrics, top=1.5/len(groups), bot=0.5/len(groups), subset='avg_score')
+        metrics2 = metrics.style.applymap(condformat_metrics, top=1.5/len(groups), bot=0.5/len(groups), subset='avg_score')
 
-    metrics2.to_html(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
-    metrics.to_csv(str(args.outputfolder) + '/reports/metrics_reverse_feature_selection.csv')
+        metrics2.to_html(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
+        metrics.to_csv(str(args.outputfolder) + '/reports/metrics_reverse_feature_selection.csv')
 
-    if args.showbrowsercnorm == True:
-        webbrowser.open(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
+        if args.showbrowsercnorm == True:
+            webbrowser.open(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
 
 
     print('--> Getting lane-specific normfactor and applying content normalization. Elapsed %s seconds ' % (
@@ -2096,9 +2181,9 @@ def contnorm(args):
 def evalnorm(args):
     args.current_state = '--> Evaluating and plotting normalization results. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
+    logging.info(args.current_state)
     rngg = pd.read_csv(str(args.outputfolder) + '/rngg.csv', index_col = 'Name')
     rawcounts = pd.read_csv(str(args.outputfolder) + '/rawcounts2.csv', index_col=0)
-    args = argParser()
     rlegenes = RLEcal(rngg, args)
     rleraw = RLEcal(logarizeoutput(rawcounts, args), args)
 
@@ -2118,14 +2203,21 @@ def evalnorm(args):
 
     print('Plotting raw RLE plot...')
     plotevalraw(rawcounts, 'RAW counts', meaniqrraw, args)
+    logging.info('Plotted raw RLE plot')
 
     print('Plotting normalized RLE plot...')
     plotevalnorm(rnormcounts, 'fully normalized counts', meaniqr, args)
+    logging.info('Plotted normalized RLE plot')
 
     pdfreportnorm()
 
     args.current_state = '--> Finished. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
+    logging.info(args.current_state)
+    print(args.showlastlog)
+
+    if args.showlastlog == True:
+        webbrowser.open('analysis_description.log')
 
     return (meaniqrraw, meaniqr)
 

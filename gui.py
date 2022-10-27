@@ -2,16 +2,18 @@ import sys
 import webbrowser
 import time
 import pathlib
+import logging
 
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QLCDNumber, QSlider, QSpinBox, QDialog, QSplashScreen,
-    QLabel, QToolBar, QStatusBar, QGridLayout, QLineEdit, QTextEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox
+    QLabel, QToolBar, QStatusBar, QGridLayout, QLineEdit, QTextEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit
 )
 from PyQt6.QtGui import QAction, QIcon, QPalette, QColor, QPixmap, QFont, QGuiApplication
 from PyQt6.QtCore import Qt, QSize, QThread, QTimer
 
 import state
 import guanin
+
 
 class MainWindow(QMainWindow):
 
@@ -35,16 +37,6 @@ class MainWindow(QMainWindow):
         widget = CentralWidget(self)
         self.setCentralWidget(widget)
 
-        toolbar = QToolBar("Toolbar")
-        toolbar.setIconSize(QSize(16,16))
-        self.addToolBar(toolbar)
-
-        button_action = QAction(QIcon("icons/database_plus.png"), "Load RCC data", self)
-        button_action.setStatusTip("Click to select RCC input data")
-        button_action.triggered.connect(self.onMyToolBarButtonClick)
-        button_action.setCheckable(True)
-        toolbar.addAction(button_action)
-
         menubar = self.menuBar()
 
         exitAct = QAction(QIcon('icons/minus_exit.png'), '&Exit', self)
@@ -52,23 +44,71 @@ class MainWindow(QMainWindow):
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(QApplication.instance().quit)
 
-        loadRCCsAct = QAction(QIcon("icons/database_plus.png"), 'Load RCCs', self)
-        loadRCCsAct.setShortcut('Ctrl+L')
-        loadRCCsAct.setStatusTip('Select input RCC files')
-        # somehow trigger el click con el abrir files loadRCCsAct.triggered.connect(QApplication.instance().file_open)
-
         aboutgenvipAct = QAction(QIcon("icons/genvip_24x24.png"), 'About GENVIP', self)
-        # aboutgenvipAct.connect(webbrowser.open('http://www.genvip.eu'))
+        aboutgenvipAct.triggered.connect(self.popupgenvipweb)
+
+        aboutgenpobTeam = QAction(QIcon("icons/GenPob_logo.resized.png"), 'About GENPOB Team', self)
+        aboutgenpobTeam.triggered.connect(self.popupgenpobteam)
 
         aboutguaninAct = QAction(QIcon('icons/logoguanin_32x32.png'), 'About GUANIN', self)
+        aboutguaninAct.triggered.connect(self.popupguaningithub)
 
-        filemenu = menubar.addMenu('File')
-        filemenu.addAction(exitAct)
-        filemenu.addAction(loadRCCsAct)
+        aboutcitationAct = QAction(QIcon('icons/book-open-bookmark.png'), 'Please cite', self)
+        aboutcitationAct.triggered.connect(self.popupguaninpaper)
 
+        aboutlicenseAct = QAction(QIcon('icons/license-key.png'), 'GPL3 license', self)
+        aboutlicenseAct.triggered.connect(self.popuplicenseinfo)
+
+        viewlogAct = QAction(QIcon('icons/information.png'), 'Analysis information', self)
+        viewlogAct.triggered.connect(self.viewlog)
+
+        viewpdfreportAct = QAction(QIcon('icons/report-paper.png'), 'PDF report', self)
+        viewpdfreportAct.triggered.connect(self.viewpdfreport)
+
+        viewsummaryandinfolanesAct = QAction(QIcon('icons/application-table.png'), 'Summary and infolanes', self)
+        viewsummaryandinfolanesAct.triggered.connect(self.viewsummaryandinfolanes)
+
+
+        filemenu = menubar.addMenu('Guanin')
+        viewmenu = menubar.addMenu('View')
         aboutmenu = menubar.addMenu('About')
-        aboutmenu.addAction(aboutgenvipAct)
+
         aboutmenu.addAction(aboutguaninAct)
+        aboutmenu.addAction(aboutcitationAct)
+        aboutmenu.addAction(aboutlicenseAct)
+        filemenu.addAction(exitAct)
+
+        viewmenu.addAction(viewlogAct)
+        viewmenu.addAction(viewpdfreportAct)
+        viewmenu.addAction(viewsummaryandinfolanesAct)
+
+        aboutmenu.addAction(aboutgenvipAct)
+        aboutmenu.addAction(aboutgenpobTeam)
+
+    def viewlog(self):
+        webbrowser.open(str(self.state.outputfolder) + '/analysis_description.log')
+
+    def viewpdfreport(self):
+        webbrowser.open(str(self.state.outputfolder) + '/reports/QC_inspection.pdf')
+        webbrowser.open(str(self.state.outputfolder) + '/reports/norm_report.pdf')
+
+    def popuplicenseinfo(self):
+        webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.html')
+
+    def viewsummaryandinfolanes(self):
+        webbrowser.open(str(self.state.outputfolder) + '/rawsummary.html')
+
+    def popupgenpobteam(self):
+        webbrowser.open('https://genpob.eu/team/')
+
+    def popupguaninpaper(self):
+        webbrowser.open('https://www.google.com/search?q=paper+pending+publication')
+
+    def popupguaningithub(self):
+        webbrowser.open('https://github.com/julimontoto/guanin')
+
+    def popupgenvipweb(self):
+        webbrowser.open('http://www.genvip.eu')
 
     def file_open(self):
         print('hay que meter que abra archivos')
@@ -80,6 +120,7 @@ class MainWindow(QMainWindow):
                     QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
+            logging.info('GUANIN session closed')
 
             event.accept()
         else:
@@ -112,6 +153,7 @@ class CentralWidget(QWidget):
         laycnorm = QFormLayout()
         layeval = QFormLayout()
         layexport = QFormLayout()
+        laylog = QFormLayout()
 
         layout1.setContentsMargins(10, 5, 5, 5)
         layout1.setSpacing(10)
@@ -125,10 +167,11 @@ class CentralWidget(QWidget):
 
         rccfolderbutton = QPushButton('Select folder containing RCC')
         rccfolderbutton.clicked.connect(self.openselectfolder)
+        rccfolderbutton.clicked.connect(self.folderinfotolog)
         layload.addRow('Select RCC files', rccfolderbutton)
 
         self.showfoldertextbox = QLabel(str(self.state.folder))
-        layload.addRow('Selected folder: ', self.showfoldertextbox)
+        layload.addRow('Selected input folder: ', self.showfoldertextbox)
 
 
         csvgroupsbutton = QPushButton('Select csv file')
@@ -145,6 +188,14 @@ class CentralWidget(QWidget):
         sampleidentifier.currentIndexChanged.connect(self.changingmodeid)
 
         layload.addRow('Sample identifier', sampleidentifier)
+
+        outputfolderbutton = QPushButton('Select folder to generate output')
+        outputfolderbutton.clicked.connect(self.openselectoutputfolder)
+        layload.addRow('Select RCC files', outputfolderbutton)
+
+        self.showoutputfoldertextbox = QLabel(str(self.state.outputfolder))
+
+        layload.addRow('Selected output folder: ', self.showoutputfoldertextbox)
 
         doubleforloading = QHBoxLayout()
         doubleforticksloading = QHBoxLayout()
@@ -467,7 +518,9 @@ class CentralWidget(QWidget):
         doubleformtic1ev = QFormLayout()
         ticpopupinfolanes4 = QCheckBox()
         ticpopupinfolanes4.stateChanged.connect(self.change_showbrowsercnorm)
-        doubleformtic1ev.addRow(QLabel('Check output/reports for final report'))
+        ticpopuplastlog = QCheckBox()
+        ticpopuplastlog.stateChanged.connect(self.change_showlastlog)
+        doubleformtic1ev.addRow('Show final log', ticpopuplastlog)
 
         doublefortickseval.addLayout(doubleformtic1ev)
 
@@ -502,21 +555,41 @@ class CentralWidget(QWidget):
 
         layout3.addLayout(layeval)
 
+        layout3.addLayout(laylog)
+
         layout1.addLayout(layout3)
 
         self.setLayout(layout1)
 
+
+    def folderinfotolog(self):
+        logging.debug('uy un bug')
+        logging.info('capasao')
+        # logging.warning('ollo piollo')
+        # logging.error('aaaaaaaaaaaa')
 
 
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
         self.state.folder = folder
         self.showfoldertextbox.setText(self.state.folder)
+        logging.info('Folder selected succesfully')
+
+
+    def openselectoutputfolder(self):
+        folder = QFileDialog.getExistingDirectory(self)
+        self.state.outputfolder = folder
+        self.showoutputfoldertextbox.setText(self.state.outputfolder)
 
     def opencsvfile(self):
         file = QFileDialog.getOpenFileName(self)
         self.state.groupsfile = file[0]
-        self.showfiletextbox.setText(self.state.groupsfile)
+        if (file[0] == 'No groups defined') | (file[0] == ''):
+            self.state.groups = 'no'
+            self.showfiletextbox.setText('No groups defined')
+        else:
+            self.showfiletextbox.setText(self.state.groupsfile)
+            self.state.groups = 'yes'
         print(self.state.groupsfile)
 
     def changingmodeid(self, value):
@@ -553,7 +626,8 @@ class CentralWidget(QWidget):
         print(self.state.groupsfile)
         print(self.state.folder)
         guanin.runQCview(self.state)
-        self.parent.statusBar().showMessage('RCC files loaded, ready to perform QC')
+        self.parent.statusBar().showMessage(self.state.current_state)
+
 
 
     def changingbackgroundbutton(self, checkbox):
@@ -683,7 +757,7 @@ class CentralWidget(QWidget):
             self.state.refendgenes = 'endhkes'
             print(self.state.refendgenes)
 
-    def changeaftertransformlowcounts(self, value):
+    def changeaftertransformlowcounts(self, checkbox):
         if checkbox == 0:
             self.state.firsttransformlowcounts == True
         elif checkbox == 2:
@@ -764,8 +838,8 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')
         self.parent.statusBar().repaint()
         (rawiqr, normiqr) = guanin.evalnorm(self.state)
-        self.labeltext1.setText('Raw RLE plot, IQR: ' + str(rawiqr))
-        self.labeltext2.setText('Normalized RLE plot, IQR: ' + str(normiqr))
+        self.labeltext1.setText('Raw RLE plot')
+        self.labeltext2.setText('Normalized RLE plot')
         self.parent.statusBar().showMessage('Evaluation and data export ready, check "output" folder')
 
         pixmap1 = QPixmap('output/images/rlerawplot2.png')
@@ -782,6 +856,14 @@ class CentralWidget(QWidget):
             self.state.logarizedoutput = '10'
         print(self.state.logarizedoutput)
 
+    def change_showlastlog(self, checkbox):
+        if checkbox == 0:
+            self.state.showlastlog = False
+            print(self.state.showlastlog)
+        elif checkbox == 2:
+            self.state.showlastlog = True
+            print(self.state.showlastlog)
+
     def showflaggedlanes(self):
         self.showingflaggedlanes.setText(str(self.state.badlanes))
 
@@ -791,11 +873,22 @@ class CentralWidget(QWidget):
     def showingnormIQR(self):
         self.labeltext2.setText('Normalized RLE plot, IQR: ' + str(self.state.normmeaniqr))
 
+class logger(logging.Handler):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.widget = QPlainTextEdit(parent)
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
 
 def main():
+    logging.basicConfig(filename= 'analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
-    pixmap = QPixmap('image/guanin_splashscreen2_HQ-01_640x480.png')
+    pixmap = QPixmap('image/guanin_splashscreen2_HQ.resized.png')
     splash = QSplashScreen(pixmap)
+    logging.info('New GUANIN session started')
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
     splash.show()
     QTimer.singleShot(2000, splash.close)
