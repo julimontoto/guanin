@@ -18,7 +18,7 @@ except ImportError:
     from PyQt6.QtCore import Qt, QTimer
 
 
-import state, guanin
+from . import state, guanin
 
 class MainWindow(QMainWindow):
 

@@ -5,6 +5,9 @@ description = ""
 authors = ["julimontoto <juli.mlouzao@gmail.com>"]
 readme = "README.md"
 include = ["image", "icons", "examples", "reports"]
+packages = [
+    {include="guanin"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

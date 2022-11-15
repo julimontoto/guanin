@@ -1,33 +1,31 @@
-UBUNTU 22.04.1 LTS:
+# Install
 
-Assuming python 3.9.4 is installed in Ubuntu 22.04.1 LTS
+## Linux
 
-pip or conda will be needed to install dependencies:
-pip install:
-$ sudo apt update
-$ apt install python3-pip
-$ pip install --upgrade pip
-$ pip install PyQt6
-$ python setup.py install
-RUN:
-$ guanin
+### Installing from Repo
+====================
+
+  $ git clone https://github.com/julimontoto/guanin.git
+  $ pip install poetry
+  $ poetry install
+
+### Run
 
 
-MAC/UNIX:
+  $ guanin
+
+## MAC
 
 Assuming python ^3.9 is installed.
-% pip install python3-pip
-% pip install --upgrade pip
-% pip install PyQt6
-% python3 setup.py install
-RUN:
-$ guanin
 
+  % pip install python3-pip
+  % pip install --upgrade pip
+  % pip install PyQt6
+  % python3 setup.py install
 
-WINDOWS (not wareanteed to work)
+## Windows (not guaranteed to work)
+================================
+
 Install python3 and pip.
 
 Visual Studio Build Tools 14+ required.
-
-Installing dependencies:
-$ py -m pip install numpy pandas scipy ERgene fpdf sklearn mlxtend seaborn PyQt6
