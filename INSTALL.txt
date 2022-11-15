@@ -1,23 +1,30 @@
 UBUNTU 22.04.1 LTS:
 
-Assuming python 3.10.4 is installed in Ubuntu 22.04.1 LTS
+Assuming python 3.9.4 is installed in Ubuntu 22.04.1 LTS
 
 pip or conda will be needed to install dependencies:
 pip install:
 $ sudo apt update
-$ sudo apt install python3-pip
-
-
-Installing dependencies:
-$ pip install numpy pandas scipy ERgene fpdf sklearn mlxtend seaborn PyQt6
-
+$ apt install python3-pip
+$ pip install --upgrade pip
+$ pip install PyQt6
+$ python setup.py install
 RUN:
-$python3 gui.py
+$ guanin
 
 
+MAC/UNIX:
+
+Assuming python ^3.9 is installed.
+% pip install python3-pip
+% pip install --upgrade pip
+% pip install PyQt6
+% python3 setup.py install
+RUN:
+$ guanin
 
 
-WINDOWS:
+WINDOWS (not wareanteed to work)
 Install python3 and pip.
 
 Visual Studio Build Tools 14+ required.

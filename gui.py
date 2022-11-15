@@ -1,16 +1,24 @@
 import sys
 import webbrowser
 import pathlib
+import tempfile
 import logging
-from PyQt6.QtWidgets import (
-    QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QLCDNumber, QSlider, QSpinBox, QDialog, QSplashScreen,
-    QLabel, QToolBar, QStatusBar, QGridLayout, QLineEdit, QTextEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit
-)
-from PyQt6.QtGui import QAction, QIcon, QPalette, QColor, QPixmap, QFont, QGuiApplication
-from PyQt6.QtCore import Qt, QSize, QThread, QTimer
+try:
+    from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
+        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+    from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
+    from PyQt6.QtCore import Qt, QTimer
+except ImportError:
+    import os
+    os.environ['LD_LIBRARY_PATH'] = pathlib.Path(__file__).parent / 'libraries'
+
+    from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
+        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+    from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
+    from PyQt6.QtCore import Qt, QTimer
+
 
 import state, guanin
-
 
 class MainWindow(QMainWindow):
 
@@ -83,7 +91,7 @@ class MainWindow(QMainWindow):
         aboutmenu.addAction(aboutgenpobTeam)
 
     def viewlog(self):
-        webbrowser.open(str(self.state.outputfolder) + '/analysis_description.log')
+        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
 
     def viewpdfreport(self):
         webbrowser.open(str(self.state.outputfolder) + '/reports/QC_inspection.pdf')
@@ -164,7 +172,6 @@ class CentralWidget(QWidget):
 
         rccfolderbutton = QPushButton('Select folder containing RCC')
         rccfolderbutton.clicked.connect(self.openselectfolder)
-        rccfolderbutton.clicked.connect(self.folderinfotolog)
         layload.addRow('Select RCC files', rccfolderbutton)
 
         self.showfoldertextbox = QLabel(str(self.state.folder))
@@ -535,14 +542,11 @@ class CentralWidget(QWidget):
 
         doubleforeval2 = QHBoxLayout()
 
-        pixmap1 = QPixmap('/home/juli/PycharmProjects/guanin/output/images/rlenormplot2.png')
-        pixmap2 = QPixmap('/home/juli/PycharmProjects/guanin/output/images/rlenormplot2.png')
         self.labelpix1 = QLabel('No raw RLE plot generated yet')
         self.labelpix1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # labelpix1.setPixmap(pixmap1)
+
         self.labelpix2 = QLabel('No normalized RLE plot generated yet')
         self.labelpix2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # labelpix2.setPixmap(pixmap2)
 
         doubleforeval2.addWidget(self.labelpix1)
         doubleforeval2.addWidget(self.labelpix2)
@@ -557,13 +561,6 @@ class CentralWidget(QWidget):
         layout1.addLayout(layout3)
 
         self.setLayout(layout1)
-
-
-    def folderinfotolog(self):
-        logging.debug('uy un bug')
-        logging.info('capasao')
-        # logging.warning('ollo piollo')
-        # logging.error('aaaaaaaaaaaa')
 
 
     def openselectfolder(self):
@@ -839,8 +836,8 @@ class CentralWidget(QWidget):
         self.labeltext2.setText('Normalized RLE plot')
         self.parent.statusBar().showMessage('Evaluation and data export ready, check "output" folder')
 
-        pixmap1 = QPixmap('output/images/rlerawplot2.png')
-        pixmap2 = QPixmap('output/images/rlenormplot2.png')
+        pixmap1 = QPixmap(str(self.state.outputfolder) + '/images/rlerawplot2.png')
+        pixmap2 = QPixmap(str(self.state.outputfolder) + '/images/rlenormplot2.png')
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
 
@@ -881,9 +878,10 @@ class logger(logging.Handler):
         self.widget.appendPlainText(msg)
 
 def main():
-    logging.basicConfig(filename= 'analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    #self.state = state.ConfigData()
+    logging.basicConfig(filename=str(pathlib.Path.cwd()) + '/guanin_analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
-    pixmap = QPixmap('image/guanin_splashscreen2_HQ.resized.png')
+    pixmap = QPixmap(str(pathlib.Path.cwd()) + '/image/guanin_splashscreen2_HQ.resized.png')
     splash = QSplashScreen(pixmap)
     logging.info('New GUANIN session started')
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)

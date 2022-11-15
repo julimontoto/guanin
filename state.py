@@ -41,6 +41,7 @@ class ConfigData:
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
         self.groupsfile = 'No groups defined'
+        self.groupsfile = 'No groups defined'
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'

@@ -1,4 +1,5 @@
 import os
+import tempfile
 import math
 import numpy as np
 import pandas as pd
@@ -21,8 +22,6 @@ import time
 import pathlib
 import webbrowser
 from ERgene import FindERG
-
-import state
 
 
 def getfolderpath(folder):
@@ -614,8 +613,7 @@ def plotsca(args, infolanes):
     plt.title('scaling factor')
     plt.savefig(str(args.outputfolder) + '/images/scaplot.png')
 
-def pdfreport():
-    args = argParser()
+def pdfreport(args):
 
     pdf = FPDF()
     pdf.add_page()
@@ -636,8 +634,7 @@ def pdfreport():
     if args.showbrowserqc == True:
         os.system(str(args.outputfolder) + '/reports/QC_inspection.pdf')
 
-def pdfreportnorm():
-    args = argParser()
+def pdfreportnorm(args):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
@@ -1656,7 +1653,7 @@ def plotevalnorm(matrix, what, meaniqr, args):
     plt.ylim(-1,1)
     plt.ylabel('RLE', fontsize=24)
     plt.xlabel('Samples', fontsize=24)
-    sns.stripplot(data=matrix, size=2, color='black')
+    sns.stripplot(data=matrix, size=2, palette='dark:black')
     plt.savefig(str(args.outputfolder) + '/images/rlenormplot.png')
     plt.savefig(str(args.outputfolder) + '/images/rlenormplot2.png', dpi=15)
 
@@ -1683,7 +1680,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     plt.ylabel('RLE', fontsize=24)
     plt.xlabel('Samples', fontsize=24)
     plt.ylim(-1,1)
-    sns.stripplot(data=matrix, size=2, color='black')
+    sns.stripplot(data=matrix, size=2, palette='dark:black')
     plt.savefig(str(args.outputfolder) + '/images/rlerawplot.png')
     plt.savefig(str(args.outputfolder) + '/images/rlerawplot2.png', dpi=15)
     return estoo
@@ -1731,7 +1728,7 @@ def argParser():
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
-    parser.add_argument('-of', '--outputfolder', type=str, default= pathlib.Path.cwd()/'output')
+    parser.add_argument('-of', '--outputfolder', type=str, default= tempfile.gettempdir() + '/guanin_output')
     parser.add_argument('-sll', '--showlastlog', type=bool, default = False)
     return parser.parse_args()
 
@@ -1795,8 +1792,8 @@ def plotandreport(args, whatinfolanes = 'rawinfolanes'):
     elif whatinfolanes == 'infolanes':
         infolanes = pd.read_csv(str(args.outputfolder) + '/infolanes.csv', index_col=0)
 
-    dfnegcount = pd.read_csv('output/dfnegcount.csv', index_col=0)
-    dfhkecount = pd.read_csv('output/dfhkecount.csv', index_col=0)
+    dfnegcount = pd.read_csv(str(args.outputfolder) + '/dfnegcount.csv', index_col=0)
+    dfhkecount = pd.read_csv(str(args.outputfolder) + '/dfhkecount.csv', index_col=0)
 
     if args.modeview != 'justrun':
         plotfovvalue(args, infolanes)
@@ -1812,7 +1809,7 @@ def plotandreport(args, whatinfolanes = 'rawinfolanes'):
     args.current_state = '--> Generating pdf report'
     print(args.current_state)
     logging.info(args.current_state)
-    pdfreport()
+    pdfreport(args)
 
 
 def runQCview(args):
@@ -1828,7 +1825,7 @@ def runQCview(args):
         logging.error(args.current_state)
         print(args.current_state)
         if args.showbrowserrawqc == True:
-            webbrowser.open('analysis_description.log')
+            webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
         return
     try:
         plotandreport(args)
@@ -1845,7 +1842,7 @@ def runQCview(args):
         print(args.current_state)
 
     if args.showbrowserrawqc == True:
-        webbrowser.open('analysis_description.log')
+        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
 
 
 def runQCfilterpre(args):
@@ -1917,7 +1914,7 @@ def runQCfilter(args):
         logging.info(args.current_state)
 
     if args.showbrowserqc == True:
-        webbrowser.open('analysis_description.log')
+        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
 
 
 def technorm(args):
@@ -2204,15 +2201,14 @@ def evalnorm(args):
     plotevalnorm(rnormcounts, 'fully normalized counts', meaniqr, args)
     logging.info('Plotted normalized RLE plot')
 
-    pdfreportnorm()
+    pdfreportnorm(args)
 
     args.current_state = '--> Finished. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
     logging.info(args.current_state)
-    print(args.showlastlog)
 
     if args.showlastlog == True:
-        webbrowser.open('analysis_description.log')
+        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
 
     return (meaniqrraw, meaniqr)
 
