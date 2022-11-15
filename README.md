@@ -1,85 +1,42 @@
+![Logo](/image/logoguanin.png)
+  
+# GUANIN
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/julimontoto/guanin">
-    <img src=![image/logoguanin.png]("image/logoguanin.png") width="156" height="156">
-  </a>
+| GUi-driven Analyser for Nanostring Interactive Normalization |
 
-<h3 align="center">GUANIN</h3>
+[Explore the docs](https://github.com/julimontoto/guanin)
 
-  <p align="center">
-    | GUi-driven Analyser for Nanostring Interactive Normalization |
-    <br />
-    <a href="https://github.com/julimontoto/guanin"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
-    ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
-  </p>
-</div>
+[View Demo](https://github.com/github_username/repo_name) TBD
 
+[Report But](https://github.com/julimontoto/guanin/issues)
 
+[Request Feature](https://github.com/github_username/repo_name/issues)
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
+## Table of Contents
+
+* [About Guanin](#about-guanin)
+* [Getting Started](#getting-started)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+* [Usage](#usage)
+* [Roadmap](#roadmap)
+* [Contributing](#contributing)
+* [License](#license)
+* [Contact](#contact)
+* [Acknowledgments](#acknowledgements)
 
 
+![Guanin Screen Shot](https://i.imgur.com/TBTcTnm.png)
 
-<!-- ABOUT GUANIN -->
-
-
-[![Product Name Screen Shot][product-screenshot]]([https://example.com](https://i.imgur.com/TBTcTnm.png))
-
-Aquí hay una captura representativa de GUANIN (que no se ve)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-<!-- GETTING STARTED -->
+## Getting started
 
 ### Prerequisites
 
-GUANIN should run under Linux, MacOS and Windows.
+GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 installed.
 
 ### Installation
 
-Assuming you have a Python >= 3.9 installed:
-   
-    $ pip install --user https://github.com/julimontoto/guanin/releases/download/0.1.0/GUANIN-0.1.0.tar.gz
-
 Check INSTALL.txt for further details.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- USAGE EXAMPLES -->
 
 ## Running
 
@@ -106,10 +63,6 @@ Although, running it through the console will provide further information about 
 ## License
 
 Distributed under the GPL License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- For developers -->
 ## For developers
@@ -149,30 +102,8 @@ To create a new release, follow the steps:
   the binaries tested in [3].
 
 
-<!-- CONTACT -->
 ## Contact
 
 Julián Montoto-Louzao - [@julimontoto](https://twitter.com/julimontoto) - juli.mlouzao@gmail.com
 
 GUANIN: [https://github.com/julimontoto/guanin](https://github.com/julimontoto/guanin)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
