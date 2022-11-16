@@ -165,7 +165,7 @@ class CentralWidget(QWidget):
 
         loadtitle = QLabel('- Loading data -')
         loadtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        headerfont = QFont('Roboto', 11)
+        headerfont = QFont('Helvetica Neue', 11)
         headerfont.setBold(True)
         loadtitle.setFont(headerfont)
         layload.addRow(loadtitle)
