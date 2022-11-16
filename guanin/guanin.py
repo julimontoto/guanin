@@ -639,7 +639,7 @@ def pdfreportnorm(args):
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
 
-    pdf.image('reports/images/genviptemplate.png',0,0,h=297)
+    pdf.image('../reports/images/genviptemplate.png',0,0,h=297)
 
     pdf.image(str(args.outputfolder) + '/images/avgm.png', 12.5, 42, h=69)
     pdf.image(str(args.outputfolder) + '/images/uve.png', 110, 42, h=69)
@@ -1688,7 +1688,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
 
 def argParser():
     parser = argparse.ArgumentParser(description="Nanostring quality control analysis")
-    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.cwd() / 'examples/d1_COV_GSE183071', help='relative folder where RCC set is located. Default: /data')
+    parser.add_argument('-f', '--folder', type=str, default= pathlib.Path.cwd() / '../examples/d1_COV_GSE183071', help='relative folder where RCC set is located. Default: /data')
     parser.add_argument('-minf', '--minfov', type=float, default=0.75, help='set manually min fov for QC')
     parser.add_argument('-maxf', '--maxfov', type=float, default=1, help='set manually max fov for QC')
     parser.add_argument('-minbd', '--minbd', type=float, default=0.1, help='set manually min binding density for QC')
@@ -1724,7 +1724,7 @@ def argParser():
     parser.add_argument('-grn', '--groupsinrnormgenes', type=str, default='no', choices=['yes', 'no'], help='want groups to be specified in last column of rnormgenes dataframe?')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
-    parser.add_argument('-gf', '--groupsfile', type=str, default='examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
+    parser.add_argument('-gf', '--groupsfile', type=str, default='../examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
