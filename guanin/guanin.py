@@ -619,7 +619,7 @@ def pdfreport(args):
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
 
-    pdf.image('reports/images/genviptemplate.png',0,0,h=297)
+    pdf.image('../reports/images/genviptemplate.png',0,0,h=297)
 
     pdf.image(str(args.outputfolder) + '/images/ldplot.png', 12.5, 42, h=69)
     pdf.image(str(args.outputfolder) + '/images/bdplot.png', 110, 42, h=69)
