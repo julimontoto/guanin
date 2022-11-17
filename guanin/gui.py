@@ -10,7 +10,7 @@ try:
     from PyQt6.QtCore import Qt, QTimer
 except ImportError:
     import os
-    os.environ['LD_LIBRARY_PATH'] = pathlib.Path(__file__).parent / 'libraries'
+    os.environ['LD_LIBRARY_PATH'] = str(pathlib.Path(__file__).parent.parent / 'libraries')
 
     from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
         QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
@@ -25,9 +25,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.state = state.ConfigData()
+        print(str(pathlib.Path(__file__).parent.parent / 'libraries'))
 
         self.setWindowTitle("GUANIN: Nanostring Interactive Normalization")
-        self.setWindowIcon(QIcon(str(pathlib.Path.cwd().parent/'image/logoguanin_156x156.png')))
+        self.setWindowIcon(QIcon(str(pathlib.Path(__file__).parent.parent/'image/logoguanin_156x156.png')))
         # self.resize(1080,640)
 
         qtRectangle = self.frameGeometry()
@@ -44,33 +45,33 @@ class MainWindow(QMainWindow):
 
         menubar = self.menuBar()
 
-        exitAct = QAction(QIcon('../icons/minus_exit.png'), '&Exit', self)
+        exitAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/minus_exit.png')), '&Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(QApplication.instance().quit)
 
-        aboutgenvipAct = QAction(QIcon("../icons/genvip_24x24.png"), 'About GENVIP', self)
+        aboutgenvipAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/genvip_24x24.png')), 'About GENVIP', self)
         aboutgenvipAct.triggered.connect(self.popupgenvipweb)
 
-        aboutgenpobTeam = QAction(QIcon("../icons/GenPob_logo.resized.png"), 'About GENPOB Team', self)
+        aboutgenpobTeam = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/GenPob_logo.resized.png')), 'About GENPOB Team', self)
         aboutgenpobTeam.triggered.connect(self.popupgenpobteam)
 
-        aboutguaninAct = QAction(QIcon('../icons/logoguanin_32x32.png'), 'About GUANIN', self)
+        aboutguaninAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/logoguanin_32x32.png')), 'About GUANIN', self)
         aboutguaninAct.triggered.connect(self.popupguaningithub)
 
-        aboutcitationAct = QAction(QIcon('../icons/book-open-bookmark.png'), 'Please cite', self)
+        aboutcitationAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/book-open-bookmark.png')), 'Please cite', self)
         aboutcitationAct.triggered.connect(self.popupguaninpaper)
 
-        aboutlicenseAct = QAction(QIcon('../icons/license-key.png'), 'GPL3 license', self)
+        aboutlicenseAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/license-key.png')), 'GPL3 license', self)
         aboutlicenseAct.triggered.connect(self.popuplicenseinfo)
 
-        viewlogAct = QAction(QIcon('../icons/information.png'), 'Analysis information', self)
+        viewlogAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/information.png')), 'Analysis information', self)
         viewlogAct.triggered.connect(self.viewlog)
 
-        viewpdfreportAct = QAction(QIcon('../icons/report-paper.png'), 'PDF report', self)
+        viewpdfreportAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/report-paper.png')), 'PDF report', self)
         viewpdfreportAct.triggered.connect(self.viewpdfreport)
 
-        viewsummaryandinfolanesAct = QAction(QIcon('../icons/application-table.png'), 'Summary and infolanes', self)
+        viewsummaryandinfolanesAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/application-table.png')), 'Summary and infolanes', self)
         viewsummaryandinfolanesAct.triggered.connect(self.viewsummaryandinfolanes)
 
 
@@ -878,7 +879,7 @@ def main():
     #self.state = state.ConfigData()
     logging.basicConfig(filename=str(pathlib.Path.cwd().parent) + '/guanin_analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
-    pixmap = QPixmap(str(pathlib.Path.cwd().parent) + '/image/guanin_splashscreen2_HQ.resized.png')
+    pixmap = QPixmap(str(pathlib.Path(__file__).parent.parent / 'image/guanin_splashscreen2_HQ.resized.png'))
     splash = QSplashScreen(pixmap)
     logging.info('New GUANIN session started')
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
