@@ -1,4 +1,4 @@
-<img src="https://github.com/julimontoto/guanin/blob/master/image/logoguanin_156x156.png" width="156">
+![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png)
   
 # GUANIN
 
