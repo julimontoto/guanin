@@ -1013,6 +1013,7 @@ def transformlowcounts(args):
         elif varback == 'sustract':
             for i in infolanes['ID']:
                 estebg = ilanes.at[varbg,i]
+                print(estebg)
                 dfgenes.loc[dfgenes[i] <= estebg, i] = 0
                 dfgenes.loc[dfgenes[i] > estebg, i] = dfgenes[i] - estebg
                 dfgenes.replace(0,1,inplace=True)
