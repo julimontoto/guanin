@@ -393,6 +393,7 @@ class CentralWidget(QWidget):
         doubleformtic1tn = QFormLayout()
         ticforaftertransformlowcounts = QCheckBox()
         ticforaftertransformlowcounts.stateChanged.connect(self.changeaftertransformlowcounts)
+        ticforaftertransformlowcounts.setChecked(True)
         doubleformtic1tn.addRow('Transform low counts after technical normalization', ticforaftertransformlowcounts)
 
         doublefortechnorm.addLayout(doubleformtic1tn)
