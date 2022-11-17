@@ -4,7 +4,7 @@ import tempfile
 
 class ConfigData:
     def __init__(self):
-        self.folder = pathlib.Path.cwd()/'examples/d1_COV_GSE183071'
+        self.folder = pathlib.Path(__file__).parent/'examples/d1_COV_GSE183071'
         self.minfov = 0.75
         self.maxfov = 1
         self.minbd = 0.1

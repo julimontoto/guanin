@@ -25,10 +25,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.state = state.ConfigData()
-        print(str(pathlib.Path(__file__).parent.parent / 'libraries'))
-
+        print(str(pathlib.Path(__file__)))
         self.setWindowTitle("GUANIN: Nanostring Interactive Normalization")
-        self.setWindowIcon(QIcon(str(pathlib.Path(__file__).parent.parent/'image/logoguanin_156x156.png')))
+        self.setWindowIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_156x156.png')))
         # self.resize(1080,640)
 
         qtRectangle = self.frameGeometry()
@@ -45,33 +44,34 @@ class MainWindow(QMainWindow):
 
         menubar = self.menuBar()
 
-        exitAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/minus_exit.png')), '&Exit', self)
+        exitAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/minus_exit.png')), '&Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(QApplication.instance().quit)
 
-        aboutgenvipAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/genvip_24x24.png')), 'About GENVIP', self)
+        aboutgenvipAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/genvip_24x24.png')), 'About GENVIP', self)
+        print(str(pathlib.Path(__file__).parent / 'icons/genvip_24x24.png'))
         aboutgenvipAct.triggered.connect(self.popupgenvipweb)
 
-        aboutgenpobTeam = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/GenPob_logo.resized.png')), 'About GENPOB Team', self)
+        aboutgenpobTeam = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/GenPob_logo.resized.png')), 'About GENPOB Team', self)
         aboutgenpobTeam.triggered.connect(self.popupgenpobteam)
 
-        aboutguaninAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/logoguanin_32x32.png')), 'About GUANIN', self)
+        aboutguaninAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/logoguanin_32x32.png')), 'About GUANIN', self)
         aboutguaninAct.triggered.connect(self.popupguaningithub)
 
-        aboutcitationAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/book-open-bookmark.png')), 'Please cite', self)
+        aboutcitationAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/book-open-bookmark.png')), 'Please cite', self)
         aboutcitationAct.triggered.connect(self.popupguaninpaper)
 
-        aboutlicenseAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/license-key.png')), 'GPL3 license', self)
+        aboutlicenseAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/license-key.png')), 'GPL3 license', self)
         aboutlicenseAct.triggered.connect(self.popuplicenseinfo)
 
-        viewlogAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/information.png')), 'Analysis information', self)
+        viewlogAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/information.png')), 'Analysis information', self)
         viewlogAct.triggered.connect(self.viewlog)
 
-        viewpdfreportAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/report-paper.png')), 'PDF report', self)
+        viewpdfreportAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/report-paper.png')), 'PDF report', self)
         viewpdfreportAct.triggered.connect(self.viewpdfreport)
 
-        viewsummaryandinfolanesAct = QAction(QIcon(str(pathlib.Path(__file__).parent.parent/'icons/application-table.png')), 'Summary and infolanes', self)
+        viewsummaryandinfolanesAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/application-table.png')), 'Summary and infolanes', self)
         viewsummaryandinfolanesAct.triggered.connect(self.viewsummaryandinfolanes)
 
 
@@ -205,7 +205,7 @@ class CentralWidget(QWidget):
         runloading = QPushButton('Run load RCCs')
         runloading.clicked.connect(self.runloadingrccs)
 
-        runloading.setIcon(QIcon('../image/logoguanin_96x96.png'))
+        runloading.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
         doubleforloading.addWidget(runloading)
 
         doubleformtic1 = QFormLayout()
@@ -354,7 +354,7 @@ class CentralWidget(QWidget):
         doubleforticksqcfiltering = QHBoxLayout()
         doubleforqcfiltering.addLayout(doubleforticksqcfiltering)
         runqcfiltering = QPushButton('Run QC filtering')
-        runqcfiltering.setIcon(QIcon('../image/logoguanin_96x96.png'))
+        runqcfiltering.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
         runqcfiltering.clicked.connect(self.runqc)
         runqcfiltering.clicked.connect(self.showflaggedlanes)
         doubleforqcfiltering.addWidget(runqcfiltering)
@@ -399,7 +399,7 @@ class CentralWidget(QWidget):
 
 
         runtechnorm = QPushButton('Run technical normalization')
-        runtechnorm.setIcon(QIcon('../image/logoguanin_96x96.png'))
+        runtechnorm.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
         runtechnorm.clicked.connect(self.runthetechnorm)
 
         doublefortechnorm.addWidget(runtechnorm)
@@ -488,7 +488,7 @@ class CentralWidget(QWidget):
         doublefortickscnorm = QHBoxLayout()
         doubleforcnorm.addLayout(doublefortickscnorm)
         runcnorm = QPushButton('Run content normalization')
-        runcnorm.setIcon(QIcon('../image/logoguanin_96x96.png'))
+        runcnorm.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
         runcnorm.clicked.connect(self.runcnorm)
         doubleforcnorm.addWidget(runcnorm)
 
@@ -512,7 +512,7 @@ class CentralWidget(QWidget):
         doublefortickseval = QHBoxLayout()
         doubleforeval.addLayout(doublefortickseval)
         runevalbutton = QPushButton('Run evaluation')
-        runevalbutton.setIcon(QIcon('../image/logoguanin_96x96.png'))
+        runevalbutton.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
         runevalbutton.clicked.connect(self.runeval)
 
         doubleforeval.addWidget(runevalbutton)
@@ -877,9 +877,10 @@ class logger(logging.Handler):
 
 def main():
     #self.state = state.ConfigData()
-    logging.basicConfig(filename=str(pathlib.Path.cwd().parent) + '/guanin_analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    pathlib.Path(str(tempfile.gettempdir()) + '/guanin_output').mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(filename=str(tempfile.gettempdir()) + '/guanin_output/guanin_analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
-    pixmap = QPixmap(str(pathlib.Path(__file__).parent.parent / 'image/guanin_splashscreen2_HQ.resized.png'))
+    pixmap = QPixmap(str(pathlib.Path(__file__).parent / 'image/guanin_splashscreen2_HQ.resized.png'))
     splash = QSplashScreen(pixmap)
     logging.info('New GUANIN session started')
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
