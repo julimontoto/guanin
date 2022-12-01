@@ -73,7 +73,7 @@ def loadrccs(args, start_time = 0):
             dfneg = dfneg.astype(convert_dict)
             dfend = dfend.astype(convert_dict)
             dfhke = dfhke.astype(convert_dict)
-            dff = pd.concat([dfend, dfhke]) #dataframe with endogenous and housekeeping gene
+            dff = pd.concat([dfend, dfhke, dfneg, dfpos])
 
             names = ['parametro', 'valor']
             dinf = pd.read_csv(getfolderpath(args.folder) / file, names=names, nrows=30, on_bad_lines='skip') #dataframe with lane info
@@ -124,7 +124,7 @@ def loadrccs(args, start_time = 0):
             bd = float(bd)
             thislane.append(bd)
 
-            topneg = 3*(gmean(dfneg['Count']))
+            topneg = 3*(np.mean(dfneg['Count']))
 
             dfnegin = dfneg[dfneg.Count <= topneg]
 
@@ -764,7 +764,6 @@ def removelanes(autoremove, args):
     pathout = str(args.outputfolder)
     pathinfolanes = pathout + '/infolanes.csv'
     infolanes.to_csv(pathinfolanes, index=True)
-
     exportdfgenes(dfgenes, args)
 
     return dfgenes11, infolanes
@@ -781,11 +780,10 @@ def rescalingfactor23(args):
 
     if args.tecnormeth == 'posgeomean' or args.tecnormeth == 'regression':
         use = 'posGEOMEAN'
-        ref = gmean(infolanes[use])
         if args.tecnormeth == 'regression':
             negs = pd.read_csv(str(args.outputfolder) + '/dfnegcount.csv', index_col=0)
             negs = negs.drop('maxoutlier', axis=1)
-            corrected_negs = regretnegs(negs)
+            corrected_negs = regretnegs(negs, args)
             backgr_regr = []
             for i in corrected_negs.index:
                 thisbackg_regr = (np.mean(corrected_negs.loc[i])) + 2*(np.std(corrected_negs.loc[i]))
@@ -795,10 +793,9 @@ def rescalingfactor23(args):
 
     elif args.tecnormeth == 'Sum':
         use = 'Sum'
-        ref = gmean(infolanes[use])
     elif args.tecnormeth == 'Median':
         use = 'Median'
-        ref = gmean(infolanes[use])
+    ref = np.mean(infolanes[use])
 
 
     scalingf2 = []
@@ -811,7 +808,46 @@ def rescalingfactor23(args):
 
     return infolanes
 
-def regretnegs(negs):
+def reinfolanes(args):
+    '''
+    Whether background correction (transform low counts) or technorm happens first, background or scaling factor needs to be recalculated after.
+    For background correction, new background shoult be calculated from dfgenes given by technorm
+    For technorm, new scaling factor needs to be calculated from dfgenes given by transformlowcounts
+    '''
+
+    infolanes = findaltnegatives(args)
+    fildfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv', index_col='Name')
+    rawdfgenes = pd.read_csv(str(args.outputfolder) + '/rawfcounts.csv', index_col='Name')
+
+    if args.firsttransformlowcounts == True:
+        dfgenes = rawdfgenes
+    elif args.firsttransformlowcounts == False:
+        dfgenes = fildfgenes
+
+
+    dfneg = dfgenes[dfgenes['CodeClass'] == 'Negative'].drop(['CodeClass', 'Accession'], axis=1).T
+    infolanes['Background'] = dfneg.mean(axis=1)+(2*(dfneg.std(axis=1)))
+    infolanes['Background2'] = dfneg.max(axis=1)
+    infolanes['Background3'] = dfneg.mean(axis=1)
+
+    dfpos = fildfgenes[fildfgenes['CodeClass'] == 'Positive'].drop(['CodeClass', 'Accession'], axis=1).T
+    infolanes['posGEOMEAN'] = gmean(dfpos, axis=1)
+    infolanes['Sum'] = dfpos.sum(axis=1)
+    infolanes['Median'] = np.median(dfpos, axis=1)
+
+    dfgenes4mean = dfgenes.drop(['CodeClass', 'Accession'], axis = 1).T
+    infolanes['meanexpr'] = gmean(dfgenes4mean, axis=1)
+
+    pathoutinfolanes(infolanes, args)
+    infolanes = rescalingfactor23(args)
+    pathoutinfolanes(infolanes,args)
+
+    dfgenes = dfgenes.drop(list(dfpos.columns))
+    dfgenes = dfgenes.drop(list(dfneg.columns))
+    exportdfgenes(dfgenes, args)
+
+
+def regretnegs(negs, args):
     corrected_negs = pd.DataFrame()
     posneg = pd.read_csv(str(args.outputfolder) + '/posnegcounts.csv', index_col=0)
     for i in posneg.index:
@@ -868,13 +904,13 @@ def findaltnegatives(args):
     dfgenes = dfgenes.T
 
     genmean = dfgenes.mean()
-    meangenmean = gmean(genmean)
+    meangenmean = np.mean(genmean)
     genmean = genmean/meangenmean
 
     genmean.sort_values(inplace=True)
 
     genstd = dfgenes.std()
-    meangenstd = gmean(genstd)
+    meangenstd = np.mean(genstd)
     genstd = genstd/meangenmean
     genstd = genstd*2
 
@@ -921,7 +957,7 @@ def normtecnica(dfgenes, args):
 
     return normgenes
 
-def regresion(dfgenes):
+def regresion(dfgenes, args):
     normgenes = pd.DataFrame()
     normgenes['CodeClass'] = dfgenes['CodeClass']
     normgenes['Name'] = dfgenes['Name']
@@ -1013,7 +1049,6 @@ def transformlowcounts(args):
         elif varback == 'sustract':
             for i in infolanes['ID']:
                 estebg = ilanes.at[varbg,i]
-                print(estebg)
                 dfgenes.loc[dfgenes[i] <= estebg, i] = 0
                 dfgenes.loc[dfgenes[i] > estebg, i] = dfgenes[i] - estebg
                 dfgenes.replace(0,1,inplace=True)
@@ -1704,7 +1739,7 @@ def argParser():
     parser.add_argument('-lc', '--lowcounts', type=str, default='sustract', choices=['skip', 'asim', 'sustract'],  help='what to do with counts below background?')
     parser.add_argument('-mi', '--modeid', type=str, default='filename', choices=['sampleID','filename', 'id+filename'], help='choose sample identifier. sampleID: optimal if assigned in rccs. filenames: easier to be unique. id+filename: care with group assignment coherence')
     parser.add_argument('-mv', '--modeview', type=str, default='view', choices=['justrun', 'view'], help='choose if plot graphs or just run calculations')
-    parser.add_argument('-tnm', '--tecnormeth', type=str, default='posgeomean', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
+    parser.add_argument('-tnm', '--tecnormeth', type=str, default='regression', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
     parser.add_argument('-reg', '--refendgenes', type=str, default= 'endhkes', choices=['hkes', 'endhkes'], help='choose refgenes, housekeeping, or hkes and endogenous')
     parser.add_argument('-re', '--remove', type=str, nargs='+', default=None, help='lanes to be removed from the analysis')
     parser.add_argument('-bg', '--background', type=str, default= 'Background', choices=['Background', 'Background2', 'Background3', 'Backgroundalt'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=')
@@ -1818,7 +1853,7 @@ def runQCview(args):
         showinfolanes(args)
         state = 'All RCCs loaded succesfully'
         args.current_state = state
-        print(state)
+        print(args.current_state)
         logging.info(state)
     except Exception as e:
         state = 'Something went wrong loading files, check input folder. Error: ' + str(e)
@@ -1858,7 +1893,7 @@ def runQCfilterpre(args):
         exportfilrawcounts(dfgenes, args)
     elif args.laneremover =='no':
         dfgenes.reset_index(inplace=True)
-        exportdfgenes(dfgenes, args)
+    exportdfgenes(dfgenes, args)
 
     infolanes = rescalingfactor23(args)
     pathoutinfolanes(infolanes, args)
@@ -1920,37 +1955,40 @@ def runQCfilter(args):
 
 def technorm(args):
 
-    try:
-        if args.firsttransformlowcounts == True:
-            transformlowcounts(args)
+
+    if args.firsttransformlowcounts == True:
+        transformlowcounts(args)
+        reinfolanes(args)
         dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
         if args.tecnormeth != 'regression':
             normgenes = normtecnica(dfgenes, args)
         elif args.tecnormeth == 'regression':
-            normgenes = regresion(dfgenes)
+            normgenes = regresion(dfgenes, args)
 
-        exporttnormgenes(normgenes, args)
-        exportdfgenes(normgenes, args)
-        if args.firsttransformlowcounts == False:
-            transformlowcounts(args)
+    elif args.firsttransformlowcounts == False:
+        dfgenes = pd.read_csv(str(args.outputfolder) + '/dfgenes.csv')
+        if args.tecnormeth != 'regression':
+            normgenes = normtecnica(dfgenes, args)
+        elif args.tecnormeth == 'regression':
+            normgenes = regresion(dfgenes, args)
+        reinfolanes(args)
+        transformlowcounts(args)
 
-        args.current_state = 'Technical normalization done'
-        print(args.current_state)
-        logging.info(args.current_state)
+    exporttnormgenes(normgenes, args)
+    exportdfgenes(normgenes, args)
 
-    except Exception as e:
-        args.current_state = 'Failed technical normalization'
-        print(args.current_state)
-        logging.error(args.current_state)
+    args.current_state = 'Technical normalization done'
+    # print(args.current_state)
+    # logging.info(args.current_state)
 
-
+    # except Exception as e:
+    #     args.current_state = 'Failed technical normalization'
+    #     print(args.current_state, e)
+    #     logging.error(args.current_state)
 
 
 def contnorm(args):
     logging.info('Starting content normalization')
-
-    flagged = pd.read_csv(str(args.outputfolder) + '/flagged.csv')
-    flagged = set(flagged['Flagged_samples'])
 
     allhkes = getallhkes(args)
     args.current_state = '--> Selecting refgenes. Elapsed %s seconds ' + str((time.time() - args.start_time))
@@ -1977,24 +2015,7 @@ def contnorm(args):
     except Exception as e:
         logging.warning('Unable to retrieve candidate ref genes from endogenous, ERROR: ', e)
 
-    refgenesshow = refgenes.copy()
-
-    refgenesshow = refgenesshow.T
-
-    if 'CodeClass' in refgenesshow.index:
-        refgenesshow.drop('CodeClass', axis=0, inplace=True)
-    if 'Accession' in refgenesshow.index:
-        refgenesshow.drop('Accession', axis=0, inplace=True)
-
-    refgenesshow = refgenesshow.applymap(lambda x: float(x))
-    refgenesinfo = refgenesshow.describe()
-    refgenesinfo = refgenesinfo.T
-
-    refgenesinfo['std/mean'] = refgenesinfo['std'] / refgenesinfo['mean']
-    refgenesinfo.sort_values('std/mean', inplace=True)
-
     pathoutrefgenes(refgenes, args)
-
 
     args.current_state = str(('--> Group-driven refining candidate reference genes selection through kruskal, wilcoxon and feature selection. Elapsed %s seconds ' % (time.time() - args.start_time)))
     print(args.current_state)
@@ -2004,7 +2025,6 @@ def contnorm(args):
         args.current_state = '--> Performing kruskal-wallis analysis'
         print(args.current_state)
         logging.info(args.current_state)
-        global ddf
         ddf = getgroups(args)
         ddfc = list(ddf.items())
         ddfb = list(ddf.values())
@@ -2074,17 +2094,11 @@ def contnorm(args):
 
     bestrefgenes = takerefgenes(names, args)
 
-    ###Método wrapper de feature selection para ver qué genes ayudan al método a clasificar mejor por grupos
-    ###POR ORDENAR Y CREAR UNA FUNCIÓN TODAVÍA
-
     dataref = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
-    # dataref.set_index(refgenesshow.index, inplace=True)
 
     if args.groups == 'yes':
         targets = pd.read_csv(args.groupsfile)
         groups = set(targets['GROUP'])
-
-
 
 
     print('--> Performing feature selection for refgenes evaluation and control.')

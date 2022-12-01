@@ -40,8 +40,7 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = 'No groups defined'
-        self.groupsfile = 'No groups defined'
+        self.groupsfile = str(pathlib.Path(__file__).parent/'examples/d1_COV_GSE183071.csv')
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'
