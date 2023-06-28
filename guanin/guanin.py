@@ -1103,10 +1103,10 @@ def findrefend(args, selhkes):
         logging.info('Most promising endogenous genes: ' +  str(bestend))
         print('Most promising endogenous genes: ', bestend)
     refgenes = selhkes
-    if 'CodeClass' in refgenes.columns:
-            refgenes.drop('CodeClass', axis='columns', inplace=True)
-    if 'Accession' in refgenes.columns:
-        refgenes.drop('Accession', axis='columns', inplace=True)
+    # if 'CodeClass' in refgenes.columns:
+    #     refgenes.drop('CodeClass', axis='columns', inplace=True)
+    # if 'Accession' in refgenes.columns:
+    #     refgenes.drop('Accession', axis='columns', inplace=True)
 
     if args.refendgenes == 'endhkes':
         for i in bestend:
@@ -1114,7 +1114,6 @@ def findrefend(args, selhkes):
             refgen = norm2end.loc[isbest]
             refgen.set_index('Name', drop=True, inplace=True)
             refgenes = pd.concat([refgenes, refgen])
-
 
     return refgenes
 
@@ -1407,8 +1406,11 @@ def getnamesrefgenes(uvedf, genorm, args):
 
 def takerefgenes(names, args):
     datarefgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv')
+    datarefgenes = datarefgenes.rename(columns={'Unnamed: 0': 'Name'})
+    datarefgenes = datarefgenes.set_index('Name')
     bestrefgenes = datarefgenes[names]
-    bestrefgenes.to_csv(str(args.outputfolder) + '/bestrefgenes.csv', index=False)
+    bestrefgenes.to_csv(str(args.outputfolder) + '/bestrefgenes.csv', index=True)
+
     return bestrefgenes
 
 def rankfeaturegenes(data, targets, args, verbose=0):
@@ -2014,6 +2016,7 @@ def contnorm(args):
         logging.info(args.current_state)
     except Exception as e:
         logging.warning('Unable to retrieve candidate ref genes from endogenous, ERROR: ', e)
+        refgenes = selhkes
 
     pathoutrefgenes(refgenes, args)
 
@@ -2058,6 +2061,7 @@ def contnorm(args):
         '--> Applying genorm to select best ranking selection of refgenes from candidate refgenes. Elapsed %s seconds ' % (
                     time.time() - args.start_time))
     datarefgenes = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
+
     eme = measureM(datarefgenes)
 
     genorm = geNorm(datarefgenes)
@@ -2137,7 +2141,6 @@ def contnorm(args):
 
             return 'background-color: {}'.format(color)
 
-
         metrics2 = metrics.style.applymap(condformat_metrics, top=1.5/len(groups), bot=0.5/len(groups), subset='avg_score')
 
         metrics2.to_html(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
@@ -2151,8 +2154,6 @@ def contnorm(args):
                 time.time() - args.start_time))
 
     allgenes = getallgenesdf(args)
-    if args.groups == 'yes':
-        ddf2 = grouprnormgenes(args, *ddfb)
 
     if args.contnorm == 'refgenes' or args.contnorm == 'ponderaterefgenes':
         normfactor = getnormfactor(bestrefgenes, eme, args)

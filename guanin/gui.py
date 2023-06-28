@@ -193,7 +193,7 @@ class CentralWidget(QWidget):
 
         outputfolderbutton = QPushButton('Select folder to generate output')
         outputfolderbutton.clicked.connect(self.openselectoutputfolder)
-        layload.addRow('Select RCC files', outputfolderbutton)
+        layload.addRow('Select output folder', outputfolderbutton)
 
         self.showoutputfoldertextbox = QLabel(str(self.state.outputfolder))
 
