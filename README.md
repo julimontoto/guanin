@@ -1,14 +1,15 @@
 ![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png)
 ![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png)
-![Genvip Logo]((https://assets.website-files.com/626aa42f9c48fb2bd944720c/626e3aaf89d043d9f7b2236e_Logo_genvip.svg)) (no se ve y estuve un buen rato trasteando y prbando mil imágenes, no sé qué pasa... lo arreglas Xabi porfa?)
-  
+![Genvip Logo]((https://assets.website-files.com/626aa42f9c48fb2bd944720c/626e3aaf89d043d9f7b2236e_Logo_genvip.svg)) 
+
+![try](guanin/image/logogenvip.png)
+(no se ve y estuve un buen rato trasteando y prbando mil imágenes, no sé qué pasa... lo arreglas Xabi porfa?)
+
 # GUANIN
 
 | GUi-driven Analyser for Nanostring Interactive Normalization |
 
 [Explore the docs](https://github.com/julimontoto/guanin)
-
-[View Demo](https://github.com/github_username/repo_name) TBD  (esto lo metí yo de calentao de grabarme un vídeo usándola?) o es cosa tuya xabi? porque creo que me lo cargo, que me da verguenza
 
 [Report But](https://github.com/julimontoto/guanin/issues)
 
@@ -110,7 +111,7 @@ This *executable* is installed in your PATH. You can find it and launch it with 
 
 ## Roadmap
 
-TBD
+[Workflow](
 
 ## Contributing
 
