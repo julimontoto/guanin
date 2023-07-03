@@ -1,6 +1,6 @@
 ![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png)
 ![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png)
-![Genvip Logo]((https://i.ibb.co/vjLGZ8k/genviplogo.png))
+![Genvip Logo]((https://assets.website-files.com/626aa42f9c48fb2bd944720c/626e3aaf89d043d9f7b2236e_Logo_genvip.svg)) (no se ve y estuve un buen rato trasteando y prbando mil imágenes, no sé qué pasa... lo arreglas Xabi porfa?)
   
 # GUANIN
 
