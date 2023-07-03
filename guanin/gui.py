@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         aboutmenu.addAction(aboutgenpobTeam)
 
     def viewlog(self):
-        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
+        webbrowser.open(str(self.state.outputfolder) + '/guanin_analysis_description.log')
 
     def viewpdfreport(self):
         webbrowser.open(str(self.state.outputfolder) + '/reports/QC_inspection.pdf')
