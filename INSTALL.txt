@@ -2,6 +2,12 @@
 
 ## Linux
 
+### Installing with pip
+====================
+
+  $ pip install guanin
+
+
 ### Installing from Repo
 ====================
 
@@ -26,7 +32,7 @@ Assuming python ^3.9 is installed.
 
   % pip install python3-pip
   % pip install --upgrade pip
-  % pip install guanin-0.x.x-py3-none-any.whl
+  % pip install guanin
 
 ### Run
 
@@ -34,13 +40,13 @@ Assuming python ^3.9 is installed.
   % guanin
 
 
-## Windows (not guaranteed to work)
+## Windows
 ================================
 
 Install python3 and pip.
 Visual Studio Build Tools 14+ required.
 
-> pip install guanin-0.x.x-py3-none-any.whl
+> pip install guanin
 
 ### Run
 

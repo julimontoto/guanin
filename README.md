@@ -75,6 +75,26 @@ nice if...", and so on. If that is your case, fork and develop.
 
 ## License
 
+GUANIN: GUi-driven Analyzer for Nanostring Interactive Normalization. 
+Copyright (C) 2023, Montoto-Louzao et al.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Contact:juli.mlouzao@gmail.com | GENVIP - GENPOB
+Instituto de Investigación Sanitaria de Santiago de Compostela.
+Complejo Hospitalario Universitario de Santiago de Compostela.
+
 Distributed under the GPL License. See `LICENSE.txt` for more information.
 
 ## Contact
