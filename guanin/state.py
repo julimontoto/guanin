@@ -40,7 +40,7 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = ''
+        self.groupsfile = pathlib.Path(__file__).parent/'groups_d1_COV_GSE183071.csv'
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.current_state = 'Ready to analysis'
@@ -51,7 +51,6 @@ class ConfigData:
         self.outputfolder = tempfile.gettempdir() + '/guanin_output'
         self.showlastlog = False
         self.refgenessel = ''
-
 
     def __str__(self):
         return self.modeid
