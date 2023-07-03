@@ -1,9 +1,8 @@
-![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png)
-![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png)
-![Genvip Logo]((https://assets.website-files.com/626aa42f9c48fb2bd944720c/626e3aaf89d043d9f7b2236e_Logo_genvip.svg)) 
+![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png) ![img](https://i.imgur.com/aWneKnL.png)
+![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png) 
+![Genvip Logo](https://i.imgur.com/4gpxYQV.png)
 
-![try](guanin/image/logogenvip.png)
-(no se ve y estuve un buen rato trasteando y prbando mil imágenes, no sé qué pasa... lo arreglas Xabi porfa?)
+
 
 # GUANIN
 
@@ -43,11 +42,9 @@ GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 inst
 
 #### Installing with pip
 
-
   $ pip install guanin
 
 #### Installing from Repo
-====================
 
   $ git clone https://github.com/julimontoto/guanin.git
   $ pip install poetry
@@ -77,7 +74,6 @@ Assuming python ^3.9 is installed.
 
 
 ### Windows
-================================
 
 Install python3 and pip.
 Visual Studio Build Tools 14+ required.
@@ -87,7 +83,6 @@ Visual Studio Build Tools 14+ required.
 #### Run
 
   > guanin
-
 
 Check INSTALL.txt for further details.
 
@@ -109,9 +104,9 @@ From a console, launch the GUI with:
 
 This *executable* is installed in your PATH. You can find it and launch it with a double-click. Although, running it through the console will provide further information about the execution of the program.
 
-## Roadmap
+## Workflow
 
-[Workflow](
+![Workflow](TBD)
 
 ## Contributing
 
@@ -148,7 +143,7 @@ Contact:juli.mlouzao@gmail.com | GENVIP - GENPOB
 Instituto de Investigación Sanitaria de Santiago de Compostela.
 Complejo Hospitalario Universitario de Santiago de Compostela.
 
-Distributed under the GPL License. See `LICENSE.txt` for more information.
+Distributed under the GPLV3 License. See `LICENSE.txt` for more information.
 
 ## Contact
 
