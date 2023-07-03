@@ -1,4 +1,6 @@
 ![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png)
+![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png)
+![Genvip Logo]((https://i.ibb.co/vjLGZ8k/genviplogo.png))
   
 # GUANIN
 
