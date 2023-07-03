@@ -8,7 +8,7 @@
 
 [Explore the docs](https://github.com/julimontoto/guanin)
 
-[View Demo](https://github.com/github_username/repo_name) TBD
+[View Demo](https://github.com/github_username/repo_name) TBD  (esto lo metí yo de calentao de grabarme un vídeo usándola?) o es cosa tuya xabi? porque creo que me lo cargo, que me da verguenza
 
 [Report But](https://github.com/julimontoto/guanin/issues)
 
@@ -36,7 +36,57 @@
 
 GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 installed.
 
-### Installation
+## Installation
+
+### Linux
+
+#### Installing with pip
+
+
+  $ pip install guanin
+
+#### Installing from Repo
+====================
+
+  $ git clone https://github.com/julimontoto/guanin.git
+  $ pip install poetry
+  $ poetry install
+
+#### [OR] Installing from .whl file
+
+  $ pip install python3-pip
+  $ pip install --upgrade pip
+  $ pip install guanin-0.x.x-py3-none-any.whl
+
+### Run
+
+  $ guanin
+
+### MAC
+
+Assuming python ^3.9 is installed.
+
+  % pip install python3-pip
+  % pip install --upgrade pip
+  % pip install guanin
+
+### Run
+
+  % guanin
+
+
+### Windows
+================================
+
+Install python3 and pip.
+Visual Studio Build Tools 14+ required.
+
+> pip install guanin
+
+#### Run
+
+  > guanin
+
 
 Check INSTALL.txt for further details.
 
@@ -56,7 +106,7 @@ From a console, launch the GUI with:
 
    $ guanin
 
-This *executable* is installed in your PATH (TBD!). You can find it and launch it with a double-click. Although, running it through the console will provide further information about the execution of the program.
+This *executable* is installed in your PATH. You can find it and launch it with a double-click. Although, running it through the console will provide further information about the execution of the program.
 
 ## Roadmap
 
