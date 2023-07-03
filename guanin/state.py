@@ -40,8 +40,9 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = str(pathlib.Path(__file__).parent/'examples/d1_COV_GSE183071.csv')
+        self.groupsfile = ''
         self.start_time = time.time()
+        self.current_state = 'Ready to analysis'
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
@@ -49,7 +50,7 @@ class ConfigData:
         self.firsttransformlowcounts = True
         self.outputfolder = tempfile.gettempdir() + '/guanin_output'
         self.showlastlog = False
-
+        self.refgenessel = ''
 
 
     def __str__(self):

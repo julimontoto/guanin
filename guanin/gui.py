@@ -18,7 +18,8 @@ except ImportError:
     from PyQt6.QtCore import Qt, QTimer
 
 
-import guanin, state
+import guanin.guanin as guanin
+import guanin.state as state
 
 class MainWindow(QMainWindow):
 
@@ -518,14 +519,14 @@ class CentralWidget(QWidget):
 
         doubleforeval.addWidget(runevalbutton)
 
-        doubleformtic1ev = QFormLayout()
-        ticpopupinfolanes4 = QCheckBox()
-        ticpopupinfolanes4.stateChanged.connect(self.change_showbrowsercnorm)
-        ticpopuplastlog = QCheckBox()
-        ticpopuplastlog.stateChanged.connect(self.change_showlastlog)
-        doubleformtic1ev.addRow('Show final log', ticpopuplastlog)
+        # doubleformtic1ev = QFormLayout()
+        # ticpopupinfolanes4 = QCheckBox()
+        # ticpopupinfolanes4.stateChanged.connect(self.change_showbrowsercnorm)
+        # ticpopuplastlog = QCheckBox()
+        # ticpopuplastlog.stateChanged.connect(self.change_showlastlog)
+        # doubleformtic1ev.addRow('Show final log', ticpopuplastlog)
 
-        doublefortickseval.addLayout(doubleformtic1ev)
+        # doublefortickseval.addLayout(doubleformtic1ev)
 
         layeval.addRow(doubleforeval)
 
@@ -824,8 +825,8 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage('Performing content normalization...')
         self.parent.statusBar().repaint()
         print(self.state.groupsfile)
-        guanin.contnorm(self.state)
-        self.parent.statusBar().showMessage('Content normalization done, ready to evaluate normalization')
+        rngg, refgenes = guanin.contnorm(self.state)
+        self.parent.statusBar().showMessage('Content normalization done, ready to evaluate normalization. Ref genes selected: ' + str(refgenes))
 
     def runeval(self):
         self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')

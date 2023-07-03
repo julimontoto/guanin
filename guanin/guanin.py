@@ -445,7 +445,7 @@ def plotfovvalue(args, infolanes):
     plt.legend()
     plt.ylabel('fov value')
     plt.xlabel('samples')
-    plt.title('IMAGE QC')
+    plt.title('IMAGE QC (FOV)')
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.grid(True)
     plt.savefig(str(args.outputfolder) + '/images/fovplot.png')
@@ -1992,6 +1992,12 @@ def technorm(args):
 def contnorm(args):
     logging.info('Starting content normalization')
 
+    if os.path.isfile(args.groupsfile):
+        targets = pd.read_csv(args.groupsfile)
+        groups = set(targets['GROUP'])
+        if len(groups)>1:
+            args.groups = 'yes'
+
     allhkes = getallhkes(args)
     args.current_state = '--> Selecting refgenes. Elapsed %s seconds ' + str((time.time() - args.start_time))
     print(args.current_state)
@@ -2083,9 +2089,11 @@ def contnorm(args):
         names = getnamesrefgenes(uve, genorm, args)
         if args.nrefgenes == None:
             args.current_state = 'Ref. genes selected (auto): ' + str(names)
+            args.refgenessel = str(names)
             print(args.current_state)
         elif args.nrefgenes != None:
             args.current_state = 'Ref. genes selected (n_manual): ' + str(names)
+            args.refgenessel = str(names)
             print(args.current_state)
     else:
         if type(args.chooserefgenes) == str:
@@ -2094,21 +2102,22 @@ def contnorm(args):
             names = args.chooserefgenes
 
         args.current_state = 'Ref. genes selected (manual): ' + str(names)
+        args.refgenessel = str(names)
         print(args.current_state)
 
     bestrefgenes = takerefgenes(names, args)
 
     dataref = pd.read_csv(str(args.outputfolder) + '/refgenes.csv', index_col=0)
 
-    if args.groups == 'yes':
-        targets = pd.read_csv(args.groupsfile)
-        groups = set(targets['GROUP'])
-
 
     print('--> Performing feature selection for refgenes evaluation and control.')
-    if args.groups == 'yes':
+    print(args.groups)
+    if (args.groups == 'yes') | (os.path.exists(args.groupsfile) == True):
+        print('2')
         metrics = rankfeaturegenes(dataref, targets, args)
+        print(metrics)
         ranking = rankstatsrefgenes(metrics, reskrus, reswilcopairs)
+        print(ranking)
 
         def condformat_ranking(val, top, bot, colorbien='#a3c771', colorreg='#f0e986', colormal='#e3689b'):
             if top >= val >= bot:
@@ -2125,9 +2134,10 @@ def contnorm(args):
             ranking2 = ranking2.applymap(condformat_ranking, top=1, bot=0.05, subset = i)
 
         ranking2.to_html(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
+        print('done')
         ranking.to_csv(str(args.outputfolder) + '/reports/ranking_kruskal_wilcox.csv')
 
-        if args.showbrowsercnorm == True:
+    if args.showbrowsercnorm == True:
             webbrowser.open(str(args.outputfolder) + '/ranking_kruskal_wilcox.html')
 
     if args.groups == 'yes':
@@ -2146,8 +2156,8 @@ def contnorm(args):
         metrics2.to_html(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
         metrics.to_csv(str(args.outputfolder) + '/reports/metrics_reverse_feature_selection.csv')
 
-        if args.showbrowsercnorm == True:
-            webbrowser.open(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
+    if (args.showbrowsercnorm == True) and (args.groups == 'yes'):
+        webbrowser.open(str(args.outputfolder) + '/metrics_reverse_feature_selection.html')
 
 
     print('--> Getting lane-specific normfactor and applying content normalization. Elapsed %s seconds ' % (
@@ -2184,7 +2194,7 @@ def contnorm(args):
         rngg = logarizeoutput(adnormgenes, args)
 
     rngg.to_csv(str(args.outputfolder) + '/rngg.csv', index=True)
-    return rngg
+    return rngg, names
 
 def evalnorm(args):
     args.current_state = '--> Evaluating and plotting normalization results. Elapsed %s seconds ' + str((time.time() - args.start_time))
