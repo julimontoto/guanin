@@ -1,6 +1,6 @@
-![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png) ![img](https://i.imgur.com/aWneKnL.png)
-![Genpob Logo](https://genpob.eu/static/image/GenPob_logo.png) 
-![Genvip Logo](https://i.imgur.com/4gpxYQV.png)
+![Guanin Logo](https://i.ibb.co/whKb1vY/logoguanin-156x156.png) <img src="https://i.imgur.com/aWneKnL.png" width="100" height="100">
+<a href="https://genpob.eu"><img src="https://genpob.eu/static/image/GenPob_logo.png" height="100">
+<a href="https://www.genvip.eu"><img src="https://i.imgur.com/4gpxYQV.png" height="100">
 
 
 
@@ -10,7 +10,7 @@
 
 [Explore the docs](https://github.com/julimontoto/guanin)
 
-[Report But](https://github.com/julimontoto/guanin/issues)
+[Report Bug](https://github.com/julimontoto/guanin/issues)
 
 [Request Feature](https://github.com/github_username/repo_name/issues)
 
@@ -47,13 +47,17 @@ GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 inst
 #### Installing from Repo
 
   $ git clone https://github.com/julimontoto/guanin.git
+  
   $ pip install poetry
+  
   $ poetry install
 
 #### [OR] Installing from .whl file
 
   $ pip install python3-pip
+  
   $ pip install --upgrade pip
+  
   $ pip install guanin-0.x.x-py3-none-any.whl
 
 ### Run
@@ -65,7 +69,9 @@ GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 inst
 Assuming python ^3.9 is installed.
 
   % pip install python3-pip
+  
   % pip install --upgrade pip
+  
   % pip install guanin
 
 ### Run
@@ -106,7 +112,7 @@ This *executable* is installed in your PATH. You can find it and launch it with 
 
 ## Workflow
 
-![Workflow](TBD)
+<img src="https://i.imgur.com/UZBcIN5.png" height="500">
 
 ## Contributing
 
@@ -153,4 +159,9 @@ GUANIN: [https://github.com/julimontoto/guanin](https://github.com/julimontoto/g
 
 ## Acknowledgements
 
-TBD
+GENVIP RESEARCH GROUP (www.genvip.eu).
+GENPOB RESEARCH GROUP(www.genpob.eu).
+María José Martín Santamaría (UDC).
+Instituto Sanitario de Santiago de Compostela (IDIS).
+Complejo Hospitalario de Santiago de Compostela (CHUS).
+Obra Social Pediatría (OSP).
