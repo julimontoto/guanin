@@ -42,41 +42,41 @@ GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 inst
 
 #### Installing with pip
 
-  $ pip install guanin
+    $ pip install guanin
 
 #### Installing from Repo
 
-  $ git clone https://github.com/julimontoto/guanin.git
+    $ git clone https://github.com/julimontoto/guanin.git
   
-  $ pip install poetry
+    $ pip install poetry
   
-  $ poetry install
+    $ poetry install
 
 #### [OR] Installing from .whl file
 
-  $ pip install python3-pip
+    $ pip install python3-pip
   
-  $ pip install --upgrade pip
+    $ pip install --upgrade pip
   
-  $ pip install guanin-0.x.x-py3-none-any.whl
+    $ pip install guanin-0.x.x-py3-none-any.whl
 
 ### Run
 
-  $ guanin
+    $ guanin
 
 ### MAC
 
 Assuming python ^3.9 is installed.
 
-  % pip install python3-pip
+    % pip install python3-pip
   
-  % pip install --upgrade pip
-  
-  % pip install guanin
+    % pip install --upgrade pip
+ 
+    % pip install guanin
 
 ### Run
 
-  % guanin
+    % guanin
 
 
 ### Windows
@@ -145,7 +145,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Contact:juli.mlouzao@gmail.com | GENVIP - GENPOB
+Contact: juli.mlouzao@gmail.com | GENVIP - GENPOB
 Instituto de Investigación Sanitaria de Santiago de Compostela.
 Complejo Hospitalario Universitario de Santiago de Compostela.
 
@@ -153,7 +153,7 @@ Distributed under the GPLV3 License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Julián Montoto-Louzao - [@julimontoto](https://twitter.com/julimontoto) - juli.mlouzao@gmail.com
+Julián Montoto-Louzao - [@julimontoto](https://twitter.com/julimontoto) -  juli.mlouzao@gmail.com
 
 GUANIN: [https://github.com/julimontoto/guanin](https://github.com/julimontoto/guanin)
 
