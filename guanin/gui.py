@@ -582,7 +582,7 @@ class CentralWidget(QWidget):
             self.state.groups = 'no'
             self.showfiletextbox.setText('No groups defined')
         else:
-            self.showfiletextbox.setText(self.state.groupsfile)
+            self.showfiletextbox.setText(str(self.state.groupsfile))
             self.state.groups = 'yes'
         print(self.state.groupsfile)
 
