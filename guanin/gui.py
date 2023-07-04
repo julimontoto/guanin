@@ -181,7 +181,7 @@ class CentralWidget(QWidget):
         csvgroupsbutton.clicked.connect(self.opencsvfile)
         layload.addRow('Select groups file', csvgroupsbutton)
 
-        self.showfiletextbox = QLabel(self.state.groupsfile)
+        self.showfiletextbox = QLabel(str(self.state.groupsfile))
         layload.addRow('Selected groups file: ', self.showfiletextbox)
 
 
