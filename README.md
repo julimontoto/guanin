@@ -89,6 +89,7 @@ Visual Studio Build Tools 14+ required.
 #### Run
 
   > guanin
+In case this is not working properly, you will need to find where Guanin has been installed and add it to Path environment variable. (Usually ~/Pythonxxx/scripts)
 
 Check INSTALL.txt for further details.
 
