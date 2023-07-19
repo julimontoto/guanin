@@ -1,15 +1,15 @@
-import sys
-import webbrowser
+import logging
+import os
 import pathlib
 import tempfile
-import logging
+import sys
+import webbrowser
 try:
     from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
         QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 except ImportError:
-    import os
     os.environ['LD_LIBRARY_PATH'] = str(pathlib.Path(__file__).parent.parent / 'libraries')
 
     from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
@@ -51,7 +51,6 @@ class MainWindow(QMainWindow):
         exitAct.triggered.connect(QApplication.instance().quit)
 
         aboutgenvipAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/genvip_24x24.png')), 'About GENVIP', self)
-        print(str(pathlib.Path(__file__).parent / 'icons/genvip_24x24.png'))
         aboutgenvipAct.triggered.connect(self.popupgenvipweb)
 
         aboutgenpobTeam = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/GenPob_logo.resized.png')), 'About GENPOB Team', self)
@@ -878,14 +877,37 @@ class logger(logging.Handler):
         self.widget.appendPlainText(msg)
 
 def main():
-    #self.state = state.ConfigData()
-    pathlib.Path(str(tempfile.gettempdir()) + '/guanin_output').mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(filename=str(tempfile.gettempdir()) + '/guanin_output/guanin_analysis_description.log', level=logging.INFO, format=' %(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    # Set the default output dir to TMP dir + username
+    apps_dir = pathlib.Path(tempfile.gettempdir()) / os.getlogin()
+    if os.name == "nt":
+        apps_dir = pathlib.Path(os.getenv("LOCALAPPDATA", apps_dir))
+    else:  #  posix
+        apps_dir = pathlib.Path(os.getenv("XDG_DATA_HOME", apps_dir))
+    app_dir = pathlib.Path(apps_dir / "guanin")
+    app_dir.mkdir(parents=True, exist_ok=True)
+
+    # The the loggers to a File in App Data and Console
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S %p",
+        handlers=[
+            logging.FileHandler(
+                pathlib.Path(app_dir / "analysis_description.log")),
+            logging.StreamHandler()
+        ])
+
+    # Launch the app
     app = QApplication(sys.argv)
-    pixmap = QPixmap(str(pathlib.Path(__file__).parent / 'image/guanin_splashscreen2_HQ.resized.png'))
+    pixmap = QPixmap(
+        str(pathlib.Path(__file__).parent
+            / "image" / "guanin_splashscreen2_HQ.resized.png"))
     splash = QSplashScreen(pixmap)
-    logging.info('New GUANIN session started')
-    splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.SplashScreen)
+    logging.info("New GUANIN session started")
+    logging.info(f"Output dir set to {app_dir}")
+
+    splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint |
+                          Qt.WindowType.SplashScreen)
     splash.show()
     QTimer.singleShot(2000, splash.close)
     window = MainWindow()
