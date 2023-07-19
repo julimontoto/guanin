@@ -655,36 +655,28 @@ class CentralWidget(QWidget):
         logging.info(f"state.pbelowbackground = {self.state.pbelowbackground}")
 
     def changeminfov(self, value):
-        self.state.minfov = float(value.replace(',', '.'))
-        logging.info(f"state.minfov = {self.state.minfov}")
+        self.state.change_float("minfov", value)
 
     def changemaxfov(self, value):
-        self.state.maxfov = float(value.replace(',', '.'))
-        logging.info(f"state.maxfov = {self.state.maxfov}")
+        self.state.change_float("maxfov", value)
 
     def changeminbd(self, value):
-        self.state.minbd = float(value.replace(',', '.'))
-        logging.info(f"state.minbd = {self.state.minbd}")
+        self.state.change_float("minbd", value)
 
     def changemaxbd(self, value):
-        self.state.maxbd = float(value.replace(',', '.'))
-        logging.info(f"state.maxbd = {self.state.maxbd}")
+        self.state.change_float("maxbd", value)
 
     def changeminlin(self, value):
-        self.state.minlin = float(value.replace(',', '.'))
-        logging.info(f"state.minlin = {self.state.minlin}")
+        self.state.change_float("minlin", value)
 
     def changemaxlin(self, value):
-        self.state.maxlin = float(value.replace(',', '.'))
-        logging.info(f"state.maxlin = {self.state.maxlin}")
+        self.state.change_float("maxlin", value)
 
     def changeminscaf(self, value):
-        self.state.minscaf = float(value.replace(',', '.'))
-        logging.info(f"state.minscaf = {self.state.minscaf}")
+        self.state.change_float("minscaf", value)
 
     def changemaxscaf(self, value):
-        self.state.maxscaf = float(value.replace(',', '.'))
-        logging.info(f"state.maxscaf = {self.state.maxscaf}")
+        self.state.change_float("maxscaf", value)
 
     def changesampleremoving(self, checkbox):
         if checkbox == 2:

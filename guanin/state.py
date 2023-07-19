@@ -57,7 +57,7 @@ class ConfigData:
         self.refgenessel = ''
 
     def change_float(self, name, value):
-        attr = getattr(self, name)
+        attr = getattr(self, name, None)
         if attr:
             attr = float(value.replace(",", "."))
         logging.info(f"state.{name} = {attr}")
