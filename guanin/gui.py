@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import pathlib
@@ -18,17 +19,25 @@ except ImportError:
     from PyQt6.QtCore import Qt, QTimer
 
 
-import guanin.guanin as guanin
-import guanin.state as state
+try:
+    import guanin.guanin as guanin
+    import guanin.state as state
+except ModuleNotFoundError:
+    import guanin
+    import state
+
 
 class MainWindow(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__()
-        self.state = state.ConfigData()
-        print(str(pathlib.Path(__file__)))
+        self.state = state.ConfigData(**kwargs.get("config", {}))
+        app_path = pathlib.Path(__file__).parent
+        icons_path = app_path / "icons"
+
         self.setWindowTitle("GUANIN: Nanostring Interactive Normalization")
-        self.setWindowIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_156x156.png')))
+        self.setWindowIcon(QIcon(
+            str(app_path / "image" / "logoguanin_156x156.png")))
         # self.resize(1080,640)
 
         qtRectangle = self.frameGeometry()
@@ -45,35 +54,45 @@ class MainWindow(QMainWindow):
 
         menubar = self.menuBar()
 
-        exitAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/minus_exit.png')), '&Exit', self)
+        exitAct = QAction(QIcon(
+            str(icons_path / "minus_exit.png")), '&Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(QApplication.instance().quit)
 
-        aboutgenvipAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/genvip_24x24.png')), 'About GENVIP', self)
+        aboutgenvipAct = QAction(QIcon(
+            str(icons_path / "genvip_24x24.png")), 'About GENVIP', self)
         aboutgenvipAct.triggered.connect(self.popupgenvipweb)
 
-        aboutgenpobTeam = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/GenPob_logo.resized.png')), 'About GENPOB Team', self)
+        aboutgenpobTeam = QAction(QIcon(
+            str(icons_path / "GenPob_logo.resized.png")),
+            'About GENPOB Team', self)
         aboutgenpobTeam.triggered.connect(self.popupgenpobteam)
 
-        aboutguaninAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/logoguanin_32x32.png')), 'About GUANIN', self)
+        aboutguaninAct = QAction(QIcon(
+            str(icons_path / "logoguanin_32x32.png")), 'About GUANIN', self)
         aboutguaninAct.triggered.connect(self.popupguaningithub)
 
-        aboutcitationAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/book-open-bookmark.png')), 'Please cite', self)
+        aboutcitationAct = QAction(QIcon(
+            str(icons_path / "book-open-bookmark.png")), 'Please cite', self)
         aboutcitationAct.triggered.connect(self.popupguaninpaper)
 
-        aboutlicenseAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/license-key.png')), 'GPL3 license', self)
+        aboutlicenseAct = QAction(QIcon(
+            str(icons_path / "license-key.png")), 'GPL3 license', self)
         aboutlicenseAct.triggered.connect(self.popuplicenseinfo)
 
-        viewlogAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/information.png')), 'Analysis information', self)
+        viewlogAct = QAction(QIcon(
+            str(icons_path / "information.png")), 'Analysis information', self)
         viewlogAct.triggered.connect(self.viewlog)
 
-        viewpdfreportAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/report-paper.png')), 'PDF report', self)
+        viewpdfreportAct = QAction(QIcon(
+            str(icons_path / "report-paper.png")), 'PDF report', self)
         viewpdfreportAct.triggered.connect(self.viewpdfreport)
 
-        viewsummaryandinfolanesAct = QAction(QIcon(str(pathlib.Path(__file__).parent/'icons/application-table.png')), 'Summary and infolanes', self)
+        viewsummaryandinfolanesAct = QAction(QIcon(
+            str(icons_path / "application-table.png")),
+            'Summary and infolanes', self)
         viewsummaryandinfolanesAct.triggered.connect(self.viewsummaryandinfolanes)
-
 
         filemenu = menubar.addMenu('Guanin')
         viewmenu = menubar.addMenu('View')
@@ -92,17 +111,20 @@ class MainWindow(QMainWindow):
         aboutmenu.addAction(aboutgenpobTeam)
 
     def viewlog(self):
-        webbrowser.open(str(self.state.outputfolder) + '/guanin_analysis_description.log')
+        webbrowser.open(
+            str(self.state.outputfolder / "analysis_description.log"))
 
     def viewpdfreport(self):
-        webbrowser.open(str(self.state.outputfolder) + '/reports/QC_inspection.pdf')
-        webbrowser.open(str(self.state.outputfolder) + '/reports/norm_report.pdf')
+        webbrowser.open(
+            str(self.state.outputfolder / "reports" / "QC_inspection.pdf"))
+        webbrowser.open(
+            str(self.state.outputfolder / "reports" / "norm_report.pdf"))
 
     def popuplicenseinfo(self):
         webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.html')
 
     def viewsummaryandinfolanes(self):
-        webbrowser.open(str(self.state.outputfolder) + '/rawsummary.html')
+        webbrowser.open(str(self.state.outputfolder / "rawsummary.html"))
 
     def popupgenpobteam(self):
         webbrowser.open('https://genpob.eu/team/')
@@ -117,36 +139,32 @@ class MainWindow(QMainWindow):
         webbrowser.open('http://www.genvip.eu')
 
     def closeEvent(self, event):
-
-        reply = QMessageBox.question(self, 'Confirm exit',
-                    "Are you sure to quit?", QMessageBox.StandardButton.Yes |
-                    QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+        reply = QMessageBox.question(
+            self,
+            'Confirm exit',
+            "Are you sure to quit?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
             logging.info('GUANIN session closed')
 
             event.accept()
         else:
-
             event.ignore()
 
 
-    def onMyToolBarButtonClick(self, s):
-        print("click", s)
-
 class CentralWidget(QWidget):
     def __init__(self, parent):
-
         super().__init__()
         self.parent = parent
         self.parent.statusBar().showMessage('Ready to start analysis')
-        self.state = state.ConfigData()
+        self.state = parent.state
 
         self.initUI()
 
     def initUI(self):
-
-
+        imgs_path = pathlib.Path(__file__).parent / "image"
         layout1 = QHBoxLayout()
         layout2 = QVBoxLayout()
         layout3 = QVBoxLayout()
@@ -155,7 +173,6 @@ class CentralWidget(QWidget):
         laytnorm = QFormLayout()
         laycnorm = QFormLayout()
         layeval = QFormLayout()
-        layexport = QFormLayout()
         laylog = QFormLayout()
 
         layout1.setContentsMargins(10, 5, 5, 5)
@@ -205,7 +222,7 @@ class CentralWidget(QWidget):
         runloading = QPushButton('Run load RCCs')
         runloading.clicked.connect(self.runloadingrccs)
 
-        runloading.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
+        runloading.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         doubleforloading.addWidget(runloading)
 
         doubleformtic1 = QFormLayout()
@@ -271,7 +288,6 @@ class CentralWidget(QWidget):
         doubleforfov.addLayout(minfovlay)
         doubleforfov.addLayout(maxfovlay)
         layqc.addRow(doubleforfov)
-
 
         doubleforbd = QHBoxLayout()
         minbdlay = QFormLayout()
@@ -344,8 +360,6 @@ class CentralWidget(QWidget):
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
         layqc.addRow('Remove bad samples?', sampleremovercombobox)
 
-
-
         manualremoveselection = QLineEdit()
         manualremoveselection.textChanged.connect(self.changemanualremoveinput)
         layqc.addRow('Manual input lanes to remove:', manualremoveselection)
@@ -354,7 +368,8 @@ class CentralWidget(QWidget):
         doubleforticksqcfiltering = QHBoxLayout()
         doubleforqcfiltering.addLayout(doubleforticksqcfiltering)
         runqcfiltering = QPushButton('Run QC filtering')
-        runqcfiltering.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
+        runqcfiltering.setIcon(QIcon(
+            str(imgs_path / "logoguanin_96x96.png")))
         runqcfiltering.clicked.connect(self.runqc)
         runqcfiltering.clicked.connect(self.showflaggedlanes)
         doubleforqcfiltering.addWidget(runqcfiltering)
@@ -362,7 +377,8 @@ class CentralWidget(QWidget):
         doubleformtic1qc = QFormLayout()
         popoutinfolanescheck = QCheckBox()
         popoutinfolanescheck.stateChanged.connect(self.change_showbrowserqc)
-        doubleformtic1qc.addRow('Pop out new infolanes and QC report', popoutinfolanescheck)
+        doubleformtic1qc.addRow('Pop out new infolanes and QC report',
+                                popoutinfolanescheck)
         doubleforticksqcfiltering.addLayout(doubleformtic1qc)
 
         layqc.addRow(doubleforqcfiltering)
@@ -371,7 +387,6 @@ class CentralWidget(QWidget):
         layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
 
         layout2.addLayout(layqc)
-
 
         tnormtitle = QLabel('- Technical normalization parameters -')
         tnormtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -392,26 +407,26 @@ class CentralWidget(QWidget):
 
         doubleformtic1tn = QFormLayout()
         ticforaftertransformlowcounts = QCheckBox()
-        ticforaftertransformlowcounts.stateChanged.connect(self.changeaftertransformlowcounts)
+        ticforaftertransformlowcounts.stateChanged.connect(
+            self.changeaftertransformlowcounts)
         ticforaftertransformlowcounts.setChecked(True)
-        doubleformtic1tn.addRow('Transform low counts after technical normalization', ticforaftertransformlowcounts)
+        doubleformtic1tn.addRow(
+            'Transform low counts after technical normalization',
+            ticforaftertransformlowcounts)
 
         doublefortechnorm.addLayout(doubleformtic1tn)
 
-
         runtechnorm = QPushButton('Run technical normalization')
-        runtechnorm.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
+        runtechnorm.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runtechnorm.clicked.connect(self.runthetechnorm)
 
         doublefortechnorm.addWidget(runtechnorm)
-
 
         laytnorm.addRow(doublefortechnorm)
 
         layout3.addLayout(laytnorm)
 
         layout1.addLayout(layout2)
-
 
         laycnorm = QFormLayout()
         cnormtitle = QLabel('- Content normalization parameters -')
@@ -422,13 +437,16 @@ class CentralWidget(QWidget):
         filhousekeepingsmincounts = QSpinBox()
         filhousekeepingsmincounts.setValue(50)
         filhousekeepingsmincounts.setMaximum(1000)
-        filhousekeepingsmincounts.textChanged.connect(self.change_filhousekeepingmincounts)
-        laycnorm.addRow('Filter housekeeping panel genes by min counts', filhousekeepingsmincounts)
+        filhousekeepingsmincounts.textChanged.connect(
+            self.change_filhousekeepingmincounts)
+        laycnorm.addRow('Filter housekeeping panel genes by min counts',
+                        filhousekeepingsmincounts)
 
         includeerg = QCheckBox()
         includeerg.setChecked(True)
         includeerg.stateChanged.connect(self.change_includeerg)
-        laycnorm.addRow('Include best endogenous as reference candidates', includeerg)
+        laycnorm.addRow('Include best endogenous as reference candidates',
+                        includeerg)
 
         howmanyergs = QSpinBox()
         howmanyergs.setValue(6)
@@ -455,7 +473,8 @@ class CentralWidget(QWidget):
 
         inputrefgenesline = QLineEdit()
         inputrefgenesline.textChanged.connect(self.change_inputnamesrefgenes)
-        laycnorm.addRow('If manual selection is chosen, input genes:', inputrefgenesline)
+        laycnorm.addRow('If manual selection is chosen, input genes:',
+                        inputrefgenesline)
 
         howtofilter = QComboBox()
         howtofilter.addItem('Kruskal-Wallis filtering')
@@ -471,11 +490,9 @@ class CentralWidget(QWidget):
         additionalnormalization.addItem('Quantile normalization')
         additionalnormalization.addItem('Standarization')
 
-
         additionalnormalization.currentIndexChanged.connect(self.change_adnormalization)
 
         laycnorm.addRow('Perform additional normalization?', additionalnormalization)
-
 
         howtoexport = QComboBox()
         howtoexport.addItem('Normalized count matrix')
@@ -484,12 +501,11 @@ class CentralWidget(QWidget):
         howtoexport.currentIndexChanged.connect(self.change_exportmethod)
         laycnorm.addRow('Format export results', howtoexport)
 
-
         doubleforcnorm = QHBoxLayout()
         doublefortickscnorm = QHBoxLayout()
         doubleforcnorm.addLayout(doublefortickscnorm)
         runcnorm = QPushButton('Run content normalization')
-        runcnorm.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
+        runcnorm.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runcnorm.clicked.connect(self.runcnorm)
         doubleforcnorm.addWidget(runcnorm)
 
@@ -508,24 +524,14 @@ class CentralWidget(QWidget):
         evaltitle.setFont(headerfont)
         layeval.addRow(evaltitle)
 
-
         doubleforeval = QHBoxLayout()
         doublefortickseval = QHBoxLayout()
         doubleforeval.addLayout(doublefortickseval)
         runevalbutton = QPushButton('Run evaluation')
-        runevalbutton.setIcon(QIcon(str(pathlib.Path(__file__).parent/'image/logoguanin_96x96.png')))
+        runevalbutton.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runevalbutton.clicked.connect(self.runeval)
 
         doubleforeval.addWidget(runevalbutton)
-
-        # doubleformtic1ev = QFormLayout()
-        # ticpopupinfolanes4 = QCheckBox()
-        # ticpopupinfolanes4.stateChanged.connect(self.change_showbrowsercnorm)
-        # ticpopuplastlog = QCheckBox()
-        # ticpopuplastlog.stateChanged.connect(self.change_showlastlog)
-        # doubleformtic1ev.addRow('Show final log', ticpopuplastlog)
-
-        # doublefortickseval.addLayout(doubleformtic1ev)
 
         layeval.addRow(doubleforeval)
 
@@ -552,7 +558,6 @@ class CentralWidget(QWidget):
 
         layeval.addRow(doubleforeval2)
 
-
         layout3.addLayout(layeval)
 
         layout3.addLayout(laylog)
@@ -561,13 +566,11 @@ class CentralWidget(QWidget):
 
         self.setLayout(layout1)
 
-
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
         self.state.folder = folder
         self.showfoldertextbox.setText(self.state.folder)
-        logging.info('Folder selected succesfully')
-
+        logging.debug(f"Folder {folder} selected succesfully")
 
     def openselectoutputfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
@@ -583,220 +586,202 @@ class CentralWidget(QWidget):
         else:
             self.showfiletextbox.setText(str(self.state.groupsfile))
             self.state.groups = 'yes'
-        print(self.state.groupsfile)
+        logging.debug(f"state.groupsfile = {self.state.groupsfile}")
 
     def changingmodeid(self, value):
         if value == 1:
             self.state.modeid = 'sampleID'
         elif value == 0:
             self.state.modeid = 'filename'
-        print(self.state.modeid)
+        logging.debug(f"state.modeid = {self.state.modeid}")
 
     def change_showbrowserrawqc(self, checkbox):
         if checkbox == 0:
             self.state.showbrowserrawqc = False
         elif checkbox == 2:
             self.state.showbrowserrawqc = True
-        print(self.state.showbrowserrawqc)
+        logging.debug(f"state.showbrowserrawqc = {self.state.showbrowserrawqc}")
 
     def change_showbrowserqc(self, checkbox):
         if checkbox == 0:
             self.state.showbrowserqc = False
         elif checkbox == 2:
             self.state.showbrowserqc = True
-        print(self.state.showbrowserqc)
+        logging.debug(f"state.showbrowserqc = {self.state.showbrowserqc}")
 
     def change_showbrowsercnorm(self, checkbox):
         if checkbox == 0:
             self.state.showbrowsercnorm = False
         elif checkbox == 2:
             self.state.showbrowsercnorm = True
-        print(self.state.showbrowsercnorm)
+        logging.debug(f"state.showbrowsercnorm = {self.state.showbrowsercnorm}")
 
     def runloadingrccs(self):
         self.parent.statusBar().showMessage('Loading RCC files...')
         self.parent.statusBar().repaint()
-        print(self.state.groupsfile)
-        print(self.state.folder)
+        logging.debug(f"state.groupsfile = {self.state.groupsfile}")
+        logging.debug(f"state.folder = {self.state.folder}")
         guanin.runQCview(self.state)
         self.parent.statusBar().showMessage(self.state.current_state)
-
-
 
     def changingbackgroundbutton(self, checkbox):
         if checkbox == 0:
             self.state.background = 'Background'
-            print(self.state.background)
         elif checkbox == 1:
             self.state.background = 'Background2'
-            print(self.state.background)
         elif checkbox == 2:
             self.state.background = 'Background3'
-            print(self.state.background)
         elif checkbox == 3:
             self.state.background = 'Backgroundalt'
-            print(self.state.background)
         elif checkbox == 4:
             self.state.background = 'Backgroundalt'
-            print(self.state.background)
+        logging.debug(f"state.background = {self.state.background}")
 
     def changingmanualbackground(self, value):
         self.state.manualbackground = value
-        print(self.state.manualbackground)
+        logging.debug(f"state.manualbackground = {self.state.manualbackground}")
 
     def changingbackgroundcorrection(self, checkbox):
         if checkbox == 0:
             self.state.lowcounts = 'sustract'
-            print(self.state.lowcounts)
         elif checkbox == 1:
             self.state.lowcounts = 'asim'
-            print(self.state.lowcounts)
         elif checkbox == 2:
             self.state.lowcounts = 'skip'
-            print(self.state.lowcounts)
+        logging.debug(f"state.lowcounts = {self.state.lowcounts}")
 
     def changingpbelowbackground(self, value):
         self.state.pbelowbackground = value
-        print(self.state.pbelowbackground)
+        logging.info(f"state.pbelowbackground = {self.state.pbelowbackground}")
 
     def changeminfov(self, value):
-        print(self.state.minfov)
-        self.state.minfov = float(value.replace(',','.'))
-        print(self.state.minfov)
+        self.state.minfov = float(value.replace(',', '.'))
+        logging.info(f"state.minfov = {self.state.minfov}")
 
     def changemaxfov(self, value):
-        self.state.maxfov = float(value.replace(',','.'))
-        print(self.state.maxfov)
+        self.state.maxfov = float(value.replace(',', '.'))
+        logging.info(f"state.maxfov = {self.state.maxfov}")
 
     def changeminbd(self, value):
-        self.state.minbd = float(value.replace(',','.'))
-        print(self.state.minbd)
+        self.state.minbd = float(value.replace(',', '.'))
+        logging.info(f"state.minbd = {self.state.minbd}")
 
     def changemaxbd(self, value):
-        self.state.maxbd = float(value.replace(',','.'))
-        print(self.state.maxbd)
+        self.state.maxbd = float(value.replace(',', '.'))
+        logging.info(f"state.maxbd = {self.state.maxbd}")
 
     def changeminlin(self, value):
-        self.state.minlin = float(value.replace(',','.'))
-        print(self.state.minlin)
+        self.state.minlin = float(value.replace(',', '.'))
+        logging.info(f"state.minlin = {self.state.minlin}")
 
     def changemaxlin(self, value):
-        self.state.maxlin = float(value.replace(',','.'))
-        print(self.state.maxlin)
+        self.state.maxlin = float(value.replace(',', '.'))
+        logging.info(f"state.maxlin = {self.state.maxlin}")
 
     def changeminscaf(self, value):
-        self.state.minscaf = float(value.replace(',','.'))
-        print(self.state.minscaf)
+        self.state.minscaf = float(value.replace(',', '.'))
+        logging.info(f"state.minscaf = {self.state.minscaf}")
 
     def changemaxscaf(self, value):
-        self.state.maxscaf = float(value.replace(',','.'))
-        print(self.state.maxscaf)
+        self.state.maxscaf = float(value.replace(',', '.'))
+        logging.info(f"state.maxscaf = {self.state.maxscaf}")
 
     def changesampleremoving(self, checkbox):
         if checkbox == 2:
             self.state.remove = 'variable de luego manual remove'
-            print(self.state.remove)
+            logging.info(f"{self.state.remove}")
         elif checkbox == 1:
             self.state.laneremover = 'no'
-            print(self.state.laneremover + ' lanes removed')
+            logging.info(f"{self.state.laneremover} lanes removed")
         elif checkbox == 0:
             self.state.laneremover = 'yes'
             self.state.remove = None
-            print('qc remove')
+            logging.info("qc remove")
         elif checkbox == 3:
             self.state.laneremover = 'no'
 
     def changemanualremoveinput(self, value):
         self.state.remove = value
-        print(self.state.remove)
+        logging.debug(f"state.remove = {self.state.remove}")
 
     def runqc(self):
         self.parent.statusBar().showMessage('Aplying filters and QC...')
         self.parent.statusBar().repaint()
         guanin.runQCfilter(self.state)
-        self.parent.statusBar().showMessage('QC done, ready to perform technical normalization')
-
+        self.parent.statusBar().showMessage(
+            'QC done, ready to perform technical normalization')
 
     def changetnormmethod(self, checkbox):
         if checkbox == 0:
             self.state.tecnormeth = 'posgeomean'
-            print(self.state.tecnormeth)
         elif checkbox == 1:
             self.state.tecnormeth = 'Sum'
-            print(self.state.tecnormeth)
         elif checkbox == 2:
             self.state.tecnormeth = 'Median'
-            print(self.state.tecnormeth)
         elif checkbox == 3:
             self.state.tecnormeth = 'regression'
-            print(self.state.tecnormeth)
+        logging.debug(f"state.tecnormeth = {self.state.tecnormeth}")
 
     def runthetechnorm(self):
         self.parent.statusBar().showMessage('Performing technical normalization')
         self.parent.statusBar().repaint()
         guanin.technorm(self.state)
-        self.parent.statusBar().showMessage('Technical normalization done, ready to perform content normalization')
-
+        self.parent.statusBar().showMessage(
+            'Technical normalization done, ready to perform content normalization')
 
     def change_filhousekeepingmincounts(self, value):
-        self.state.mincounthkes = int(value.replace(',','.'))
-        print(self.state.mincounthkes)
+        self.state.mincounthkes = int(value.replace(',', '.'))
+        logging.debug(f"state.mincounthkes = {self.state.mincounthkes}")
 
     def change_includeerg(self, checkbox):
         if checkbox == 0:
             self.state.refendgenes = 'hkes'
-            print(self.state.refendgenes)
         elif checkbox == 2:
             self.state.refendgenes = 'endhkes'
-            print(self.state.refendgenes)
+        logging.debug(f"state.refendgenes = {self.state.refendgenes}")
 
     def changeaftertransformlowcounts(self, checkbox):
         if checkbox == 0:
-            self.state.firsttransformlowcounts == True
+            self.state.firsttransformlowcounts = False
         elif checkbox == 2:
-            self.state.firsttransformlowcounts == False
-
-    def printconf(self):
-        print(self.state)
+            self.state.firsttransformlowcounts = True
+        logging.debug(
+            f"state.firsttransformlowcounts = {self.state.firsttransformlowcounts}")
 
     def change_howmanyergs(self, value):
-        self.state.numend = int(value.replace(',','.'))
-        print(self.state.numend)
+        self.state.numend = int(value.replace(',', '.'))
+        logging.debug(f"state.numend = {self.state.numend}")
 
     def change_contnormmethod(self, checkbox):
         if checkbox == 0:
             self.state.contnorm = 'refgenes'
-            print(self.state.contnorm)
         elif checkbox == 1:
             self.state.contnorm = 'refgenes'
-            print(self.state.contnorm)
         elif checkbox == 2:
             self.state.contnorm = 'topn'
-            print(self.state.contnorm)
         elif checkbox == 3:
             self.state.contnorm = 'all'
-            print(self.state.contnorm)
         elif checkbox == 4:
             self.state.contnorm = 'ponderaterefgenes'
-            print(self.state.contnorm)
         elif checkbox == 5:
             self.state.contnorm = 'refgenes'
-            print(self.state.contnorm)
+        logging.debug(f"state.contnorm = {self.state.contnorm}")
 
     def change_nrefgenes(self, value):
         if self.state.contnorm == 'refgenes':
             self.state.nrefgenes = int(value)
-            print(self.state.nrefgenes)
+            logging.debug(f"state.nrefgenes = {self.state.nrefgenes}")
         elif self.state.contnorm == 'ponderaterefgenes':
             self.state.nrefgenes = int(value)
-            print(self.state.nrefgenes)
+            logging.debug(f"status.nrefgenes = {self.state.nrefgenes}")
         elif self.state.contnorm == 'topn':
             self.state.topngenestocontnorm = int(value)
-            print(self.state.topngenestocontnorm)
+            logging.debug(
+                f"state.topngenestocontnorm = {self.state.topngenestocontnorm}")
 
     def change_inputnamesrefgenes(self, value):
         self.state.chooserefgenes = value
-        print(self.state.chooserefgenes)
+        logging.debug(f"state.chooserefgenes = {self.state.chooserefgenes}")
 
     def change_howtofilter(self, checkbox):
         if checkbox == 0:
@@ -809,7 +794,8 @@ class CentralWidget(QWidget):
             self.state.filtergroupvariation = 'flagwilcox'
         elif checkbox == 4:
             self.state.filtergroupvariation = 'nofilter'
-        print(self.state.filtergroupvariation)
+        logging.debug(
+            f"state.filtergroupvariation = {self.state.filtergroupvariation}")
 
     def change_adnormalization(self, checkbox):
         if checkbox == 0:
@@ -818,14 +804,16 @@ class CentralWidget(QWidget):
             self.state.adnormalization = 'quantile'
         elif checkbox == 2:
             self.state.adnormalization = 'standarization'
-        print(self.state.adnormalization)
+        logging.debug(f"state.adnormalization = {self.state.adnormalization}")
 
     def runcnorm(self):
         self.parent.statusBar().showMessage('Performing content normalization...')
         self.parent.statusBar().repaint()
-        print(self.state.groupsfile)
+        logging.debug(f"state.groupsfile = {self.state.groupsfile}")
         rngg, refgenes = guanin.contnorm(self.state)
-        self.parent.statusBar().showMessage('Content normalization done, ready to evaluate normalization. Ref genes selected: ' + str(refgenes))
+        self.parent.statusBar().showMessage(
+            "Content normalization done, ready to evaluate normalization. " +
+            f"Ref genes selected: {refgenes}")
 
     def runeval(self):
         self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')
@@ -833,10 +821,11 @@ class CentralWidget(QWidget):
         (rawiqr, normiqr) = guanin.evalnorm(self.state)
         self.labeltext1.setText('Raw RLE plot')
         self.labeltext2.setText('Normalized RLE plot')
-        self.parent.statusBar().showMessage('Evaluation and data export ready, check "output" folder')
+        self.parent.statusBar().showMessage(
+            "Evaluation and data export ready, check 'output' folder")
 
-        pixmap1 = QPixmap(str(self.state.outputfolder) + '/images/rlerawplot2.png')
-        pixmap2 = QPixmap(str(self.state.outputfolder) + '/images/rlenormplot2.png')
+        pixmap1 = QPixmap(str(self.state.outputfolder / "images" / "rlerawplot2.png"))
+        pixmap2 = QPixmap(str(self.state.outputfolder / "images" / "rlenormplot2.png"))
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
 
@@ -847,24 +836,26 @@ class CentralWidget(QWidget):
             self.state.logarizedoutput = '2'
         elif checkbox == 2:
             self.state.logarizedoutput = '10'
-        print(self.state.logarizedoutput)
+        logging.debug(f"state.logarizedoutput = {self.state.logarizedoutput}")
 
     def change_showlastlog(self, checkbox):
         if checkbox == 0:
             self.state.showlastlog = False
-            print(self.state.showlastlog)
         elif checkbox == 2:
             self.state.showlastlog = True
-            print(self.state.showlastlog)
+        logging.debug(f"state.showlastlog = {self.state.showlastlog}")
 
     def showflaggedlanes(self):
         self.showingflaggedlanes.setText(str(self.state.badlanes))
 
     def showingrawIQR(self):
-        self.labeltext1.setText('Raw RLE plot, IQR: ' + str(self.state.rawmeaniqr))
+        self.labeltext1.setText(
+            f"Raw RLE plot, IQR: {self.state.rawmeaniqr}")
 
     def showingnormIQR(self):
-        self.labeltext2.setText('Normalized RLE plot, IQR: ' + str(self.state.normmeaniqr))
+        self.labeltext2.setText(
+            f"Normalized RLE plot, IQR: {self.state.normmeaniqr}")
+
 
 class logger(logging.Handler):
     def __init__(self, parent):
@@ -876,7 +867,8 @@ class logger(logging.Handler):
         msg = self.format(record)
         self.widget.appendPlainText(msg)
 
-def main():
+
+def main(args=None):
     # Set the default output dir to TMP dir + username
     apps_dir = pathlib.Path(tempfile.gettempdir()) / os.getlogin()
     if os.name == "nt":
@@ -887,8 +879,11 @@ def main():
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # The the loggers to a File in App Data and Console
+    logging_level = logging.INFO
+    if args and args.debug:
+        logging_level = logging.DEBUG
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%m/%d/%Y %I:%M:%S %p",
         handlers=[
@@ -910,9 +905,17 @@ def main():
                           Qt.WindowType.SplashScreen)
     splash.show()
     QTimer.singleShot(2000, splash.close)
-    window = MainWindow()
+    window = MainWindow(config={"output_folder": app_dir})
     window.show()
     app.exec()
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Guanin GUI interface.')
+    parser.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=False,
+        help="Set logging at debug level.")
+    args = parser.parse_args()
+    main(args)
