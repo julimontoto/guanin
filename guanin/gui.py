@@ -568,14 +568,14 @@ class CentralWidget(QWidget):
 
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.folder = folder
-        self.showfoldertextbox.setText(self.state.folder)
+        self.state.folder = pathlib.Path(folder)
+        self.showfoldertextbox.setText(folder)
         logging.debug(f"Folder {folder} selected succesfully")
 
     def openselectoutputfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.outputfolder = folder
-        self.showoutputfoldertextbox.setText(self.state.outputfolder)
+        self.state.outputfolder = pathlib.Path(folder)
+        self.showoutputfoldertextbox.setText(folder)
 
     def opencsvfile(self):
         file = QFileDialog.getOpenFileName(self)
@@ -596,24 +596,15 @@ class CentralWidget(QWidget):
         logging.debug(f"state.modeid = {self.state.modeid}")
 
     def change_showbrowserrawqc(self, checkbox):
-        if checkbox == 0:
-            self.state.showbrowserrawqc = False
-        elif checkbox == 2:
-            self.state.showbrowserrawqc = True
+        self.state.showbrowserrawqc = (checkbox == 2)
         logging.debug(f"state.showbrowserrawqc = {self.state.showbrowserrawqc}")
 
     def change_showbrowserqc(self, checkbox):
-        if checkbox == 0:
-            self.state.showbrowserqc = False
-        elif checkbox == 2:
-            self.state.showbrowserqc = True
+        self.state.showbrowserqc = (checkbox == 2)
         logging.debug(f"state.showbrowserqc = {self.state.showbrowserqc}")
 
     def change_showbrowsercnorm(self, checkbox):
-        if checkbox == 0:
-            self.state.showbrowsercnorm = False
-        elif checkbox == 2:
-            self.state.showbrowsercnorm = True
+        self.state.showbrowsercnorm = (checkbox == 2)
         logging.debug(f"state.showbrowsercnorm = {self.state.showbrowsercnorm}")
 
     def runloadingrccs(self):
@@ -655,48 +646,40 @@ class CentralWidget(QWidget):
         logging.info(f"state.pbelowbackground = {self.state.pbelowbackground}")
 
     def changeminfov(self, value):
-        self.state.minfov = float(value.replace(',', '.'))
-        logging.info(f"state.minfov = {self.state.minfov}")
+        self.state.change_float("minfov", value)
 
     def changemaxfov(self, value):
-        self.state.maxfov = float(value.replace(',', '.'))
-        logging.info(f"state.maxfov = {self.state.maxfov}")
+        self.state.change_float("maxfov", value)
 
     def changeminbd(self, value):
-        self.state.minbd = float(value.replace(',', '.'))
-        logging.info(f"state.minbd = {self.state.minbd}")
+        self.state.change_float("minbd", value)
 
     def changemaxbd(self, value):
-        self.state.maxbd = float(value.replace(',', '.'))
-        logging.info(f"state.maxbd = {self.state.maxbd}")
+        self.state.change_float("maxbd", value)
 
     def changeminlin(self, value):
-        self.state.minlin = float(value.replace(',', '.'))
-        logging.info(f"state.minlin = {self.state.minlin}")
+        self.state.change_float("minlin", value)
 
     def changemaxlin(self, value):
-        self.state.maxlin = float(value.replace(',', '.'))
-        logging.info(f"state.maxlin = {self.state.maxlin}")
+        self.state.change_float("maxlin", value)
 
     def changeminscaf(self, value):
-        self.state.minscaf = float(value.replace(',', '.'))
-        logging.info(f"state.minscaf = {self.state.minscaf}")
+        self.state.change_float("minscaf", value)
 
     def changemaxscaf(self, value):
-        self.state.maxscaf = float(value.replace(',', '.'))
-        logging.info(f"state.maxscaf = {self.state.maxscaf}")
+        self.state.change_float("maxscaf", value)
 
     def changesampleremoving(self, checkbox):
-        if checkbox == 2:
-            self.state.remove = 'variable de luego manual remove'
-            logging.info(f"{self.state.remove}")
-        elif checkbox == 1:
-            self.state.laneremover = 'no'
-            logging.info(f"{self.state.laneremover} lanes removed")
-        elif checkbox == 0:
+        if checkbox == 0:
             self.state.laneremover = 'yes'
             self.state.remove = None
             logging.info("qc remove")
+        elif checkbox == 1:
+            self.state.laneremover = 'no'
+            logging.info(f"{self.state.laneremover} lanes removed")
+        elif checkbox == 2:
+            self.state.remove = 'variable de luego manual remove'
+            logging.info(f"{self.state.remove}")
         elif checkbox == 3:
             self.state.laneremover = 'no'
 
@@ -734,17 +717,11 @@ class CentralWidget(QWidget):
         logging.debug(f"state.mincounthkes = {self.state.mincounthkes}")
 
     def change_includeerg(self, checkbox):
-        if checkbox == 0:
-            self.state.refendgenes = 'hkes'
-        elif checkbox == 2:
-            self.state.refendgenes = 'endhkes'
+        self.state.refendgenes = "hkes" if (checkbox == 0) else "endhkes"
         logging.debug(f"state.refendgenes = {self.state.refendgenes}")
 
     def changeaftertransformlowcounts(self, checkbox):
-        if checkbox == 0:
-            self.state.firsttransformlowcounts = False
-        elif checkbox == 2:
-            self.state.firsttransformlowcounts = True
+        self.state.firsttransformlowcounts = (checkbox == 2)
         logging.debug(
             f"state.firsttransformlowcounts = {self.state.firsttransformlowcounts}")
 
@@ -839,10 +816,7 @@ class CentralWidget(QWidget):
         logging.debug(f"state.logarizedoutput = {self.state.logarizedoutput}")
 
     def change_showlastlog(self, checkbox):
-        if checkbox == 0:
-            self.state.showlastlog = False
-        elif checkbox == 2:
-            self.state.showlastlog = True
+        self.state.showlastlog = (checkbox == 2)
         logging.debug(f"state.showlastlog = {self.state.showlastlog}")
 
     def showflaggedlanes(self):
