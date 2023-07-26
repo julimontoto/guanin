@@ -1868,8 +1868,8 @@ def runQCview(args):
         args.current_state = state
         logging.error(args.current_state)
         print(args.current_state)
-        if args.showbrowserrawqc == True:
-            webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
+        # if args.showbrowserrawqc == True:
+        #     webbrowser.open(str(pathlib.Path.cwd()) + '/info/guanin_analysis_description.log')
         return
     try:
         plotandreport(args)
@@ -1885,8 +1885,8 @@ def runQCview(args):
         logging.error(args.current_state)
         print(args.current_state)
 
-    if args.showbrowserrawqc == True:
-        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
+    # if args.showbrowserrawqc == True:
+    #     webbrowser.open(str(pathlib.Path.cwd()) + '/info/guanin_analysis_description.log')
 
 
 def runQCfilterpre(args):
@@ -1958,8 +1958,8 @@ def runQCfilter(args):
         print(args.current_state)
         logging.info(args.current_state)
 
-    if args.showbrowserqc == True:
-        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
+    # if args.showbrowserqc == True:
+    #     webbrowser.open(str(pathlib.Path.cwd()) + '/info/guanin_analysis_description.log')
 
 
 def technorm(args):
@@ -2242,8 +2242,8 @@ def evalnorm(args):
     print(args.current_state)
     logging.info(args.current_state)
 
-    if args.showlastlog == True:
-        webbrowser.open(str(pathlib.Path.cwd()) + '/guanin_analysis_description.log')
+    # if args.showlastlog == True:
+    #     webbrowser.open(str(pathlib.Path.cwd()) + '/info/guanin_analysis_description.log')
 
     return (meaniqrraw, meaniqr)
 
