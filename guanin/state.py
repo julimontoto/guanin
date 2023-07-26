@@ -47,7 +47,7 @@ class ConfigData:
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
-        self.firsttransformlowcounts = True
+        self.firsttransformlowcounts = False
         self.outputfolder = tempfile.gettempdir() + '/guanin_output'
         self.showlastlog = False
         self.refgenessel = ''

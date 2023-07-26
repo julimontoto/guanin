@@ -18,8 +18,9 @@ except ImportError:
     from PyQt6.QtCore import Qt, QTimer
 
 
-import guanin.guanin as guanin
-import guanin.state as state
+import guanin#.guanin as guanin
+#import guanin.state as state
+import state
 
 class MainWindow(QMainWindow):
 
@@ -756,6 +757,7 @@ class CentralWidget(QWidget):
             self.state.firsttransformlowcounts == True
         elif checkbox == 2:
             self.state.firsttransformlowcounts == False
+            print(self.state.firsttransformlowcounts)
 
     def printconf(self):
         print(self.state)
