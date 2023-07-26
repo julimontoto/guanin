@@ -1,10 +1,12 @@
-import time
-import pathlib
+import logging
+from pathlib import Path
 import tempfile
+import time
+
 
 class ConfigData:
-    def __init__(self):
-        self.folder = pathlib.Path(__file__).parent/'examples/d1_COV_GSE183071'
+    def __init__(self, *args, **kwargs):
+        self.folder = Path(__file__).parent / "examples" / "d1_COV_GSE183071"
         self.minfov = 0.75
         self.maxfov = 1
         self.minbd = 0.1
@@ -40,7 +42,7 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = pathlib.Path(__file__).parent/'groups_d1_COV_GSE183071.csv'
+        self.groupsfile = Path(__file__).parent / "groups_d1_COV_GSE183071.csv"
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.current_state = 'Ready to analysis'
@@ -48,9 +50,17 @@ class ConfigData:
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
         self.firsttransformlowcounts = False
-        self.outputfolder = tempfile.gettempdir() + '/guanin_output'
+        self.outputfolder = kwargs.get(
+            "output_folder",
+            Path(tempfile.gettempdir()) / "guanin_output")
         self.showlastlog = False
         self.refgenessel = ''
+
+    def change_float(self, name, value):
+        attr = getattr(self, name, None)
+        if attr:
+            attr = float(value.replace(",", "."))
+        logging.info(f"state.{name} = {attr}")
 
     def __str__(self):
         return self.modeid

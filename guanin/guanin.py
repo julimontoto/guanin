@@ -91,8 +91,7 @@ def loadrccs(args, start_time = 0):
             elif args.modeid == 'id+filename':
                 id1 += str(file)
 
-            args.current_state = str(' Loading RCC... ' + id1)
-            print(args.current_state)
+            args.current_state = str('Loading RCC... ' + id1)
             logging.info(args.current_state)
 
             if args.autorename == 'on':
@@ -826,9 +825,9 @@ def reinfolanes(args):
     fildfgenes = pd.read_csv(str(args.outputfolder) + '/otherfiles/dfgenes.csv', index_col='Name')
     rawdfgenes = pd.read_csv(str(args.outputfolder) + '/otherfiles/rawfcounts.csv', index_col='Name')
 
-    if args.firsttransformlowcounts == True:
+    if args.firsttransformlowcounts:
         dfgenes = rawdfgenes
-    elif args.firsttransformlowcounts == False:
+    else:
         dfgenes = fildfgenes
 
 
@@ -1773,7 +1772,7 @@ def argParser():
     parser.add_argument('-st', '--start_time', type=float, default = time.time())
     parser.add_argument('-cs', '--current_state', type=str, default='Ready')
     parser.add_argument('-ftl', '--firsttransformlowcounts', type=bool, default=True)
-    parser.add_argument('-of', '--outputfolder', type=str, default= tempfile.gettempdir() + '/guanin_output')
+    parser.add_argument('-of', '--outputfolder', type=str, default=tempfile.gettempdir() + '/guanin_output')
     parser.add_argument('-sll', '--showlastlog', type=bool, default = False)
     return parser.parse_args()
 
