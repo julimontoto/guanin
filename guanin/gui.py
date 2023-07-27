@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
 
     def viewlog(self):
         webbrowser.open(
-            str(self.state.outputfolder / "analysis_description.log"))
+            str(self.state.outputfolder / "info" / "analysis_description.log"))
 
     def viewpdfreport(self):
         webbrowser.open(
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.html')
 
     def viewsummaryandinfolanes(self):
-        webbrowser.open(str(self.state.outputfolder / "rawsummary.html"))
+        webbrowser.open(str(self.state.outputfolder / "info" / "rawsummary.html"))
 
     def popupgenpobteam(self):
         webbrowser.open('https://genpob.eu/team/')
