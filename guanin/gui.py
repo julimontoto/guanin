@@ -2,21 +2,28 @@ import argparse
 import logging
 import os
 import pathlib
-import tempfile
 import sys
 import webbrowser
 try:
-    from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
-        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+    from PyQt6.QtWidgets import (
+        QMainWindow, QApplication, QWidget, QPushButton, QMessageBox,
+        QComboBox, QFileDialog, QSpinBox, QSplashScreen, QLabel, QStatusBar,
+        QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout,
+        QCheckBox, QPlainTextEdit)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 except ImportError:
-    os.environ['LD_LIBRARY_PATH'] = str(pathlib.Path(__file__).parent.parent / 'libraries')
+    os.environ['LD_LIBRARY_PATH'] = \
+        str(pathlib.Path(__file__).parent.parent / 'libraries')
 
-    from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
-        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+    from PyQt6.QtWidgets import (
+        QMainWindow, QApplication, QWidget, QPushButton, QMessageBox,
+        QComboBox, QFileDialog, QSpinBox, QSplashScreen, QLabel, QStatusBar,
+        QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout,
+        QCheckBox, QPlainTextEdit)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
+
 
 try:
     import guanin.guanin as guanin
@@ -670,17 +677,17 @@ class CentralWidget(QWidget):
 
     def changesampleremoving(self, checkbox):
         if checkbox == 0:
-            self.state.laneremover = 'yes'
+            self.state.laneremover = True
             self.state.remove = None
-            logging.info("qc remove")
+            logging.info(f"lanes removed: {self.state.laneremover}")
         elif checkbox == 1:
-            self.state.laneremover = 'no'
-            logging.info(f"{self.state.laneremover} lanes removed")
+            self.state.laneremover = False
+            logging.info(f"lanes removed: {self.state.laneremover}")
         elif checkbox == 2:
             self.state.remove = 'variable de luego manual remove'
             logging.info(f"{self.state.remove}")
         elif checkbox == 3:
-            self.state.laneremover = 'no'
+            self.state.laneremover = False
 
     def changemanualremoveinput(self, value):
         self.state.remove = value
@@ -705,11 +712,13 @@ class CentralWidget(QWidget):
         logging.debug(f"state.tecnormeth = {self.state.tecnormeth}")
 
     def runthetechnorm(self):
-        self.parent.statusBar().showMessage('Performing technical normalization')
+        self.parent.statusBar().showMessage(
+            'Performing technical normalization')
         self.parent.statusBar().repaint()
         guanin.technorm(self.state)
         self.parent.statusBar().showMessage(
-            'Technical normalization done, ready to perform content normalization')
+            "Technical normalization done, " +
+            "ready to perform content normalization")
 
     def change_filhousekeepingmincounts(self, value):
         self.state.mincounthkes = int(value.replace(',', '.'))
@@ -720,7 +729,6 @@ class CentralWidget(QWidget):
         logging.debug(f"state.refendgenes = {self.state.refendgenes}")
 
     def changeaftertransformlowcounts(self, checkbox):
-
         self.state.firsttransformlowcounts = (checkbox == 2)
         logging.debug(
             f"state.firsttransformlowcounts = {self.state.firsttransformlowcounts}")
@@ -784,7 +792,8 @@ class CentralWidget(QWidget):
         logging.debug(f"state.adnormalization = {self.state.adnormalization}")
 
     def runcnorm(self):
-        self.parent.statusBar().showMessage('Performing content normalization...')
+        self.parent.statusBar().showMessage(
+            'Performing content normalization...')
         self.parent.statusBar().repaint()
         logging.debug(f"state.groupsfile = {self.state.groupsfile}")
         rngg, refgenes = guanin.contnorm(self.state)
@@ -793,7 +802,8 @@ class CentralWidget(QWidget):
             f"Ref genes selected: {refgenes}")
 
     def runeval(self):
-        self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')
+        self.parent.statusBar().showMessage(
+            'Performing evaluation, plotting RLE...')
         self.parent.statusBar().repaint()
         (rawiqr, normiqr) = guanin.evalnorm(self.state)
         self.labeltext1.setText('Raw RLE plot')
@@ -801,8 +811,10 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage(
             "Evaluation and data export ready, check 'output' folder")
 
-        pixmap1 = QPixmap(str(self.state.outputfolder / "images" / "rlerawplot2.png"))
-        pixmap2 = QPixmap(str(self.state.outputfolder / "images" / "rlenormplot2.png"))
+        pixmap1 = QPixmap(str(self.state.outputfolder
+                              / "images" / "rlerawplot2.png"))
+        pixmap2 = QPixmap(str(self.state.outputfolder
+                              / "images" / "rlenormplot2.png"))
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
 
@@ -844,13 +856,7 @@ class logger(logging.Handler):
 
 def main(args=None):
     # Set the default output dir to TMP dir + username
-    apps_dir = pathlib.Path(tempfile.gettempdir()) / os.getlogin()
-    if os.name == "nt":
-        apps_dir = pathlib.Path(os.getenv("LOCALAPPDATA", apps_dir))
-    else:  #  posix
-        apps_dir = pathlib.Path(os.getenv("XDG_DATA_HOME", apps_dir))
-    app_dir = pathlib.Path(apps_dir / "guanin")
-    app_dir.mkdir(parents=True, exist_ok=True)
+    app_dir = guanin.default_output()
 
     # The the loggers to a File in App Data and Console
     logging_level = logging.INFO
@@ -882,6 +888,7 @@ def main(args=None):
     window = MainWindow(config={"output_folder": app_dir})
     window.show()
     app.exec()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Guanin GUI interface.')
