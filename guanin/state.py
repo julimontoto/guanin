@@ -42,19 +42,25 @@ class ConfigData:
         self.groupsinrnormgenes = 'no'
         self.logarizedoutput = '10'
         self.logarizeforeval = '10'
-        self.groupsfile = Path(__file__).parent / "groups_d1_COV_GSE183071.csv"
+        self.groupsfile = Path(__file__).parent / "examples/groups_d1_COV_GSE183071.csv"
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.current_state = 'Ready to analysis'
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
-        self.firsttransformlowcounts = False
+        self.tnormbeforebackgcorr = False
         self.outputfolder = kwargs.get(
             "output_folder",
             Path(tempfile.gettempdir()) / "guanin_output")
         self.showlastlog = False
-        self.refgenessel = ''
+        self.refgenessel = []
+        self.indexmethod2 = 0
+        self.kvalue = 3
+        self.pipeline = 'scalingfactors'
+        self.whatrefgenes = []
+        self.eme = None
+        self.grouppca = 'GROUP'
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)

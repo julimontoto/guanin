@@ -7,14 +7,14 @@ import sys
 import webbrowser
 try:
     from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
-        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QGridLayout, QButtonGroup, QVBoxLayout, QTabWidget, QFormLayout, QCheckBox, QPlainTextEdit, QStackedLayout)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 except ImportError:
     os.environ['LD_LIBRARY_PATH'] = str(pathlib.Path(__file__).parent.parent / 'libraries')
 
     from PyQt6.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton, QMessageBox, QComboBox, QFileDialog, QSpinBox, QSplashScreen,
-        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout, QCheckBox, QPlainTextEdit)
+        QLabel, QStatusBar, QLineEdit, QDoubleSpinBox, QHBoxLayout, QGridLayout, QButtonGroup, QVBoxLayout, QTabWidget, QFormLayout, QCheckBox, QPlainTextEdit, QStackedLayout)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 
@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         centerPoint = QGuiApplication.primaryScreen().availableGeometry().center()
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
+        # self.setFixedHeight(820)
 
         self.statusbar = QStatusBar(self)
         self.statusbar.showMessage(self.state.current_state)
@@ -164,25 +165,24 @@ class CentralWidget(QWidget):
 
     def initUI(self):
         imgs_path = pathlib.Path(__file__).parent / "image"
-        layout1 = QHBoxLayout()
-        layout2 = QVBoxLayout()
-        layout3 = QVBoxLayout()
-        layload = QFormLayout()
-        layqc = QFormLayout()
-        laytnorm = QFormLayout()
-        laycnorm = QFormLayout()
-        layeval = QFormLayout()
+        layout = QGridLayout()
+        self.setLayout(layout)
+
+        self.tabs = QTabWidget()
+
         laylog = QFormLayout()
 
-        layout1.setContentsMargins(10, 5, 5, 5)
-        layout1.setSpacing(10)
+        layout.setContentsMargins(10, 5, 5, 5)
+        layout.setSpacing(10)
 
+        layload = QFormLayout()
         loadtitle = QLabel('- Loading data -')
         loadtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         headerfont = QFont('Helvetica Neue', 11)
         headerfont.setBold(True)
         loadtitle.setFont(headerfont)
         layload.addRow(loadtitle)
+
 
         rccfolderbutton = QPushButton('Select folder containing RCC')
         rccfolderbutton.clicked.connect(self.openselectfolder)
@@ -199,6 +199,7 @@ class CentralWidget(QWidget):
         self.showfiletextbox = QLabel(str(self.state.groupsfile))
         layload.addRow('Selected groups file: ', self.showfiletextbox)
 
+        # layout1.addWidget(load2)
 
         sampleidentifier = QComboBox()
         sampleidentifier.addItem('Filename')
@@ -232,8 +233,12 @@ class CentralWidget(QWidget):
 
         layload.addRow(doubleforloading)
 
-        layout2.addLayout(layload)
+        bigtabload = QWidget()
+        bigtabload.setLayout(layload)
 
+        self.tabs.addTab(bigtabload, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Loading data')
+
+        layqc = QFormLayout()
         backgroundbutton = QComboBox()
         backgroundbutton.addItem('Mean+2std of neg ctrls')
         backgroundbutton.addItem('Max of neg controls')
@@ -385,73 +390,102 @@ class CentralWidget(QWidget):
         self.showingflaggedlanes = QLabel(self.state.badlanes)
         layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
 
-        layout2.addLayout(layqc)
+        bigtabqc = QWidget()
+        bigtabqc.setLayout(layqc)
 
-        tnormtitle = QLabel('- Technical normalization parameters -')
-        tnormtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tnormtitle.setFont(headerfont)
-        laytnorm.addRow(tnormtitle)
+        self.tabs.addTab(bigtabqc, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Quality Control')
+        # layout.addWidget(tabs)
 
-        tnormmethodcombobox = QComboBox()
-        tnormmethodcombobox.addItem('Use posgeomean')
-        tnormmethodcombobox.addItem('Use summation')
-        tnormmethodcombobox.addItem('Use median')
-        tnormmethodcombobox.addItem('Use regression')
-        tnormmethodcombobox.currentIndexChanged.connect(self.changetnormmethod)
-        laytnorm.addRow('Method for technical normalization: ', tnormmethodcombobox)
+        # layout2.addLayout(layqc)
 
-        doublefortechnorm = QHBoxLayout()
-        doublefortickstechnorm = QHBoxLayout()
-        doublefortechnorm.addLayout(doublefortickstechnorm)
+        laymethod = QFormLayout()
+        methodtitle = QLabel('- Normalization method -')
+        methodtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        methodtitle.setFont(headerfont)
+        laymethod.addRow(methodtitle)
 
-        doubleformtic1tn = QFormLayout()
+        self.normethodcombobox = QComboBox()
+        self.normethodcombobox.addItem('RUVg (remove unwanted variation through control genes)')
+        self.normethodcombobox.addItem('Scaling factors (technical and content normalization)')
+        self.normethodcombobox.currentIndexChanged.connect(self.changetnormmethod)
+        laymethod.addRow('Method for normalization: ', self.normethodcombobox)
+
+        self.list_ruvg_options = ['k=0', 'k=1', 'k=2', 'k=3', 'k=4', 'k=5', 'k=6']
+        self.list_scaf_options = ['Use posgeomean as scaling factor', 'Use summation as scaling factor', 'Use median as scaling factor', 'Use regression as scaling factor']
+        self.sub_list = [self.list_ruvg_options, self.list_scaf_options]
+        self.method2combobox = QComboBox()
+        self.method2combobox.addItems(self.sub_list[self.state.indexmethod2])
+
+        self.doubleformethod2combobox = QFormLayout()
+        self.inputkvalue = QSpinBox()
+        self.inputkvalue.valueChanged.connect(self.changekvalue)
+        self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
+
+        self.list_text_tick = ['', 'Perform technical normalization before background correction']
+
+        self.normethodcombobox.currentIndexChanged.connect(self.changecombomethod)
+
+        self.simpleformethod2combobox = QGridLayout()
+        self.simpleformethod2combobox.addWidget(self.method2combobox)
+
+        laymethod.addRow('Parameter for normalization: ', self.simpleformethod2combobox)
+
+        self.doublefortechnorm = QHBoxLayout()
+        self.doublefortickstechnorm = QHBoxLayout()
+        self.doublefortechnorm.addLayout(self.doublefortickstechnorm)
+
+        self.doubleformtic1tn = QFormLayout()
+        doublenotick1tn = QHBoxLayout()
         ticforaftertransformlowcounts = QCheckBox()
         ticforaftertransformlowcounts.stateChanged.connect(
             self.changeaftertransformlowcounts)
         ticforaftertransformlowcounts.setChecked(True)
-        doubleformtic1tn.addRow(
-            'Transform low counts after technical normalization',
-            ticforaftertransformlowcounts)
 
-        doublefortechnorm.addLayout(doubleformtic1tn)
+        self.row_with_tick = [self.list_text_tick[int(self.state.tnormbeforebackgcorr)], ticforaftertransformlowcounts]
+        self.doubleformtic1tn.addRow(self.row_with_tick[0], self.row_with_tick[1])
+        self.doubleformtic1tn.setRowVisible(0, False)
 
-        runtechnorm = QPushButton('Run technical normalization')
+        self.doublefortechnorm.addLayout(self.doubleformtic1tn)
+
+        runtechnorm = QPushButton('Continue normalization')
         runtechnorm.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runtechnorm.clicked.connect(self.runthetechnorm)
 
-        doublefortechnorm.addWidget(runtechnorm)
+        doublenotick1tn.addWidget(runtechnorm)
+        self.doublefortechnorm.addWidget(runtechnorm)
 
-        laytnorm.addRow(doublefortechnorm)
+        laymethod.addRow(self.doublefortechnorm)
 
-        layout3.addLayout(laytnorm)
+        bigtabmethod = QWidget()
+        bigtabmethod.setLayout(laymethod)
 
-        layout1.addLayout(layout2)
+        self.tabs.addTab(bigtabmethod, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Normalization method')
 
-        laycnorm = QFormLayout()
-        cnormtitle = QLabel('- Content normalization parameters -')
+        self.laycnorm = QFormLayout()
+        cnormtitle = QLabel('- Selection of reference genes parameters -')
         cnormtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cnormtitle.setFont(headerfont)
-        laycnorm.addRow(cnormtitle)
+        self.laycnorm.addRow(cnormtitle)
 
         filhousekeepingsmincounts = QSpinBox()
         filhousekeepingsmincounts.setValue(50)
         filhousekeepingsmincounts.setMaximum(1000)
         filhousekeepingsmincounts.textChanged.connect(
             self.change_filhousekeepingmincounts)
-        laycnorm.addRow('Filter housekeeping panel genes by min counts',
+        self.laycnorm.addRow('Filter housekeeping panel genes by min counts',
                         filhousekeepingsmincounts)
 
         includeerg = QCheckBox()
         includeerg.setChecked(True)
         includeerg.stateChanged.connect(self.change_includeerg)
-        laycnorm.addRow('Include best endogenous as reference candidates',
+        self.laycnorm.addRow('Include best endogenous as reference candidates',
                         includeerg)
 
         howmanyergs = QSpinBox()
         howmanyergs.setValue(6)
         howmanyergs.setMaximum(999)
         howmanyergs.textChanged.connect(self.change_howmanyergs)
-        laycnorm.addRow('How many best endogenous genes to include', howmanyergs)
+        self.laycnorm.addRow('How many best endogenous genes to include', howmanyergs)
 
         whatrefgenestouse = QComboBox()
         whatrefgenestouse.addItem('Genorm auto selection (default)')
@@ -462,17 +496,17 @@ class CentralWidget(QWidget):
         whatrefgenestouse.addItem('Manual selection of genes')
         whatrefgenestouse.currentIndexChanged.connect(self.change_contnormmethod)
 
-        laycnorm.addRow('What reference genes selection to use?', whatrefgenestouse)
+        self.laycnorm.addRow('What reference genes selection to use?', whatrefgenestouse)
 
         inputngenes = QSpinBox()
         inputngenes.setValue(6)
         inputngenes.setMaximum(50000)
         inputngenes.textChanged.connect(self.change_nrefgenes)
-        laycnorm.addRow('If n genes to be set from last option: ', inputngenes)
+        self.laycnorm.addRow('If n genes to be set from last option: ', inputngenes)
 
         inputrefgenesline = QLineEdit()
         inputrefgenesline.textChanged.connect(self.change_inputnamesrefgenes)
-        laycnorm.addRow('If manual selection is chosen, input genes:',
+        self.laycnorm.addRow('If manual selection is chosen, input genes:',
                         inputrefgenesline)
 
         howtofilter = QComboBox()
@@ -482,7 +516,7 @@ class CentralWidget(QWidget):
         howtofilter.addItem('Wilcoxon flagging')
         howtofilter.addItem('No group filtering/flagging')
         howtofilter.currentIndexChanged.connect(self.change_howtofilter)
-        laycnorm.addRow('How to filter/flag reference genes', howtofilter)
+        self.laycnorm.addRow('How to filter/flag reference genes', howtofilter)
 
         additionalnormalization = QComboBox()
         additionalnormalization.addItem('No')
@@ -491,19 +525,19 @@ class CentralWidget(QWidget):
 
         additionalnormalization.currentIndexChanged.connect(self.change_adnormalization)
 
-        laycnorm.addRow('Perform additional normalization?', additionalnormalization)
+        self.laycnorm.addRow('Perform additional normalization?', additionalnormalization)
 
         howtoexport = QComboBox()
         howtoexport.addItem('Normalized count matrix')
         howtoexport.addItem('log2 count matrix')
         howtoexport.addItem('log10 count matrix')
         howtoexport.currentIndexChanged.connect(self.change_exportmethod)
-        laycnorm.addRow('Format export results', howtoexport)
+        self.laycnorm.addRow('Format export results', howtoexport)
 
         doubleforcnorm = QHBoxLayout()
         doublefortickscnorm = QHBoxLayout()
         doubleforcnorm.addLayout(doublefortickscnorm)
-        runcnorm = QPushButton('Run content normalization')
+        runcnorm = QPushButton('Run normalization')
         runcnorm.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runcnorm.clicked.connect(self.runcnorm)
         doubleforcnorm.addWidget(runcnorm)
@@ -514,14 +548,18 @@ class CentralWidget(QWidget):
         doubleformtic1cn.addRow('Pop out info about ref genes', ticpopupinfolanes3)
         doublefortickscnorm.addLayout(doubleformtic1cn)
 
-        laycnorm.addRow(doubleforcnorm)
+        self.laycnorm.addRow(doubleforcnorm)
 
-        layout3.addLayout(laycnorm)
+        bigtabcnorm = QWidget()
+        bigtabcnorm.setLayout(self.laycnorm)
 
+        self.tabs.addTab(bigtabcnorm, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Reference genes selection')
+
+        self.layeval = QFormLayout()
         evaltitle = QLabel('- Normalization evaluation -')
         evaltitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         evaltitle.setFont(headerfont)
-        layeval.addRow(evaltitle)
+        self.layeval.addRow(evaltitle)
 
         doubleforeval = QHBoxLayout()
         doublefortickseval = QHBoxLayout()
@@ -532,7 +570,7 @@ class CentralWidget(QWidget):
 
         doubleforeval.addWidget(runevalbutton)
 
-        layeval.addRow(doubleforeval)
+        self.layeval.addRow(doubleforeval)
 
         doubleforevaltext = QHBoxLayout()
         self.labeltext1 = QLabel('Raw RLE plot')
@@ -542,7 +580,7 @@ class CentralWidget(QWidget):
 
         doubleforevaltext.addWidget(self.labeltext1)
         doubleforevaltext.addWidget(self.labeltext2)
-        layeval.addRow(doubleforevaltext)
+        self.layeval.addRow(doubleforevaltext)
 
         doubleforeval2 = QHBoxLayout()
 
@@ -555,15 +593,56 @@ class CentralWidget(QWidget):
         doubleforeval2.addWidget(self.labelpix1)
         doubleforeval2.addWidget(self.labelpix2)
 
-        layeval.addRow(doubleforeval2)
+        self.layeval.addRow(doubleforeval2)
 
-        layout3.addLayout(layeval)
+        doubleforevalpcatext = QHBoxLayout()
+        self.labelpca1 = QLabel('Raw PCA plot')
+        self.labelpca1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labelpca2 = QLabel('Normalized PCA plot')
+        self.labelpca2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout3.addLayout(laylog)
+        doubleforevalpcatext.addWidget(self.labelpca1)
+        doubleforevalpcatext.addWidget(self.labelpca2)
+        self.layeval.addRow(doubleforevalpcatext)
 
-        layout1.addLayout(layout3)
+        doubleforevalpca2 = QHBoxLayout()
 
-        self.setLayout(layout1)
+        self.labelpixpca1 = QLabel('No raw PCA plot generated yet')
+        self.labelpixpca1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.labelpixpca2 = QLabel('No normalized PCA plot generated yet')
+        self.labelpixpca2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        doubleforevalpca2.addWidget(self.labelpixpca1)
+        doubleforevalpca2.addWidget(self.labelpixpca2)
+
+        self.layeval.addRow(doubleforevalpca2)
+
+        bigtabeval = QWidget()
+        bigtabeval.setLayout(self.layeval)
+
+        self.tabs.addTab(bigtabeval, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Evaluation')
+        layout.addWidget(self.tabs)
+
+        # layout3.addLayout(laylog)
+
+        selector_lay = QHBoxLayout()
+
+        # tabswidget = QTabWidget()
+        # layout2_w = QWidget()
+        # layout2_w.setLayout(layout2)
+        # layout3_w = QWidget()
+        # layout3_w.setLayout(layout3)
+        #
+        # tabswidget.addTab(layout2_w, 'Loading data')
+        # tabswidget.addTab(layout3_w, 'Normalization')
+        #
+        # selector_lay.addWidget(tabswidget)
+
+        # mainlayout.addLayout(selector_lay)
+        # mainlayout.addLayout(layout1)
+        self.setLayout(layout)
+
 
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
@@ -606,13 +685,21 @@ class CentralWidget(QWidget):
         self.state.showbrowsercnorm = (checkbox == 2)
         logging.debug(f"state.showbrowsercnorm = {self.state.showbrowsercnorm}")
 
+    def next_tab(self):
+        cur_index = self.tabs.currentIndex()
+        if cur_index < len(self.tabs) - 1:
+            self.tabs.setCurrentIndex(cur_index + 1)
+
     def runloadingrccs(self):
         self.parent.statusBar().showMessage('Loading RCC files...')
         self.parent.statusBar().repaint()
         logging.debug(f"state.groupsfile = {self.state.groupsfile}")
         logging.debug(f"state.folder = {self.state.folder}")
+        self.next_tab()
         guanin.runQCview(self.state)
         self.parent.statusBar().showMessage(self.state.current_state)
+
+
 
     def changingbackgroundbutton(self, checkbox):
         if checkbox == 0:
@@ -690,10 +777,25 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage('Aplying filters and QC...')
         self.parent.statusBar().repaint()
         guanin.runQCfilter(self.state)
+        self.next_tab()
         self.parent.statusBar().showMessage(
             'QC done, ready to perform technical normalization')
 
+    def changecombomethod(self, index):
+        if index == 0:
+            self.state.pipeline = 'scalingfactors'
+        elif index ==1:
+            self.state.pipeline = 'ruvgnorm'
+        self.state.indexmethod2 = index
+        self.method2combobox.clear()
+        self.method2combobox.addItems(self.sub_list[self.state.indexmethod2])
+        self.doubleformtic1tn.setRowVisible(0, bool(index))
+
+    def changekvalue(self, value):
+        self.state.kvalue = value
+
     def changetnormmethod(self, checkbox):
+        self.state.kvalue = checkbox
         if checkbox == 0:
             self.state.tecnormeth = 'posgeomean'
         elif checkbox == 1:
@@ -707,7 +809,8 @@ class CentralWidget(QWidget):
     def runthetechnorm(self):
         self.parent.statusBar().showMessage('Performing technical normalization')
         self.parent.statusBar().repaint()
-        guanin.technorm(self.state)
+        guanin.pipeline1(self.state)
+        self.next_tab()
         self.parent.statusBar().showMessage(
             'Technical normalization done, ready to perform content normalization')
 
@@ -721,9 +824,9 @@ class CentralWidget(QWidget):
 
     def changeaftertransformlowcounts(self, checkbox):
 
-        self.state.firsttransformlowcounts = (checkbox == 2)
+        self.state.tnormbeforebackgcorr = (checkbox == 2)
         logging.debug(
-            f"state.firsttransformlowcounts = {self.state.firsttransformlowcounts}")
+            f"state.tnormbeforebackgcorr = {self.state.tnormbeforebackgcorr}")
 
     def change_howmanyergs(self, value):
         self.state.numend = int(value.replace(',', '.'))
@@ -784,17 +887,19 @@ class CentralWidget(QWidget):
         logging.debug(f"state.adnormalization = {self.state.adnormalization}")
 
     def runcnorm(self):
-        self.parent.statusBar().showMessage('Performing content normalization...')
+        self.parent.statusBar().showMessage('Performing normalization...')
         self.parent.statusBar().repaint()
         logging.debug(f"state.groupsfile = {self.state.groupsfile}")
-        rngg, refgenes = guanin.contnorm(self.state)
+        guanin.pipeline2(self.state)
+        self.next_tab()
+        print(self.state.pipeline)
         self.parent.statusBar().showMessage(
-            "Content normalization done, ready to evaluate normalization. " +
-            f"Ref genes selected: {refgenes}")
+            "Content normalization done, ready to evaluate normalization. ")
 
     def runeval(self):
         self.parent.statusBar().showMessage('Performing evaluation, plotting RLE...')
         self.parent.statusBar().repaint()
+        self.next_tab()
         (rawiqr, normiqr) = guanin.evalnorm(self.state)
         self.labeltext1.setText('Raw RLE plot')
         self.labeltext2.setText('Normalized RLE plot')
@@ -805,6 +910,11 @@ class CentralWidget(QWidget):
         pixmap2 = QPixmap(str(self.state.outputfolder / "images" / "rlenormplot2.png"))
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
+
+        pixmappca1 = QPixmap(str(self.state.outputfolder / "images" / "pcanorm2.png"))
+        pixmappca2 = QPixmap(str(self.state.outputfolder / "images" / "pcaraw2.png"))
+        self.labelpixpca1.setPixmap(pixmappca1)
+        self.labelpixpca2.setPixmap(pixmappca2)
 
     def change_exportmethod(self, checkbox):
         if checkbox == 0:
@@ -880,6 +990,7 @@ def main(args=None):
     splash.show()
     QTimer.singleShot(2000, splash.close)
     window = MainWindow(config={"output_folder": app_dir})
+    window.resize(860,480)
     window.show()
     app.exec()
 
