@@ -1941,7 +1941,10 @@ def logarizeoutput(rnormgenes, args):
         pathlogarized = args.outputfolder / 'otherfiles' / 'logarized_rnormcounts.csv'
         logarizedgenes.to_csv(pathlogarized)
 
-        return logarizedgenes
+    elif args.logarizedoutput == 'no':
+        logarizedgenes = rnormgenes
+
+    return logarizedgenes
 
 
 def logarizegroupedcounts(rnormgenesgroups, args):
@@ -2080,15 +2083,15 @@ def argParser():
     parser.add_argument('-minscaf', '--minscalingfactor', type=float, default=0.3, help='set manually min scaling factor for QC')
     parser.add_argument('-maxscaf', '--maxscalingfactor', type=float, default=3, help='set manually max scaling factor for QC')
     parser.add_argument('-swbrrq', '--showbrowserrawqc', type=bool, default=False, help='pops up infolanes and qc summary')
-    parser.add_argument('-swbrq', '--showbrowserqc', type=bool, default=True, help='pops up infolanes and qc summary')
+    parser.add_argument('-swbrq', '--showbrowserqc', type=bool, default=False, help='pops up infolanes and qc summary')
     parser.add_argument('-swbrcn', '--showbrowsercnorm', type=bool, default=False, help='pops up infolanes and qc summary')
-    parser.add_argument('-lc', '--lowcounts', type=str, default='sustract', choices=['skip', 'asim', 'sustract'],  help='what to do with counts below background?')
+    parser.add_argument('-lc', '--lowcounts', type=str, default='skip', choices=['skip', 'asim', 'sustract'],  help='what to do with counts below background?')
     parser.add_argument('-mi', '--modeid', type=str, default='filename', choices=['sampleID','filename', 'id+filename'], help='choose sample identifier. sampleID: optimal if assigned in rccs. filenames: easier to be unique. id+filename: care with group assignment coherence')
     parser.add_argument('-mv', '--modeview', type=str, default='view', choices=['justrun', 'view'], help='choose if plot graphs or just run calculations')
     parser.add_argument('-tnm', '--tecnormeth', type=str, default='posgeomean', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
     parser.add_argument('-reg', '--refendgenes', type=str, default= 'endhkes', choices=['hkes', 'endhkes'], help='choose refgenes, housekeeping, or hkes and endogenous')
     parser.add_argument('-re', '--remove', type=str, nargs='+', default=None, help='lanes to be removed from the analysis')
-    parser.add_argument('-bg', '--background', type=str, default= 'Background', choices=['Background', 'Background2', 'Background3', 'Backgroundalt'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=')
+    parser.add_argument('-bg', '--background', type=str, default= 'Backgroundalt', choices=['Background', 'Background2', 'Background3', 'Backgroundalt'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=')
     parser.add_argument('-pbb', '--pbelowbackground', type=int, default=85, help='if more than %bb genes are below background, sample gets removed from analysis')
     parser.add_argument('-mbg', '--manualbackground', type=float, default=None, help='set manually background')
     parser.add_argument('-crg', '--chooserefgenes', type=list, nargs='+', default = None, help = 'list of strings like. choose manualy reference genes to use over decided-by-program ones')
@@ -2103,7 +2106,7 @@ def argParser():
     parser.add_argument('-mch', '--mincounthkes', type=int, default=80, help='set n min counts to filter hkes candidate as refgenes')
     parser.add_argument('-nrg', '--nrefgenes', type=int, default=None, help='set n refgenes to use, overwriting geNorm calculation')
     parser.add_argument('-lr', '--laneremover', type=str, default='yes', choices=['yes', 'no'], help='option to perform analysis with all lanes if set to no')
-    parser.add_argument('-lo', '--logarizedoutput', type=str, default='10', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
+    parser.add_argument('-lo', '--logarizedoutput', type=str, default='no', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
     parser.add_argument('-gf', '--groupsfile', type=str, default='../examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
     parser.add_argument('-st', '--start_time', type=float, default = time.time())

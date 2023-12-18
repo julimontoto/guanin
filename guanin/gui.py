@@ -788,6 +788,9 @@ class CentralWidget(QWidget):
             self.state.pipeline = 'ruvgnorm'
             self.doubleformethod2combobox.removeRow(self.method2combobox)
             self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
+        ###MISSING SHOW TICK FOR A) APPLY TECHNICAL NORMALIZATION BEFORE BACKGROUND CORRECTION OR B) APPLY MEDIAN OF RATIOS CORRECTION
+
+
 
     def changekvalue(self, value):
         self.state.kvalue = value
@@ -811,7 +814,7 @@ class CentralWidget(QWidget):
         guanin.pipeline1(self.state)
         self.next_tab()
         self.parent.statusBar().showMessage(
-            "Technical normalization done, " +
+            "First step of normalization done, " +
             "ready to perform content normalization")
 
     def change_filhousekeepingmincounts(self, value):
