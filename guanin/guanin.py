@@ -25,8 +25,7 @@ import webbrowser
 from sklearn.preprocessing import StandardScaler, quantile_transform, scale, PowerTransformer
 from sklearn.neighbors import KNeighborsClassifier
 from ERgene import FindERG
-from pydeseq2.preprocessing import deseq2_norm_fit
-from pydeseq2.preprocessing import deseq2_norm_transform
+from pydeseq2.preprocessing import deseq2_norm
 import traceback
 
 
@@ -475,9 +474,6 @@ def summarizerawinfolanes(args):
 
     rawsummary.to_html(str(args.outputfolder / 'info' / 'rawsummary.html'))
 
-    if args.showbrowserrawqc == True:
-        webbrowser.open(str(args.outputfolder / 'info'/ 'rawsummary.html'))
-
 def summarizeinfolanes(args):
     infolanes = pd.read_csv(args.outputfolder / 'info' / "infolanes.csv",
         index_col='ID')
@@ -579,7 +575,6 @@ def summarizeinfolanes(args):
 
     if args.showbrowserqc:
         webbrowser.open(str(args.outputfolder / "Summary.html"))
-
 
 def exportposneg(dfposneg, args):
     posnegcounts = pd.DataFrame()
@@ -2085,7 +2080,7 @@ def argParser():
     parser.add_argument('-minscaf', '--minscalingfactor', type=float, default=0.3, help='set manually min scaling factor for QC')
     parser.add_argument('-maxscaf', '--maxscalingfactor', type=float, default=3, help='set manually max scaling factor for QC')
     parser.add_argument('-swbrrq', '--showbrowserrawqc', type=bool, default=False, help='pops up infolanes and qc summary')
-    parser.add_argument('-swbrq', '--showbrowserqc', type=bool, default=False, help='pops up infolanes and qc summary')
+    parser.add_argument('-swbrq', '--showbrowserqc', type=bool, default=True, help='pops up infolanes and qc summary')
     parser.add_argument('-swbrcn', '--showbrowsercnorm', type=bool, default=False, help='pops up infolanes and qc summary')
     parser.add_argument('-lc', '--lowcounts', type=str, default='sustract', choices=['skip', 'asim', 'sustract'],  help='what to do with counts below background?')
     parser.add_argument('-mi', '--modeid', type=str, default='filename', choices=['sampleID','filename', 'id+filename'], help='choose sample identifier. sampleID: optimal if assigned in rccs. filenames: easier to be unique. id+filename: care with group assignment coherence')
@@ -2123,7 +2118,7 @@ def argParser():
     parser.add_argument('-wrg', '--whatrefgenes', type=list, default=[])
     parser.add_argument('-m', '--eme', type=object, default=None)
     parser.add_argument('-gpca', '--grouppca', type=str, default='GROUP')
-    parser.add_argument('-dm', '--deseq2_mor', type=bool, default=False)
+    parser.add_argument('-dm', '--deseq2_mor', type=bool, default=True)
     return parser.parse_args()
 
 
@@ -2178,8 +2173,9 @@ def showinfolanes(args):
     infolanes.to_html(args.outputfolder / 'info' / 'rawinfolanes.html')
 
     if args.showbrowserrawqc:
-        webbrowser.open(args.outputfolder / 'info' / 'rawinfolanes.html')
-
+        ##DEBUG
+        #FOR SOME REASON IT POPS 2 TABS
+        webbrowser.open(str(args.outputfolder / 'info' / 'rawinfolanes.html'))
 
 def plotandreport(args, whatinfolanes="rawinfolanes"):
     """Plot QC from infolanes or raw info lanes (file).
@@ -2328,10 +2324,9 @@ def runQCfilter(args):
 
 def pipeline1(args):
     if args.deseq2_mor:
-        ###TODO METER VST_FIT Y VST_TRANSFORM DE PYDESEQ2
-        apply_deseq2_mor()
+        apply_deseq2_mor(args)
     if args.pipeline == 'ruvgnorm':
-        RUVgnorm1(args)
+        pass #NOT NEEDED, JUST FOR CLEARANCE
     elif args.pipeline == 'scalingfactors':
         technorm(args)
 
@@ -2342,11 +2337,6 @@ def pipeline2(args):
     elif args.pipeline == 'scalingfactors':
         selecting_refgenes(args)
         contnorm(args)
-
-def RUVgnorm1(args):
-    #RUVg algorithm does not split into technical and content normalization,
-    #so it goes all the way together in one step in ruvgnorm2
-    pass
 
 def RUVgnorm2(args, center=True, round=False, epsilon=1, tolerance=1e-8, isLog=False):
     gene_matrix = pd.read_csv(args.outputfolder / 'otherfiles' / 'rawfcounts.csv', index_col='Name')
@@ -2661,14 +2651,13 @@ def contnorm(args):
 
     return rngg, names
 
-def apply_deseq2_mor():
+def apply_deseq2_mor(args):
     dfgenes = pd.read_csv(
         args.outputfolder / 'otherfiles' / 'dfgenes.csv',
         index_col='Name')
     dfgenes2 = dfgenes.drop(['CodeClass', 'Accession'], axis=1)
     print(dfgenes)
-    logmeans, filtered_genes = deseq2_norm_fit(dfgenes2)
-    counts, size_factors = deseq2_norm_transform(dfgenes2, logmeans, filtered_genes)
+    counts, sizefactors = deseq2_norm(dfgenes2)
     counts[['CodeClass', 'Accession']] = dfgenes[['CodeClass', 'Accession']]
     exportdfgenes(counts, args)
 

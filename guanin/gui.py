@@ -9,7 +9,7 @@ try:
         QMainWindow, QApplication, QWidget, QPushButton, QMessageBox,
         QComboBox, QFileDialog, QSpinBox, QSplashScreen, QLabel, QStatusBar,
         QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout,
-        QCheckBox, QPlainTextEdit)
+        QCheckBox, QPlainTextEdit, QGridLayout, QTabWidget)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 except ImportError:
@@ -20,7 +20,7 @@ except ImportError:
         QMainWindow, QApplication, QWidget, QPushButton, QMessageBox,
         QComboBox, QFileDialog, QSpinBox, QSplashScreen, QLabel, QStatusBar,
         QLineEdit, QDoubleSpinBox, QHBoxLayout, QVBoxLayout, QFormLayout,
-        QCheckBox, QPlainTextEdit)
+        QCheckBox, QPlainTextEdit, QGridLayout, QTabWidget)
     from PyQt6.QtGui import QAction, QIcon, QPixmap, QFont, QGuiApplication
     from PyQt6.QtCore import Qt, QTimer
 
@@ -177,8 +177,6 @@ class CentralWidget(QWidget):
 
         self.tabs = QTabWidget()
 
-        laylog = QFormLayout()
-
         layout.setContentsMargins(10, 5, 5, 5)
         layout.setSpacing(10)
 
@@ -205,8 +203,6 @@ class CentralWidget(QWidget):
 
         self.showfiletextbox = QLabel(str(self.state.groupsfile))
         layload.addRow('Selected groups file: ', self.showfiletextbox)
-
-        # layout1.addWidget(load2)
 
         sampleidentifier = QComboBox()
         sampleidentifier.addItem('Filename')
@@ -417,18 +413,15 @@ class CentralWidget(QWidget):
         self.normethodcombobox.currentIndexChanged.connect(self.changetnormmethod)
         laymethod.addRow('Method for normalization: ', self.normethodcombobox)
 
-        self.list_ruvg_options = ['k=0', 'k=1', 'k=2', 'k=3', 'k=4', 'k=5', 'k=6']
         self.list_scaf_options = ['Use posgeomean as scaling factor', 'Use summation as scaling factor', 'Use median as scaling factor', 'Use regression as scaling factor']
-        self.sub_list = [self.list_ruvg_options, self.list_scaf_options]
         self.method2combobox = QComboBox()
-        self.method2combobox.addItems(self.sub_list[self.state.indexmethod2])
+        self.method2combobox.addItems(self.list_scaf_options)
 
         self.doubleformethod2combobox = QFormLayout()
         self.inputkvalue = QSpinBox()
         self.inputkvalue.valueChanged.connect(self.changekvalue)
-        self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
 
-        self.list_text_tick = ['', 'Perform technical normalization before background correction']
+        self.list_text_tick = ['Perform median of ratios pre-normalization (size factors)', 'Perform technical normalization before background correction']
 
         self.normethodcombobox.currentIndexChanged.connect(self.changecombomethod)
 
@@ -631,8 +624,6 @@ class CentralWidget(QWidget):
         self.tabs.addTab(bigtabeval, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Evaluation')
         layout.addWidget(self.tabs)
 
-        # layout3.addLayout(laylog)
-
         selector_lay = QHBoxLayout()
 
         # tabswidget = QTabWidget()
@@ -791,12 +782,12 @@ class CentralWidget(QWidget):
     def changecombomethod(self, index):
         if index == 0:
             self.state.pipeline = 'scalingfactors'
+            self.method2combobox.addItems(self.list_scaf_options)
+            self.doubleformethod2combobox.addRow(self.method2combobox)
         elif index ==1:
             self.state.pipeline = 'ruvgnorm'
-        self.state.indexmethod2 = index
-        self.method2combobox.clear()
-        self.method2combobox.addItems(self.sub_list[self.state.indexmethod2])
-        self.doubleformtic1tn.setRowVisible(0, bool(index))
+            self.doubleformethod2combobox.removeRow(self.method2combobox)
+            self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
 
     def changekvalue(self, value):
         self.state.kvalue = value
@@ -927,8 +918,8 @@ class CentralWidget(QWidget):
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
 
-        pixmappca1 = QPixmap(str(self.state.outputfolder / "images" / "pcanorm2.png"))
-        pixmappca2 = QPixmap(str(self.state.outputfolder / "images" / "pcaraw2.png"))
+        pixmappca1 = QPixmap(str(self.state.outputfolder / "images" / "pcaraw2.png"))
+        pixmappca2 = QPixmap(str(self.state.outputfolder / "images" / "pcanorm2.png"))
         self.labelpixpca1.setPixmap(pixmappca1)
         self.labelpixpca2.setPixmap(pixmappca2)
 
