@@ -397,9 +397,6 @@ class CentralWidget(QWidget):
         bigtabqc.setLayout(layqc)
 
         self.tabs.addTab(bigtabqc, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Quality Control')
-        # layout.addWidget(tabs)
-
-        # layout2.addLayout(layqc)
 
         self.laymethod = QFormLayout()
         methodtitle = QLabel('- Normalization method -')
@@ -417,7 +414,6 @@ class CentralWidget(QWidget):
         self.method2combobox = QComboBox()
         self.method2combobox.addItems(self.list_scaf_options)
 
-        self.doubleformethod2combobox = QFormLayout()
         self.inputkvalue = QSpinBox()
         self.inputkvalue.valueChanged.connect(self.changekvalue)
 
@@ -425,23 +421,22 @@ class CentralWidget(QWidget):
 
         self.list_text_tick = ['Perform median of ratios pre-normalization (size factors)', 'Perform technical normalization before background correction']
 
-        self.simpleformethod2combobox = QGridLayout()
-        self.simpleformethod2combobox.addWidget(self.method2combobox)
-
+        # self.simpleformethod2combobox = QGridLayout()
+        # self.simpleformethod2combobox.addWidget(self.method2combobox)
+        #
         self.doublefortechnorm = QHBoxLayout()
-        self.doublefortickstechnorm = QHBoxLayout()
-        self.doublefortechnorm.addLayout(self.doublefortickstechnorm)
+        # self.doublefortickstechnorm = QHBoxLayout()
+        # self.doublefortechnorm.addLayout(self.doublefortickstechnorm)
 
         self.doubleformtic1tn = QFormLayout()
-        doublenotick1tn = QHBoxLayout()
-        ticforaftertransformlowcounts = QCheckBox()
-        ticforaftertransformlowcounts.stateChanged.connect(
-            self.changeaftertransformlowcounts)
-        ticforaftertransformlowcounts.setChecked(True)
+        self.ticforaftertransformlowcounts = QCheckBox()
+        # self.ticforaftertransformlowcounts.stateChanged.connect(
+        #     self.changeaftertransformlowcounts)
+        self.ticforaftertransformlowcounts.setChecked(True)
 
-        self.row_with_tick = [self.list_text_tick[int(self.state.tnormbeforebackgcorr)], ticforaftertransformlowcounts]
-        self.doubleformtic1tn.addRow(self.row_with_tick[0], self.row_with_tick[1])
-        self.doubleformtic1tn.setRowVisible(0, False)
+        # self.row_with_tick = [self.list_text_tick[int(self.state.tnormbeforebackgcorr)], self.ticforaftertransformlowcounts]
+        self.doubleformtic1tn.addRow(self.list_text_tick[0], self.ticforaftertransformlowcounts)
+        self.doubleformtic1tn.setRowVisible(0, True)
 
         self.doublefortechnorm.addLayout(self.doubleformtic1tn)
 
@@ -449,7 +444,6 @@ class CentralWidget(QWidget):
         runtechnorm.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runtechnorm.clicked.connect(self.runthetechnorm)
 
-        doublenotick1tn.addWidget(runtechnorm)
         self.doublefortechnorm.addWidget(runtechnorm)
 
         self.laymethod.addRow(self.doublefortechnorm)
@@ -777,31 +771,24 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage(
             'QC done, ready to perform technical normalization')
 
-    # def changecombomethod(self, index):
-    #     if index == 0:
-    #         self.state.pipeline = 'scalingfactors'
-    #         self.method2combobox.addItems(self.list_scaf_options)
-    #         self.doubleformethod2combobox.addRow(self.method2combobox)
-    #     elif index ==1:
-    #         self.state.pipeline = 'ruvgnorm'
-    #         self.doubleformethod2combobox.removeRow(self.method2combobox)
-    #         self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
-    #     ###MISSING SHOW TICK FOR A) APPLY TECHNICAL NORMALIZATION BEFORE BACKGROUND CORRECTION OR B) APPLY MEDIAN OF RATIOS CORRECTION
-
-
-
     def changekvalue(self, value):
         self.state.kvalue = value
 
     def changetnormmethod(self, checkbox):
         self.laymethod.setRowVisible(2, False)
+        self.doubleformtic1tn.setRowVisible(0,False)
         if checkbox == 0:
             self.state.pipeline = 'ruvgnorm'
             self.laymethod.insertRow(2, 'k value', self.inputkvalue)
+            self.laymethod.setRowVisible(2, True)
+            self.doubleformtic1tn.insertRow(0, self.list_text_tick[checkbox], self.ticforaftertransformlowcounts)
+            self.doubleformtic1tn.setRowVisible(0, True)
         elif checkbox == 1:
-            self.laymethod.setRowVisible(2, False)
             self.state.pipeline = 'scalingfactors'
-            self.laymethod.insertRow(2, 'Parameter for technical normalization', self.method2combobox)
+            self.laymethod.insertRow(2, 'Scaling factor', self.method2combobox)
+            self.laymethod.setRowVisible(2, True)
+            self.doubleformtic1tn.insertRow(0, self.list_text_tick[checkbox], self.ticforaftertransformlowcounts)
+            self.doubleformtic1tn.setRowVisible(0, True)
         logging.debug(f"state.tecnormeth = {self.state.tecnormeth}")
 
     def runthetechnorm(self):
