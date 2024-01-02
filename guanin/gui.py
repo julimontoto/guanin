@@ -361,9 +361,8 @@ class CentralWidget(QWidget):
 
         sampleremovercombobox = QComboBox()
         sampleremovercombobox.addItem('Remove auto-QC flagged')
-        sampleremovercombobox.addItem('Keep all samples')
+        sampleremovercombobox.addItem('Keep all samples, only flag bad samples')
         sampleremovercombobox.addItem('Remove manually selected samples')
-        sampleremovercombobox.addItem('Flag bad samples')
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
         layqc.addRow('Remove bad samples?', sampleremovercombobox)
 
@@ -411,8 +410,11 @@ class CentralWidget(QWidget):
         self.laymethod.addRow('Method for normalization: ', self.normethodcombobox)
 
         self.list_scaf_options = ['Use posgeomean as scaling factor', 'Use summation as scaling factor', 'Use median as scaling factor', 'Use regression as scaling factor']
+        self.list_scaf_tecnormeth = ['posgeomean', 'Sum', 'Median', 'regression']
         self.method2combobox = QComboBox()
         self.method2combobox.addItems(self.list_scaf_options)
+
+        self.method2combobox.currentIndexChanged.connect(self.change_scaling_factor)
 
         self.inputkvalue = QSpinBox()
         self.inputkvalue.valueChanged.connect(self.changekvalue)
@@ -437,6 +439,10 @@ class CentralWidget(QWidget):
         # self.row_with_tick = [self.list_text_tick[int(self.state.tnormbeforebackgcorr)], self.ticforaftertransformlowcounts]
         self.doubleformtic1tn.addRow(self.list_text_tick[0], self.ticforaftertransformlowcounts)
         self.doubleformtic1tn.setRowVisible(0, True)
+
+        self.ticforaftertransformlowcounts.stateChanged.connect(self.change_ticdeseq2_mor)
+        logging.info(f'deseq2mor? {self.state.deseq2_mor}')
+        print(self.state.deseq2_mor)
 
         self.doublefortechnorm.addLayout(self.doubleformtic1tn)
 
@@ -701,11 +707,13 @@ class CentralWidget(QWidget):
         elif checkbox == 3:
             self.state.background = 'Backgroundalt'
         elif checkbox == 4:
-            self.state.background = 'Backgroundalt'
+            self.state.background = 'Manual'
+        print(f'background: {self.state.background}')
         logging.debug(f"state.background = {self.state.background}")
 
     def changingmanualbackground(self, value):
         self.state.manualbackground = value
+        print(f'manualbackground: {self.state.manualbackground}')
         logging.debug(f"state.manualbackground = {self.state.manualbackground}")
 
     def changingbackgroundcorrection(self, checkbox):
@@ -715,6 +723,7 @@ class CentralWidget(QWidget):
             self.state.lowcounts = 'asim'
         elif checkbox == 2:
             self.state.lowcounts = 'skip'
+        print(f'background method: {self.state.lowcounts}')
         logging.debug(f"state.lowcounts = {self.state.lowcounts}")
 
     def changingpbelowbackground(self, value):
@@ -747,17 +756,17 @@ class CentralWidget(QWidget):
 
     def changesampleremoving(self, checkbox):
         if checkbox == 0:
-            self.state.laneremover = True
-            self.state.remove = None
+            self.state.laneremover = True #laneremover removes lanes
+            self.state.manual_remove = False
             logging.info(f"lanes removed: {self.state.laneremover}")
         elif checkbox == 1:
-            self.state.laneremover = False
-            logging.info(f"lanes removed: {self.state.laneremover}")
+            self.state.laneremover = False #no lanes are removed
+            self.state.manual_remove = False
+            logging.info(f"Lanes removed: {self.state.laneremover}. Check flagged samples in reports")
         elif checkbox == 2:
-            self.state.remove = 'variable de luego manual remove'
-            logging.info(f"{self.state.remove}")
-        elif checkbox == 3:
-            self.state.laneremover = False
+            self.state.laneremover = True
+            self.state.manual_remove = True
+            logging.info(f"Lanes to manually remove: {self.state.remove}")
 
     def changemanualremoveinput(self, value):
         self.state.remove = value
@@ -773,6 +782,7 @@ class CentralWidget(QWidget):
 
     def changekvalue(self, value):
         self.state.kvalue = value
+        logging.info(f'kvalue: {self.state.kvalue}')
 
     def changetnormmethod(self, checkbox):
         self.laymethod.setRowVisible(2, False)
@@ -934,6 +944,14 @@ class CentralWidget(QWidget):
         self.labeltext2.setText(
             f"Normalized RLE plot, IQR: {self.state.normmeaniqr}")
 
+    def change_ticdeseq2_mor(self, checkbox):
+        self.state.deseq2_mor = (checkbox == 2)
+        self.state.tnormbeforebackgcorr = (checkbox == 2)
+        print(self.state.tnormbeforebackgcorr)
+
+    def change_scaling_factor(self, index):
+        self.state.tecnormeth = self.list_scaf_tecnormeth[index]
+        print(self.state.tecnormeth)
 
 class logger(logging.Handler):
     def __init__(self, parent):
@@ -976,7 +994,7 @@ def main(args=None):
     splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint |
                           Qt.WindowType.SplashScreen)
     splash.show()
-    QTimer.singleShot(2000, splash.close)
+    QTimer.singleShot(1000, splash.close)
     window = MainWindow(config={"output_folder": app_dir})
     window.resize(860,480)
     window.show()

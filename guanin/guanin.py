@@ -275,7 +275,7 @@ def loadrccs(args, start_time = 0):
 
             thislane.append(R2)
 
-            if args.manualbackground is not None:
+            if args.background == 'Manual':
                 background = args.manualbackground
             elif args.background == 'Background2':
                 background = background2
@@ -309,7 +309,7 @@ def loadrccs(args, start_time = 0):
     meangeomeans = np.mean(infolanes['posGEOMEAN'])
     scalingf = []
 
-    if args.manualbackground is not None:
+    if args.background == 'Manual':
         manualbglist = []
         for i in infolanes['ID']:
             manualbglist.append(args.manualbackground)
@@ -652,7 +652,7 @@ def plotld(args, infolanes):
     plt.figure()
     plt.plot(infolanes.index, infolanes['0,5fm'], 'bo', label='0,5fm')
 
-    if args.manualbackground is not None:
+    if args.background == 'Manual':
         background = 'manual background'
     else:
         background = args.background
@@ -678,7 +678,7 @@ def plotld(args, infolanes):
 def plotocn(args, infolanes, dfnegcount):
     plt.figure()
 
-    if args.manualbackground is not None:
+    if args.background == 'Manual':
         background = 'manual background'
     else:
         background = args.background
@@ -1010,7 +1010,7 @@ def removelanes(autoremove, args):
 
     if autoremove is None:
         autoremove = set(manualremove)
-    if manualremove is not None:
+    if args.manual_remove == True:
         if type(manualremove) == str:
             manualremove = set(manualremove.split())
         print(f"Se retiran manualmente las muestras: {manualremove}.")
@@ -1024,9 +1024,10 @@ def removelanes(autoremove, args):
         infolanes = infolanes.drop(autoremove)
     else:
         dfgenes11 = dfgenes.T
-        args.current_state = 'Lanes set to remove not present in analysis.'
-        print('Error: ' + args.current_state)
-        logging.error(args.current_state)
+        if args.laneremover or args.manual_remove:
+            args.current_state = 'Lanes set to remove not present in analysis.'
+            print('Error: ' + args.current_state)
+            logging.error(args.current_state)
 
     pathinfolanes = args.outputfolder / 'info' / 'infolanes.csv'
     infolanes.to_csv(pathinfolanes, index=True)
@@ -1319,7 +1320,7 @@ def transformlowcounts(args):
     varback = args.lowcounts
     varbg = args.background
 
-    if args.manualbackground is not None:
+    if args.background == 'Manual':
         mvarbg = args.manualbackground
 
         if varback == 'skip':
@@ -2091,7 +2092,7 @@ def argParser():
     parser.add_argument('-tnm', '--tecnormeth', type=str, default='posgeomean', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
     parser.add_argument('-reg', '--refendgenes', type=str, default= 'endhkes', choices=['hkes', 'endhkes'], help='choose refgenes, housekeeping, or hkes and endogenous')
     parser.add_argument('-re', '--remove', type=str, nargs='+', default=None, help='lanes to be removed from the analysis')
-    parser.add_argument('-bg', '--background', type=str, default= 'Backgroundalt', choices=['Background', 'Background2', 'Background3', 'Backgroundalt'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=')
+    parser.add_argument('-bg', '--background', type=str, default= 'Backgroundalt', choices=['Background', 'Background2', 'Background3', 'Backgroundalt', 'Manual'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=uses alternative subset of negative controls')
     parser.add_argument('-pbb', '--pbelowbackground', type=int, default=85, help='if more than %bb genes are below background, sample gets removed from analysis')
     parser.add_argument('-mbg', '--manualbackground', type=float, default=None, help='set manually background')
     parser.add_argument('-crg', '--chooserefgenes', type=list, nargs='+', default = None, help = 'list of strings like. choose manualy reference genes to use over decided-by-program ones')
@@ -2105,7 +2106,7 @@ def argParser():
     parser.add_argument('-tn', '--topngenestocontnorm', type=int, default=100, help='set n genes to compute for calculating norm factor from top n expressed endogenous genes')
     parser.add_argument('-mch', '--mincounthkes', type=int, default=80, help='set n min counts to filter hkes candidate as refgenes')
     parser.add_argument('-nrg', '--nrefgenes', type=int, default=None, help='set n refgenes to use, overwriting geNorm calculation')
-    parser.add_argument('-lr', '--laneremover', type=str, default='yes', choices=['yes', 'no'], help='option to perform analysis with all lanes if set to no')
+    parser.add_argument('-lr', '--laneremover', type=bool, default=True, choices=[True, False], help='option to perform analysis with all lanes if set to no')
     parser.add_argument('-lo', '--logarizedoutput', type=str, default='no', choices=['2', '10', 'no'], help='want normed output to be logarized? in what logbase?')
     parser.add_argument('-le', '--logarizeforeval', type=str, default='10', choices=['2', '10', 'no'], help= 'logarithm base for RLE calculations')
     parser.add_argument('-gf', '--groupsfile', type=str, default='../examples/groups_d1_COV_GSE183071.csv', help='enter file name where groups are defined')
@@ -2122,6 +2123,7 @@ def argParser():
     parser.add_argument('-m', '--eme', type=object, default=None)
     parser.add_argument('-gpca', '--grouppca', type=str, default='GROUP')
     parser.add_argument('-dm', '--deseq2_mor', type=bool, default=True)
+    parser.add_argument('-mr', '--manual_remove', type=bool, default=False)
     return parser.parse_args()
 
 
@@ -2237,7 +2239,7 @@ def runQCview(args):
     try:
         plotandreport(args)
         state = "Data loaded succesfuly, preliminary analysis and plots " +\
-            "ready to inspect"
+            "ready to inspect in reports output folder"
         args.current_state = state
         print(args.current_state)
         logging.info(state)
@@ -2259,7 +2261,7 @@ def runQCfilterpre(args):
         dfgenes, infolanes = removelanes(flagged, args)
         exportfilrawcounts(dfgenes, args)
 
-    elif args.laneremover =='no':
+    elif not args.laneremover:
         dfgenes, infolanes = removelanes([], args)
         exportfilrawcounts(dfgenes, args)
 

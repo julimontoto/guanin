@@ -49,7 +49,7 @@ class ConfigData:
         self.badlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
-        self.tnormbeforebackgcorr = False
+        self.tnormbeforebackgcorr = True
         self.outputfolder = kwargs.get(
             "output_folder",
             Path(tempfile.gettempdir()) / "guanin_output")
@@ -57,11 +57,12 @@ class ConfigData:
         self.refgenessel = []
         self.indexmethod2 = 0
         self.kvalue = 3
-        self.pipeline = 'scalingfactors'
+        self.pipeline = 'ruvg'
         self.whatrefgenes = []
         self.eme = None
         self.grouppca = 'GROUP'
         self.deseq2_mor = True
+        self.manual_remove = False
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)
