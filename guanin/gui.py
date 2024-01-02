@@ -401,17 +401,17 @@ class CentralWidget(QWidget):
 
         # layout2.addLayout(layqc)
 
-        laymethod = QFormLayout()
+        self.laymethod = QFormLayout()
         methodtitle = QLabel('- Normalization method -')
         methodtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         methodtitle.setFont(headerfont)
-        laymethod.addRow(methodtitle)
+        self.laymethod.addRow(methodtitle)
 
         self.normethodcombobox = QComboBox()
         self.normethodcombobox.addItem('RUVg (remove unwanted variation through control genes)')
         self.normethodcombobox.addItem('Scaling factors (technical and content normalization)')
         self.normethodcombobox.currentIndexChanged.connect(self.changetnormmethod)
-        laymethod.addRow('Method for normalization: ', self.normethodcombobox)
+        self.laymethod.addRow('Method for normalization: ', self.normethodcombobox)
 
         self.list_scaf_options = ['Use posgeomean as scaling factor', 'Use summation as scaling factor', 'Use median as scaling factor', 'Use regression as scaling factor']
         self.method2combobox = QComboBox()
@@ -421,14 +421,12 @@ class CentralWidget(QWidget):
         self.inputkvalue = QSpinBox()
         self.inputkvalue.valueChanged.connect(self.changekvalue)
 
-        self.list_text_tick = ['Perform median of ratios pre-normalization (size factors)', 'Perform technical normalization before background correction']
+        self.laymethod.addRow('k value', self.inputkvalue)
 
-        self.normethodcombobox.currentIndexChanged.connect(self.changecombomethod)
+        self.list_text_tick = ['Perform median of ratios pre-normalization (size factors)', 'Perform technical normalization before background correction']
 
         self.simpleformethod2combobox = QGridLayout()
         self.simpleformethod2combobox.addWidget(self.method2combobox)
-
-        laymethod.addRow('Parameter for normalization: ', self.simpleformethod2combobox)
 
         self.doublefortechnorm = QHBoxLayout()
         self.doublefortickstechnorm = QHBoxLayout()
@@ -454,10 +452,10 @@ class CentralWidget(QWidget):
         doublenotick1tn.addWidget(runtechnorm)
         self.doublefortechnorm.addWidget(runtechnorm)
 
-        laymethod.addRow(self.doublefortechnorm)
+        self.laymethod.addRow(self.doublefortechnorm)
 
         bigtabmethod = QWidget()
-        bigtabmethod.setLayout(laymethod)
+        bigtabmethod.setLayout(self.laymethod)
 
         self.tabs.addTab(bigtabmethod, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Normalization method')
 
@@ -779,16 +777,16 @@ class CentralWidget(QWidget):
         self.parent.statusBar().showMessage(
             'QC done, ready to perform technical normalization')
 
-    def changecombomethod(self, index):
-        if index == 0:
-            self.state.pipeline = 'scalingfactors'
-            self.method2combobox.addItems(self.list_scaf_options)
-            self.doubleformethod2combobox.addRow(self.method2combobox)
-        elif index ==1:
-            self.state.pipeline = 'ruvgnorm'
-            self.doubleformethod2combobox.removeRow(self.method2combobox)
-            self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
-        ###MISSING SHOW TICK FOR A) APPLY TECHNICAL NORMALIZATION BEFORE BACKGROUND CORRECTION OR B) APPLY MEDIAN OF RATIOS CORRECTION
+    # def changecombomethod(self, index):
+    #     if index == 0:
+    #         self.state.pipeline = 'scalingfactors'
+    #         self.method2combobox.addItems(self.list_scaf_options)
+    #         self.doubleformethod2combobox.addRow(self.method2combobox)
+    #     elif index ==1:
+    #         self.state.pipeline = 'ruvgnorm'
+    #         self.doubleformethod2combobox.removeRow(self.method2combobox)
+    #         self.doubleformethod2combobox.addRow(QLabel('k value: '), self.inputkvalue)
+    #     ###MISSING SHOW TICK FOR A) APPLY TECHNICAL NORMALIZATION BEFORE BACKGROUND CORRECTION OR B) APPLY MEDIAN OF RATIOS CORRECTION
 
 
 
@@ -796,15 +794,14 @@ class CentralWidget(QWidget):
         self.state.kvalue = value
 
     def changetnormmethod(self, checkbox):
-        self.state.kvalue = checkbox
+        self.laymethod.setRowVisible(2, False)
         if checkbox == 0:
-            self.state.tecnormeth = 'posgeomean'
+            self.state.pipeline = 'ruvgnorm'
+            self.laymethod.insertRow(2, 'k value', self.inputkvalue)
         elif checkbox == 1:
-            self.state.tecnormeth = 'Sum'
-        elif checkbox == 2:
-            self.state.tecnormeth = 'Median'
-        elif checkbox == 3:
-            self.state.tecnormeth = 'regression'
+            self.laymethod.setRowVisible(2, False)
+            self.state.pipeline = 'scalingfactors'
+            self.laymethod.insertRow(2, 'Parameter for technical normalization', self.method2combobox)
         logging.debug(f"state.tecnormeth = {self.state.tecnormeth}")
 
     def runthetechnorm(self):
