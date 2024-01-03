@@ -737,10 +737,16 @@ class CentralWidget(QWidget):
         self.state.change_float("maxfov", value)
 
     def changeminbd(self, value):
+        ##DEBUG
+        # VER CON XABI OJO HAY COMO DOS COSAS QUE SON SELF.STATE.MINBD (CON TODAS ESTAS FUNCIONES)
         self.state.change_float("minbd", value)
+        self.state.minbd = float(value.replace(',', '.'))
+        print(self.state.minbd)
 
     def changemaxbd(self, value):
         self.state.change_float("maxbd", value)
+        self.state.maxbd = float(value.replace(',', '.'))
+        print(self.state.maxbd)
 
     def changeminlin(self, value):
         self.state.change_float("minlin", value)
@@ -813,10 +819,12 @@ class CentralWidget(QWidget):
 
     def change_filhousekeepingmincounts(self, value):
         self.state.mincounthkes = int(value.replace(',', '.'))
+        print(self.state.mincounthkes)
         logging.debug(f"state.mincounthkes = {self.state.mincounthkes}")
 
     def change_includeerg(self, checkbox):
         self.state.refendgenes = "hkes" if (checkbox == 0) else "endhkes"
+        print(self.state.refendgenes)
         logging.debug(f"state.refendgenes = {self.state.refendgenes}")
 
     def changeaftertransformlowcounts(self, checkbox):

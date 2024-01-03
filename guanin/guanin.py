@@ -379,12 +379,12 @@ def pathoutinfolanes(infolanes, args):
     infolanes.to_csv(pathinfolanes, index=True)
 
 def pathoutrawsummary(rawsummary, args):
-    pathrawsummary = args.outputfolder / 'reports' / 'rawsummary.csv'
+    pathrawsummary = args.outputfolder / 'info' / 'rawsummary.csv'
     rawsummary.to_csv(pathrawsummary, index=True)
 
 
 def pathoutsummary (summary, args):
-    pathsummary = args.outputfolder / 'reports' / 'summary.csv'
+    pathsummary = args.outputfolder / 'info' / 'summary.csv'
     summary.to_csv(pathsummary, index=True)
 
 
@@ -571,10 +571,10 @@ def summarizeinfolanes(args):
         subset='Scaling factor')
 
     pathoutsummary(summary, args)
-    summary2view.to_html(str(args.outputfolder / "Summary.html"))
+    summary2view.to_html(str(args.outputfolder / "info" / "Summary.html"))
 
     if args.showbrowserqc:
-        webbrowser.open(str(args.outputfolder / "Summary.html"))
+        webbrowser.open(str(args.outputfolder / "info" / "Summary.html"))
 
 def exportposneg(dfposneg, args):
     posnegcounts = pd.DataFrame()
@@ -828,7 +828,7 @@ def plotsca(args, infolanes):
     plt.savefig(args.outputfolder / 'images' / 'scaplot.png')
     plt.close()
 
-def pdfreport(args):
+def pdfreport(args, rawreport=True):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
@@ -859,12 +859,15 @@ def pdfreport(args):
               110,
               200,
               h=69)
+    if rawreport:
+        pdf.output(str(args.outputfolder / "reports" / "QC_inspection.pdf"), 'F')
+    elif not rawreport:
+        pdf.output(str(args.outputfolder / "reports" / "QC_inspection_filtered.pdf"), 'F')
 
-    pdf.output(str(args.outputfolder / "reports" / "QC_inspection.pdf"), 'F')
-
-    if args.showbrowserqc:
+    if args.showbrowserqc and rawreport:
         os.system(str(args.outputfolder / "reports" / "QC_inspection.pdf"))
-
+    elif args.showbrowserqc and not rawreport:
+        os.system(str(args.outputfolder / "reports" / "QC_inspection_filtered.pdf"))
 
 def pdfreportnorm(args):
     pdf = FPDF()
@@ -941,7 +944,6 @@ def flagqc(args):
                 if thisFOV < args.minfov:
                     fovinfo = f"Low FOV value ({thisFOV}) in {i}. " +\
                         "Sample is flagged/discarded. \n"
-                    print(fovinfo)
                     logging.warning(fovinfo)
                     f.writelines(fovinfo)
                     flagged.add(i)
@@ -949,7 +951,6 @@ def flagqc(args):
                     bdinfo = "Wrong binding density value " +\
                         f"({thisBD}) in {i}. " +\
                         "Sample is flagged/discarded.\n"
-                    print(bdinfo)
                     logging.warning(bdinfo)
                     f.writelines(bdinfo)
                     flagged.add(i)
@@ -957,14 +958,12 @@ def flagqc(args):
                     lodinfo = "Wrong limit of detection value " +\
                         f"({thisLOD}) in {i}. " +\
                         "Sample is flagged/discarded.\n"
-                    print(lodinfo)
                     logging.warning(lodinfo)
                     f.writelines(lodinfo)
                     flagged.add(i)
                 if thisBG > this05:
                     bginfo = f"Wrong 0.5fm value ({thisBG}) in {i}. " +\
                         "Sample is flagged/discarded.\n"
-                    print(bginfo)
                     logging.warning(bginfo)
                     f.writelines(bginfo)
                     flagged.add(i)
@@ -972,7 +971,6 @@ def flagqc(args):
                     sfinfo = "Wrong scaling factor value " +\
                         f"({thisSF}) in {i}" +\
                         "Sample is flagged/discarded.\n"
-                    print(sfinfo)
                     logging.warning(sfinfo)
                     f.writelines(sfinfo)
                     flagged.add(i)
@@ -980,7 +978,6 @@ def flagqc(args):
                     gbbinfo = "Wrong genes below background value " +\
                         f"({thisgbb}) in {i}. " +\
                         "Sample is flagged/discarded.\n"
-                    print(gbbinfo)
                     logging.warning(gbbinfo)
                     f.writelines(gbbinfo)
                     flagged.add(i)
@@ -1362,11 +1359,11 @@ def exporttnormgenes(normgenes, args):
 
 
 def getallhkes(args):
-    dfgenes = pd.read_csv(
-        args.outputfolder / 'otherfiles' / 'dfgenes.csv',
-        index_col='Name')
+    dfhkegenes = pd.read_csv(
+        args.outputfolder / 'otherfiles' / 'dfhkecount.csv',
+        index_col=0)
 
-    allhkes = dfgenes.loc[dfgenes.loc[:, 'CodeClass'] == 'Housekeeping']
+    allhkes = dfhkegenes.T
 
     return allhkes
 
@@ -1963,6 +1960,8 @@ def logarizegroupedcounts(rnormgenesgroups, args):
         return rngg
 
     if args.logarizedoutput == 'no':
+        pathout = args.outputfolder / 'otherfiles' / 'rngg.csv'
+        rnormgenesgroups.to_csv(pathout)
         return rnormgenesgroups
 
 
@@ -2018,7 +2017,7 @@ def plotevalnorm(matrix, what, meaniqr, args):
 
     plt.figure(figsize=(30, 12))
     sns.boxplot(data=matrix, showfliers=False, showmeans=True)
-    plt.title(what + '. IQR: ' + str(meaniqr), fontsize=24)
+    plt.title(what + '. IQR: ' + str(meaniqr), fontsize=40)
     plt.tick_params(
         axis='x',
         which='both',
@@ -2026,11 +2025,11 @@ def plotevalnorm(matrix, what, meaniqr, args):
         top=False,
         labelbottom=False)
     plt.ylim(-1, 1)
-    plt.ylabel('RLE', fontsize=24)
-    plt.xlabel('Samples', fontsize=24)
+    plt.ylabel('RLE', fontsize=36)
+    plt.xlabel('Samples', fontsize=40)
     sns.stripplot(data=matrix, size=2, palette='dark:black')
     plt.savefig(args.outputfolder / 'images' / 'rlenormplot.png')
-    plt.savefig(args.outputfolder / 'images' / 'rlenormplot2.png', dpi=15)
+    plt.savefig(args.outputfolder / 'images' / 'rlenormplot2.png', dpi=17)
     plt.close()
 
 
@@ -2059,14 +2058,14 @@ def plotevalraw(matrix, what, meaniqrraw, args):
         bottom=False,
         top=False,
         labelbottom=False)
-    plt.title(f"{what}. IQR: {meaniqrraw}", fontsize=24)
-    plt.ylabel('RLE', fontsize=24)
-    plt.xlabel('Samples', fontsize=24)
+    plt.title(f"{what}. IQR: {meaniqrraw}", fontsize=40)
+    plt.ylabel('RLE', fontsize=36)
+    plt.xlabel('Samples', fontsize=40)
     plt.ylim(-1, 1)
     sns.stripplot(data=matrix, size=2, palette='dark:black')
 
     plt.savefig(args.outputfolder / 'images' / 'rlerawplot.png')
-    plt.savefig(args.outputfolder / 'images' / 'rlerawplot2.png', dpi=15)
+    plt.savefig(args.outputfolder / 'images' / 'rlerawplot2.png', dpi=17)
     plt.close()
     return estoo
 
@@ -2182,7 +2181,7 @@ def showinfolanes(args):
         #FOR SOME REASON IT POPS 2 TABS
         webbrowser.open(str(args.outputfolder / 'info' / 'rawinfolanes.html'))
 
-def plotandreport(args, whatinfolanes="rawinfolanes"):
+def plotandreport(args, whatinfolanes="rawinfolanes", rawreport=True):
     """Plot QC from infolanes or raw info lanes (file).
 
     :param whatinfolanes: chooses file rawinfolanes.csv or infolanes.csv
@@ -2218,7 +2217,7 @@ def plotandreport(args, whatinfolanes="rawinfolanes"):
     args.current_state = '--> Generating pdf report'
     print(args.current_state)
     logging.info(args.current_state)
-    pdfreport(args)
+    pdfreport(args, rawreport=rawreport)
 
 
 def runQCview(args):
@@ -2309,6 +2308,7 @@ def runQCfilterpre(args):
         webbrowser.open(args.outputfolder / 'info' / 'infolanes.html')
 
     summarizeinfolanes(args)
+    plotandreport(args, whatinfolanes='infolanes', rawreport=False)
 
     return flagged
 
@@ -2382,7 +2382,6 @@ def RUVgnorm2(args, center=True, round=False, epsilon=1, tolerance=1e-8, isLog=F
             correctedY = np.exp(correctedY).subtract(epsilon)
 
     rnormgenes = correctedY.T
-
     rngg = logarizeoutput(rnormgenes, args)
     rngg.to_csv(args.outputfolder / 'otherfiles' / 'rngg.csv', index=True)
     pathoutrnormgenes(rnormgenes, args)
@@ -2451,6 +2450,7 @@ def selecting_refgenes(args):
             "Housekeeping genes with more than 50 counts for all lanes: " +\
             f"{list(selhkes.index)}"
         print(args.current_state)
+        print(selhkes)
         logging.info(args.current_state)
 
     try:
@@ -2466,7 +2466,6 @@ def selecting_refgenes(args):
             f"Unable to retrieve candidate ref genes from endogenous, ERROR: {e}")
         refgenes = selhkes
 
-    refgenes = refgenes.drop(['CodeClass', 'Accession'], axis = 1)
     pathoutrefgenes(refgenes, args)
 
     args.current_state = str(('--> Group-driven refining candidate reference genes selection through kruskal, wilcoxon and feature selection. Elapsed %s seconds ' % (
@@ -2565,14 +2564,12 @@ def selecting_refgenes(args):
     print('--> Performing feature selection for refgenes evaluation and control.')
     print(os.path.exists(args.groupsfile))
     if args.groups == 'yes' or os.path.exists(args.groupsfile):
-        print(len(targets.columns))
         if len(targets.columns) > 2:
             targets = targets[['SAMPLE', 'GROUP']].copy()
 
         metrics = rankfeaturegenes(dataref, targets, args)
-        print(metrics)
         ranking = rankstatsrefgenes(reskrus, reswilcopairs)
-        print(ranking)
+
 
 
         ranking2 = ranking.style.applymap(condformat, top=1, bot=0.05, subset='Kruskal p-value')
@@ -2583,7 +2580,7 @@ def selecting_refgenes(args):
         ranking.to_csv(args.outputfolder / 'info' / 'ranking_kruskal_wilcox.csv')
 
     if args.showbrowsercnorm == True:
-        webbrowser.open(args.outputfolder / 'info' / 'ranking_kruskal_wilcox.html')
+        webbrowser.open(str(args.outputfolder / 'info' / 'ranking_kruskal_wilcox.html'))
 
     if args.groups == 'yes':
 
@@ -2625,7 +2622,6 @@ def contnorm(args):
 
     if args.contnorm == 'refgenes' or args.contnorm == 'ponderaterefgenes':
         normfactor = getnormfactor(bestrefgenes, eme, args)
-        print(normfactor)
     elif args.contnorm == 'all':
         normfactor = getnormfactor(allgenes, eme, args)
     elif args.contnorm == 'topn':
@@ -2661,7 +2657,6 @@ def apply_deseq2_mor(args):
         args.outputfolder / 'otherfiles' / 'dfgenes.csv',
         index_col='Name')
     dfgenes2 = dfgenes.drop(['CodeClass', 'Accession'], axis=1)
-    print(dfgenes)
     counts, sizefactors = deseq2_norm(dfgenes2)
     counts[['CodeClass', 'Accession']] = dfgenes[['CodeClass', 'Accession']]
     exportdfgenes(counts, args)
@@ -2691,7 +2686,7 @@ def plotpcaraw(df, group, args):
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title('PCA raw counts')
     plt.savefig(args.outputfolder / 'images' / 'pcaraw.png')
-    plt.savefig(args.outputfolder / 'images' / 'pcaraw2.png', dpi=60)
+    plt.savefig(args.outputfolder / 'images' / 'pcaraw2.png', dpi=80)
     plt.close()
 
 def plotpcanorm(df, group, args):
@@ -2719,7 +2714,7 @@ def plotpcanorm(df, group, args):
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title('PCA normalized counts')
     plt.savefig(args.outputfolder / 'images' / 'pcanorm.png')
-    plt.savefig(args.outputfolder / 'images' / 'pcanorm2.png', dpi=60)
+    plt.savefig(args.outputfolder / 'images' / 'pcanorm2.png', dpi=80)
     plt.close()
 
 def plotevalpcas(args):
@@ -2767,7 +2762,7 @@ def evalnorm(args):
     logging.info('Plotted raw plots')
 
     print('Plotting normalized RLE plot...')
-    plotevalnorm(rnormcounts, 'fully normalized counts', meaniqr, args)
+    plotevalnorm(rnormcounts, 'Fully normalized counts', meaniqr, args)
     logging.info('Plotted normalized plots')
 
     plotevalpcas(args)

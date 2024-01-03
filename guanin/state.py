@@ -57,7 +57,7 @@ class ConfigData:
         self.refgenessel = []
         self.indexmethod2 = 0
         self.kvalue = 3
-        self.pipeline = 'ruvg'
+        self.pipeline = 'ruvgnorm'
         self.whatrefgenes = []
         self.eme = None
         self.grouppca = 'GROUP'
