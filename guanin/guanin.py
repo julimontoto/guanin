@@ -1879,15 +1879,11 @@ def refnorm(normfactor, args):
 def pathoutrnormgenes(df, args):
     pathrnorm = args.outputfolder / 'results' / 'rnormcounts.csv'
     df.to_csv(pathrnorm)
-    path2rnorm = args.outputfolder / 'results' / 'rnormcounts2.csv'
-    df.to_csv(path2rnorm, index=False, header=False)
 
 
 def pathoutadnormgenes(df, args):
     pathadnorm = args.outputfolder / 'otherfiles' / 'adnormcounts.csv'
     df.to_csv(pathadnorm)
-    path2adnorm = args.outputfolder / 'otherfiles' / 'adnormcounts2.csv'
-    df.to_csv(path2adnorm, index=False, header=False)
 
 
 def adnormalization(df, args, rnormgenes):

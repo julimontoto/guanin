@@ -509,16 +509,13 @@ class CentralWidget(QWidget):
 
         howtofilter = QComboBox()
         howtofilter.addItem('Kruskal-Wallis filtering')
-        howtofilter.addItem('Kruskal-Wallis flagging')
         howtofilter.addItem('Wilcoxon filtering')
-        howtofilter.addItem('Wilcoxon flagging')
-        howtofilter.addItem('No group filtering/flagging')
+        howtofilter.addItem('No group filtering')
         howtofilter.currentIndexChanged.connect(self.change_howtofilter)
         self.laycnorm.addRow('How to filter/flag reference genes', howtofilter)
 
         additionalnormalization = QComboBox()
         additionalnormalization.addItem('No')
-        additionalnormalization.addItem('Quantile normalization')
         additionalnormalization.addItem('Standarization')
 
         additionalnormalization.currentIndexChanged.connect(self.change_adnormalization)
@@ -873,12 +870,8 @@ class CentralWidget(QWidget):
         if checkbox == 0:
             self.state.filtergroupvariation = 'filterkrus'
         elif checkbox == 1:
-            self.state.filtergroupvariation = 'flagkurs'
-        elif checkbox == 2:
             self.state.filtergroupvariation = 'filterwilcox'
-        elif checkbox == 3:
-            self.state.filtergroupvariation = 'flagwilcox'
-        elif checkbox == 4:
+        elif checkbox == 2:
             self.state.filtergroupvariation = 'nofilter'
         logging.debug(
             f"state.filtergroupvariation = {self.state.filtergroupvariation}")
@@ -887,8 +880,6 @@ class CentralWidget(QWidget):
         if checkbox == 0:
             self.state.adnormalization = 'no'
         elif checkbox == 1:
-            self.state.adnormalization = 'quantile'
-        elif checkbox == 2:
             self.state.adnormalization = 'standarization'
         logging.debug(f"state.adnormalization = {self.state.adnormalization}")
 
