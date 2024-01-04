@@ -2675,9 +2675,16 @@ def plotpcaraw(df, group, args):
 
     conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
 
+    if 'BATCH' in conditions.columns:
+        group = 'BATCH'
+    else:
+        group = group
+
     a = pd.merge(pca_df, conditions, left_index=True, right_index=True)
-    sns.kdeplot(data=a, x="PC1", y="PC2", hue=group, shade=True, alpha=0.5)
-    sns.scatterplot(x='PC1', y='PC2', data=a, hue=group)
+    custom_palette = sns.mpl_palette("turbo", n_colors=len(a[group].unique()))
+    sns.kdeplot(data=a, x="PC1", y="PC2", hue=group, fill=True, alpha=0.2, thresh=0.2, levels=3,
+                palette=custom_palette, common_norm=False)
+    sns.scatterplot(x='PC1', y='PC2', data=a, hue=group, palette=custom_palette)
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title('PCA raw counts')
@@ -2704,8 +2711,9 @@ def plotpcanorm(df, group, args):
     conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
 
     a = pd.merge(pca_df, conditions, left_index=True, right_index=True)
-    sns.kdeplot(data=a, x="PC1", y="PC2", hue=group, shade=True, alpha=0.5)
-    sns.scatterplot(x='PC1', y='PC2', data=a, hue=group)
+    custom_palette = sns.mpl_palette("turbo", n_colors=len(a[group].unique()))
+    sns.kdeplot(data=a, x="PC1", y="PC2", hue=group, fill=True, alpha=0.2, thresh=0.2, levels=3, palette=custom_palette, common_norm=False)
+    sns.scatterplot(x='PC1', y='PC2', data=a, hue=group, palette=custom_palette)
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title('PCA normalized counts')
