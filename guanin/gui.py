@@ -261,7 +261,7 @@ class CentralWidget(QWidget):
         layqc.addRow('Set manual background', manualbackground)
 
         backgroundcorrection = QComboBox()
-        backgroundcorrection.addItem('Sustract background value')
+        backgroundcorrection.addItem('Subtract background value')
         backgroundcorrection.addItem('Set as background')
         backgroundcorrection.addItem('Skip background correction')
         backgroundcorrection.currentIndexChanged.connect(self.changingbackgroundcorrection)
@@ -389,7 +389,7 @@ class CentralWidget(QWidget):
 
         layqc.addRow(doubleforqcfiltering)
 
-        self.showingflaggedlanes = QLabel(self.state.badlanes)
+        self.showingflaggedlanes = QLabel(self.state.nbadlanes)
         layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
 
         bigtabqc = QWidget()
@@ -516,7 +516,7 @@ class CentralWidget(QWidget):
 
         additionalnormalization = QComboBox()
         additionalnormalization.addItem('No')
-        additionalnormalization.addItem('Standarization')
+        additionalnormalization.addItem('Standarization (0-1)')
 
         additionalnormalization.currentIndexChanged.connect(self.change_adnormalization)
 
@@ -715,7 +715,7 @@ class CentralWidget(QWidget):
 
     def changingbackgroundcorrection(self, checkbox):
         if checkbox == 0:
-            self.state.lowcounts = 'sustract'
+            self.state.lowcounts = 'subtract'
         elif checkbox == 1:
             self.state.lowcounts = 'asim'
         elif checkbox == 2:
@@ -933,7 +933,7 @@ class CentralWidget(QWidget):
         logging.debug(f"state.showlastlog = {self.state.showlastlog}")
 
     def showflaggedlanes(self):
-        self.showingflaggedlanes.setText(str(self.state.badlanes))
+        self.showingflaggedlanes.setText(str(self.state.nbadlanes))
 
     def showingrawIQR(self):
         self.labeltext1.setText(

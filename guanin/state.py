@@ -18,7 +18,8 @@ class ConfigData:
         self.showbrowserrawqc = False
         self.showbrowserqc = False
         self.showbrowsercnorm = False
-        self.lowcounts = 'sustract'
+        self.lowcounts = 'subtract'
+        self.modeid = 'filename'
         self.modeid = 'filename'
         self.modeview = 'view'
         self.tecnormeth = 'posgeomean'
@@ -46,7 +47,7 @@ class ConfigData:
         self.start_time = time.time()
         self.current_state = 'Ready to analysis'
         self.current_state = 'Ready to analysis'
-        self.badlanes = 'No bad lanes detected'
+        self.nbadlanes = 'No bad lanes detected'
         self.rawmeaniqr = 'Raw IQR not calculated yet'
         self.normmeaniqr = 'Norm IQR not calculated yet'
         self.tnormbeforebackgcorr = True
@@ -63,6 +64,7 @@ class ConfigData:
         self.grouppca = 'GROUP'
         self.deseq2_mor = True
         self.manual_remove = False
+        self.badlanes = set()
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)
