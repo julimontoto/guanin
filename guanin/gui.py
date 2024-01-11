@@ -434,7 +434,7 @@ class CentralWidget(QWidget):
         self.ticforaftertransformlowcounts = QCheckBox()
         # self.ticforaftertransformlowcounts.stateChanged.connect(
         #     self.changeaftertransformlowcounts)
-        self.ticforaftertransformlowcounts.setChecked(True)
+        self.ticforaftertransformlowcounts.setChecked(False)
 
         # self.row_with_tick = [self.list_text_tick[int(self.state.tnormbeforebackgcorr)], self.ticforaftertransformlowcounts]
         self.doubleformtic1tn.addRow(self.list_text_tick[0], self.ticforaftertransformlowcounts)

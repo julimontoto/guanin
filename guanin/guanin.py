@@ -1768,13 +1768,11 @@ def rankstatsrefgenes(reskrus, reswilcopairs):
 
 
 def getallgenesdf(args):
-    ### TODO SUSTITUIR TNORMCOUNTS
     df = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
     return df
 
 
 def gettopngenesdf(args):
-    ### TODO COHERENCIA CODECLASSYACCESSION
     df = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
     df['mean'] = df.mean(axis=1)
     df.sort_values(by=['mean'], ascending=False, inplace=True)
@@ -1782,7 +1780,6 @@ def gettopngenesdf(args):
     df.drop('mean', inplace=True, axis=1)
 
     return df
-
 
 def getnormfactor(refgenesdf, eme, args):
     geomeans1 = {}
