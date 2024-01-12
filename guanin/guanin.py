@@ -1416,24 +1416,30 @@ def calkruskal(*args):
     """Kruskal wallis calculation.
 
     Takes dfa-like dataframes, groups with samples at y and ref genes at x.
+    A list of dataframes, a dataframe for each condition
     """
     gencount = 0
-
+    print(args)
+    print('a')
+    print(args[0])
     lk = {}
-    for i in args[0]:
+    for i in args[0].columns: #for each candidate reference gene, column of the first dataframe
+        print(i) #gene name
         la = []
-        a = args[0].iloc[:, gencount]
-
-        gcount = 0
-        for j in args:
-            b = args[gcount].iloc[:, gencount]
+        for j in args: #for each dataframe
+            b = j[i] #we take the column referred to the gene of interest
+            # b = args[gcount].iloc[:, gencount]
+            print(b)
             la.append(b)
-            gcount += 1
         try:
             krus = stats.kruskal(*la)
+            print('yeskrus:')
+            print(krus)
         except Exception:
+            print('nokrus')
             pass
-        lk[a.name] = krus
+        lk[i] = krus
+        print(lk)
         gencount += 1
 
     lk = pd.DataFrame.from_dict(lk)
@@ -1490,7 +1496,10 @@ def filterkruskal(flaggedgenes, args):
             print(args.current_state)
             logging.warning(args.current_state)
         else:
-            refgenes = refgenes.drop(columns=flaggedgenes)
+            if len(flaggedgenes)>=1:
+                refgenes = refgenes.drop(columns=flaggedgenes)
+            else:
+                refgenes = refgenes
     elif args.filtergroupvariation == 'flagkrus':
         args.current_state = \
             f"Genes not recommended as refgenes by kruskal: {flaggedgenes}."
@@ -1970,7 +1979,7 @@ def argParser():
     parser.add_argument('-tnm', '--tecnormeth', type=str, default='posgeomean', choices=['posgeomean','Sum', 'Median', 'regression'], help='choose method for technical normalization')
     parser.add_argument('-reg', '--refendgenes', type=str, default= 'endhkes', choices=['hkes', 'endhkes'], help='choose refgenes, housekeeping, or hkes and endogenous')
     parser.add_argument('-re', '--remove', type=str, nargs='+', default=None, help='lanes to be removed from the analysis')
-    parser.add_argument('-bg', '--background', type=str, default= 'Backgroundalt', choices=['Background', 'Background2', 'Background3', 'Backgroundalt', 'Manual'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=uses alternative subset of negative controls')
+    parser.add_argument('-bg', '--background', type=str, default= 'Background', choices=['Background', 'Background2', 'Background3', 'Backgroundalt', 'Manual'], help='choose background: b1=meancneg+(2*std), b2=maxcneg, b3=meancneg, balt=uses alternative subset of negative controls')
     parser.add_argument('-pbb', '--pbelowbackground', type=int, default=85, help='if more than %bb genes are below background, sample gets removed from analysis')
     parser.add_argument('-mbg', '--manualbackground', type=float, default=None, help='set manually background')
     parser.add_argument('-crg', '--chooserefgenes', type=list, nargs='+', default = None, help = 'list of strings like. choose manualy reference genes to use over decided-by-program ones')
@@ -2324,7 +2333,7 @@ def selecting_refgenes(args):
             f"{list(selhkes.index)}"
         print(args.current_state)
         logging.info(args.current_state)
-
+    print(selhkes)
     try:
         refgenes = findrefend(args, selhkes)
 
@@ -2335,7 +2344,7 @@ def selecting_refgenes(args):
         logging.info(args.current_state)
     except Exception as e:
         logging.warning(
-            f"Unable to retrieve candidate ref genes from enogenous, ERROR: {e}")
+            f"Unable to retrieve candidate ref genes from endogenous, ERROR: {e}")
         refgenes = selhkes
 
     pathoutrefgenes(refgenes, args)
@@ -2357,9 +2366,13 @@ def selecting_refgenes(args):
         print(args.current_state)
         logging.info(args.current_state)
         ddf = getgroups(args)
+
         ddfc = list(ddf.items())
+
         ddfb = list(ddf.values())
+
         reskrus = calkruskal(*ddfb)
+
 
         args.current_state = '--> Performing wilcoxon analysis'
         print(args.current_state)
@@ -2380,13 +2393,12 @@ def selecting_refgenes(args):
             refgenes = filterkruskal(flaggedgenes, args)
         elif args.filtergroupvariation == 'filterwilcox':
             refgenes = filterwilcox(flaggedwilcox, args)
-
+        else:
+            refgenes = filterkruskal([], args)
         print("Ref genes present in analysis after applying kruskal-wallis " +\
               f"or wilcoxon filtering: {list(refgenes.columns)}")
-
     elif args.groups == 'no':
         pass
-
     print(
         '--> Applying genorm to select best ranking selection of refgenes from candidate refgenes. Elapsed %s seconds ' % (
                 time.time() - args.start_time))

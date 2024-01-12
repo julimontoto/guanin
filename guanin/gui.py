@@ -417,6 +417,7 @@ class CentralWidget(QWidget):
         self.method2combobox.currentIndexChanged.connect(self.change_scaling_factor)
 
         self.inputkvalue = QSpinBox()
+        self.inputkvalue.setValue(3)
         self.inputkvalue.valueChanged.connect(self.changekvalue)
 
         self.laymethod.addRow('k value', self.inputkvalue)
