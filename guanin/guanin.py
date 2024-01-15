@@ -1420,8 +1420,6 @@ def calkruskal(*args):
         for j in args: #for each dataframe
             b = j[i] #we take the column referred to the gene of interest
             la.append(b)
-        if i == 'SDHA':
-            print(la)
         try:
             krus = stats.kruskal(*la)
         except Exception:
