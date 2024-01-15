@@ -1367,13 +1367,15 @@ def findrefend(args, selhkes):
         logging.info(f"Most promising endogenous genes: {bestend}")
         print('Most promising endogenous genes: ', bestend)
 
-    refgenesnames = selhkes.index.tolist() + bestend
+        refgenesnames = selhkes.index.tolist() + bestend
+    else:
+        refgenesnames = selhkes.index.tolist()
 
     if args.refendgenes == 'endhkes':
         refgenes = dfgenes.loc[refgenesnames]
 
     else:
-        refgenes = norm2end2.loc[selhkes.index.tolist()]
+        refgenes = dfgenes.loc[selhkes.index.tolist()]
 
     return refgenes
 
@@ -1396,6 +1398,7 @@ def getgroups(args):
         for i in flagged:
             if i in dfgroups.columns:
                 dfgroups.drop(i, axis=0, inplace=True)
+
     groups = list(set(dfgroups['GROUP']))
 
     d = {}
@@ -1408,39 +1411,27 @@ def getgroups(args):
             if j in refgenes.index:
                 newa.append(j)
         ddf[i] = refgenes.loc[newa]
-
     return ddf
 
 
 def calkruskal(*args):
     """Kruskal wallis calculation.
-
     Takes dfa-like dataframes, groups with samples at y and ref genes at x.
     A list of dataframes, a dataframe for each condition
     """
-    gencount = 0
-    print(args)
-    print('a')
-    print(args[0])
     lk = {}
     for i in args[0].columns: #for each candidate reference gene, column of the first dataframe
-        print(i) #gene name
         la = []
         for j in args: #for each dataframe
             b = j[i] #we take the column referred to the gene of interest
-            # b = args[gcount].iloc[:, gencount]
-            print(b)
             la.append(b)
+        if i == 'SDHA':
+            print(la)
         try:
             krus = stats.kruskal(*la)
-            print('yeskrus:')
-            print(krus)
         except Exception:
-            print('nokrus')
             pass
         lk[i] = krus
-        print(lk)
-        gencount += 1
 
     lk = pd.DataFrame.from_dict(lk)
     lk = lk.rename(index={0: 'Result', 1: 'pvalue'})
@@ -1450,20 +1441,18 @@ def calkruskal(*args):
 
 def calwilco(dfa, dfb):
     """Calculate Wilcoxon for every pair of groups."""
-    count = 0
     lw = {}
-    for i in dfa:
-        a = dfa.iloc[:, count]
-        b = dfb.iloc[:, count]
+    for i in dfa: #for each dataframe of the pair
+        a = dfa[i]
+        b = dfb[i]
         k = stats.ranksums(a, b)
         lw[i] = k
-        count += 1
     lw = pd.DataFrame.from_dict(lw)
     lw = lw.rename(index={0: 'Result', 1: 'pvalue'})
     return lw
 
 
-def calwilcopairs(*ddfc):  # XXX
+def calwilcopairs(*ddfc):  # perform wilcoxon calculations for each par of conditions
     lenargs = np.arange(0,len(ddfc))
 
     lw = {}
@@ -2333,7 +2322,7 @@ def selecting_refgenes(args):
             f"{list(selhkes.index)}"
         print(args.current_state)
         logging.info(args.current_state)
-    print(selhkes)
+
     try:
         refgenes = findrefend(args, selhkes)
 
