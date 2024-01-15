@@ -1207,11 +1207,8 @@ def findaltnegatives(args):
         args.outputfolder / 'info' / 'infolanes.csv',
         index_col=0)
     dfgenes = pd.read_csv(
-        args.outputfolder / 'otherfiles' / 'dfgenes.csv',
-        index_col=0)
-
-    dfgenes = dfgenes
-
+        args.outputfolder / 'otherfiles' / 'rawfcounts.csv',
+        index_col=0).T
     genmean = dfgenes.mean()
     meangenmean = np.mean(genmean)
     genmean = genmean/meangenmean
@@ -1229,7 +1226,6 @@ def findaltnegatives(args):
 
     bestaltnegs = genrank.head(10)
     bestaltnegsnames = bestaltnegs.index
-
     dfaltnegs = dfgenes[bestaltnegsnames]
 
     dfaltnegs = dfaltnegs.T
@@ -1291,7 +1287,6 @@ def regresion(dfgenes, args):
 def transformlowcounts(dfgenes, args):
 
     infolanes = pd.read_csv(args.outputfolder / 'info' / 'infolanes.csv', index_col=0)
-
     varback = args.lowcounts
     varbg = args.background
 
@@ -1850,9 +1845,8 @@ def RLEcal(rnormgenes, args):
 
     rlegenes = rlegenes.T
 
-    for i in rlegenes.columns:
-        median = np.median(rlegenes[i])
-        rlegenes[i] = rlegenes[i] - median
+    median = rlegenes.median()
+    rlegenes = rlegenes - median
     rlegenes = rlegenes.T
     if 'group' in rnormgenes.index:
         rlegenes.loc['group'] = rnormgenes.loc['group']
