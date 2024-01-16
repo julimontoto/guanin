@@ -28,6 +28,7 @@ from ERgene import FindERG
 from pydeseq2.preprocessing import deseq2_norm
 import traceback
 import sys
+import warnings
 
 
 class Setup:
@@ -296,15 +297,13 @@ def loadrccs(args, start_time = 0):
     if not all(infolanes.duplicated(subset=['ID'])):
         args.current_state = f"--> All {len(infolanes['ID'])} IDs are unique, "
         args.current_state += "proceeding with analysis. "
-        args.current_state += f"Elapsed {time.time() - args.start_time} seconds"
         logging.info(args.current_state)
-        print(args.current_state)
     elif any(infolanes.duplicated(subset=['ID'])):
         args.current_state = \
             "--> Duplicated IDs, rename samples with unique names " +\
             "or turn on autorename option"
         logging.warning(args.current_state)
-        print(args.current_state)
+
 
     # Adding calculated params to infolanes
     meangeomeans = np.mean(infolanes['posGEOMEAN'])
@@ -927,7 +926,6 @@ def flagqc(args):
     with open(str(qc_flags_report), "a") as f:
         args.current_state = '--> Starting QC flagging:'
         logging.info(args.current_state)
-        print(args.current_state)
 
         if (
             all(_ >= args.minfov for _ in infolanes['FOV value']) and
@@ -942,14 +940,12 @@ def flagqc(args):
                 for _ in infolanes.loc[:, 'Genes below backg %'])):
             info = 'Appropiate QC values for all samples. \n'
             args.current_state = info
-            print(args.current_state)
             logging.info(args.current_state)
             f.writelines(info + '\n')
         else:
             args.current_state =\
                 'Inappropiate QC values in some samples, revise QC report'
             logging.warning(args.current_state)
-            print(args.current_state)
             for i in infolanes.index:
                 thisFOV = infolanes.at[i, 'FOV value']
                 thisBD = infolanes.at[i, 'Binding Density']
@@ -967,34 +963,34 @@ def flagqc(args):
                 if thisBD > args.maxbd or thisBD < args.minbd:
                     bdinfo = "Wrong binding density value " +\
                         f"({thisBD}) in {i}. " +\
-                        "Sample is flagged/discarded.\n"
+                        "Sample is flagged/discarded."
                     logging.warning(bdinfo)
                     f.writelines(bdinfo)
                     flagged.add(i)
                 if thisLOD:
                     lodinfo = "Wrong limit of detection value " +\
                         f"({thisLOD}) in {i}. " +\
-                        "Sample is flagged/discarded.\n"
+                        "Sample is flagged/discarded."
                     logging.warning(lodinfo)
                     f.writelines(lodinfo)
                     flagged.add(i)
                 if thisBG > this05:
                     bginfo = f"Wrong 0.5fm value ({thisBG}) in {i}. " +\
-                        "Sample is flagged/discarded.\n"
+                        "Sample is flagged/discarded."
                     logging.warning(bginfo)
                     f.writelines(bginfo)
                     flagged.add(i)
                 if thisSF > 3 or thisSF < 0.3:
                     sfinfo = "Wrong scaling factor value " +\
                         f"({thisSF}) in {i}" +\
-                        "Sample is flagged/discarded.\n"
+                        "Sample is flagged/discarded."
                     logging.warning(sfinfo)
                     f.writelines(sfinfo)
                     flagged.add(i)
                 if thisgbb > args.pbelowbackground:
                     gbbinfo = "Wrong genes below background value " +\
                         f"({thisgbb}) in {i}. " +\
-                        "Sample is flagged/discarded.\n"
+                        "Sample is flagged/discarded."
                     logging.warning(gbbinfo)
                     f.writelines(gbbinfo)
                     flagged.add(i)
@@ -1475,7 +1471,6 @@ def filterkruskal(flaggedgenes, args):
                 "Too many genes to be removed from kruskal filtering, " +\
                 "consider using another refgenes or change settings to " +\
                 "'flagkrus'."
-            print(args.current_state)
             logging.warning(args.current_state)
         else:
             if len(flaggedgenes)>=1:
@@ -1486,7 +1481,6 @@ def filterkruskal(flaggedgenes, args):
         args.current_state = \
             f"Genes not recommended as refgenes by kruskal: {flaggedgenes}."
         logging.warning(args.current_state)
-        print(args.current_state)
     pathrefgenes = args.outputfolder / 'otherfiles' / 'refgenes.csv'
     refgenes.T.to_csv(pathrefgenes, header=True, index=True)
 
@@ -1514,12 +1508,10 @@ def filterwilcox(flaggedwilcox, args):
             args.current_state = \
                 "Too many ref genes filtered by wilcox, skipping filtering." +\
                 " Consider re-designing reference/housekeeping genes."
-            print(args.current_state)
             logging.warning(args.current_state)
     elif args.filtergroupvariation == 'flagwilcox':
         args.current_state = \
             f"Genes not recommended as refgenes by wilcoxon: {flaggedwilcox}."
-        print(args.current_state)
         logging.warning(args.current_state)
     pathrefgenes = args.outputfolder / 'otherfiles' / 'refgenes.csv'
     refgenes.T.to_csv(pathrefgenes, header=True, index=True)
@@ -1827,10 +1819,11 @@ def adnormalization(df, args):
 def logarizeoutput(rnormgenes, args):
     if 'group' in rnormgenes.index:
         rnormgenes.drop('group', axis=0, inplace=True)
-    if args.logarizedoutput == '2':
-        logarizedgenes = rnormgenes.applymap(lambda x: np.log2(x))
-    if args.logarizedoutput == '10':
-        logarizedgenes = rnormgenes.applymap(lambda x: np.log10(x))
+    with np.errstate(divide = 'ignore'):
+        if args.logarizedoutput == '2':
+            logarizedgenes = rnormgenes.applymap(lambda x: np.log2(x))
+        if args.logarizedoutput == '10':
+            logarizedgenes = rnormgenes.applymap(lambda x: np.log10(x))
 
     pathlogarized = args.outputfolder / 'otherfiles' / 'logarized_rnormcounts.csv'
     logarizedgenes.to_csv(pathlogarized)
@@ -1994,6 +1987,7 @@ def argParser():
     parser.add_argument('-mr', '--manual_remove', type=bool, default=False)
     parser.add_argument('-nbl', '--nbadlanes', type=str, default='No badlanes detected')
     parser.add_argument('-bl', '--badlanes', type=set, default=set())
+    parser.add_argument('-e', '--elapsed', type=float, default=0.0)
     return parser.parse_args()
 
 
@@ -2084,17 +2078,16 @@ def plotandreport(args, whatinfolanes="rawinfolanes", rawreport=True):
         plotsca(args, infolanes)
 
     args.current_state = '--> Generating pdf report'
-    print(args.current_state)
     logging.info(args.current_state)
     pdfreport(args, rawreport=rawreport)
 
 
 def runQCview(args):
+    args.start_time = time.time()
     try:
         showinfolanes(args)
         state = 'All RCCs loaded succesfully'
         args.current_state = state
-        print(args.current_state)
         logging.info(state)
     except Exception as e:
         state = "Something went wrong loading files, check input folder. " +\
@@ -2102,26 +2095,27 @@ def runQCview(args):
         traceback.print_exception()
         args.current_state = state
         logging.error(args.current_state)
-        print(args.current_state)
         return
     try:
         plotandreport(args)
         state = "Data loaded succesfuly, preliminary analysis and plots " +\
             "ready to inspect in reports output folder"
         args.current_state = state
-        print(args.current_state)
         logging.info(state)
     except Exception as e:
         state = "Something went wrong with preliminary analysis and/or " +\
             f"plotting. Error: {e}"
         args.current_state = state
         logging.error(args.current_state)
-        print(args.current_state)
+    args.elapsed = time.time() - args.start_time
+
+    args.current_state = f"Elapsed loading RCCs {args.elapsed} seconds"
 
 
 def runQCfilterpre(args):
     """Filter the result of runQC.
     """
+    args.start_time = time.time()
     dfgenes = pd.read_csv(args.outputfolder / 'otherfiles' / 'dfgenes_raw.csv', index_col=0)
     flagged = flagqc(args)
 
@@ -2146,6 +2140,10 @@ def runQCfilterpre(args):
 
     summarizeinfolanes(args)
     plotandreport(args, whatinfolanes='infolanes', rawreport=False)
+
+    args.elapsed += time.time() - args.start_time
+    args.current_state = f"Elapsed performign QC analysis {args.elapsed} seconds"
+
 
 def html_infolanes(args, infolanes):
     infolanes = infolanes.style.applymap(
@@ -2189,31 +2187,38 @@ def runQCfilter(args):
         runQCfilterpre(args)
         args.current_state = \
             'QC filter applied, ready to perform technical normalization'
-        print(args.current_state)
         logging.info(args.current_state)
     except Exception as e:
         args.current_state =\
             "Unknown error while QC filtering, check input data and " +\
             f"parameters. Error: {e}"
         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        print(traceback.format_exc)
         logging.info(args.current_state)
 
 def pipeline1(args):
+    args.start_time = time.time()
     if args.pipeline == 'ruvgnorm' and args.deseq2_mor:
         apply_deseq2_mor(args)
     elif args.pipeline == 'scalingfactors':
         technorm(args)
+    args.elapsed += time.time() - args.start_time
+    args.current_state = f"Pre-normalization succesful. Elapsed: {args.elapsed} seconds"
+    logging.info(args.current_state)
 
 def pipeline2(args):
+    args.start_time = time.time()
     if args.pipeline == 'ruvgnorm':
         selecting_refgenes(args)
         RUVgnorm2(args)
     elif args.pipeline == 'scalingfactors':
         selecting_refgenes(args)
         contnorm(args)
+    args.elapsed += time.time() - args.start_time
+    args.current_state = f"Elapsed performing content normalization: {args.elapsed} seconds"
+    logging.info(args.current_state)
 
 def RUVgnorm2(args, center=True, round=False, epsilon=1, tolerance=1e-8, isLog=False):
+    warnings.filterwarnings("ignore", category=FutureWarning)
     gene_matrix = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
 
     refgenes = args.refgenessel
@@ -2283,21 +2288,14 @@ def technorm(args):
 
         exporttnormgenes(normgenes, args)
 
-        args.current_state = '--> Technical normalization done. Elapsed %s seconds ' + str((time.time() - args.start_time))
-        print(args.current_state)
-        logging.info(args.current_state)
 
     except Exception as e:
         args.current_state = 'Failed technical normalization'
-        print(args.current_state, e)
         logging.error(args.current_state)
 
 def selecting_refgenes(args):
 
     allhkes = getallhkes(args)
-    args.current_state = '--> Selecting refgenes. Elapsed %s seconds ' % (time.time() - args.start_time)
-    print(args.current_state)
-    logging.info(args.current_state)
     print('Housekeeping genes present in analysis: ', list(allhkes.index))
 
     selhkes = filter50chkes(allhkes, args)
@@ -2305,14 +2303,11 @@ def selecting_refgenes(args):
         selhkes = allhkes
 
         args.current_state = 'All or almost all housekeeping genes are low expressed. Consider re-design experiment. Proceeding with all hkes'
-
-        print(args.current_state)
         logging.warning(args.current_state)
     else:
         args.current_state =\
             "Housekeeping genes with more than 50 counts for all lanes: " +\
             f"{list(selhkes.index)}"
-        print(args.current_state)
         logging.info(args.current_state)
 
     try:
@@ -2321,7 +2316,6 @@ def selecting_refgenes(args):
         args.current_state =\
             "Refgenes in analysis including housekeepings + best " +\
             f"endogenous selected: {list(refgenes.index)}"
-        print(args.current_state)
         logging.info(args.current_state)
     except Exception as e:
         logging.warning(
@@ -2329,11 +2323,6 @@ def selecting_refgenes(args):
         refgenes = selhkes
 
     pathoutrefgenes(refgenes, args)
-
-    args.current_state = str(('--> Group-driven refining candidate reference genes selection through kruskal, wilcoxon and feature selection. Elapsed %s seconds ' % (
-                                             time.time() - args.start_time)))
-    print(args.current_state)
-    logging.info(args.current_state)
 
     if os.path.isfile(args.groupsfile):
         targets = pd.read_csv(args.groupsfile)
@@ -2344,7 +2333,6 @@ def selecting_refgenes(args):
     if args.groups == 'yes':
 
         args.current_state = '--> Performing kruskal-wallis analysis'
-        print(args.current_state)
         logging.info(args.current_state)
         ddf = getgroups(args)
 
@@ -2356,17 +2344,15 @@ def selecting_refgenes(args):
 
 
         args.current_state = '--> Performing wilcoxon analysis'
-        print(args.current_state)
         logging.info(args.current_state)
         reswilcopairs = calwilcopairs(*ddfc)
 
         flaggedgenes = flagkrus(reskrus)
         flaggedwilcox = flagwilcox(reswilcopairs)
+        flaggedwilcox = flagwilcox(reswilcopairs)
 
         flaggedboth = set(flaggedgenes).intersection(set(flaggedwilcox))
 
-        print(
-            f"Flagged genes by kruskal-wallis and/or wilcoxon: {flaggedboth}")
         logging.info(
             f"Flagged genes by kruskal-wallis and/or wilcoxon: {flaggedboth}")
 
@@ -2380,9 +2366,7 @@ def selecting_refgenes(args):
               f"or wilcoxon filtering: {list(refgenes.columns)}")
     elif args.groups == 'no':
         pass
-    print(
-        '--> Applying genorm to select best ranking selection of refgenes from candidate refgenes. Elapsed %s seconds ' % (
-                time.time() - args.start_time))
+
     datarefgenes = refgenes
 
     eme = measureM(datarefgenes)
@@ -2409,23 +2393,19 @@ def selecting_refgenes(args):
         if args.nrefgenes == None:
             args.current_state = 'Ref. genes selected (auto): ' + str(names)
             args.refgenessel = names
-            print(args.current_state)
         elif args.nrefgenes != None:
             args.current_state = 'Ref. genes selected (n_manual): ' + str(names)
             args.refgenessel = names
 
-            print(args.current_state)
     else:
         names = args.chooserefgenes
 
 
         args.current_state = f"Ref. genes selected (manual): {names}"
-        print(args.current_state)
     args.refgenessel = names
 
 
     print('--> Performing feature selection for refgenes evaluation and control.')
-    print(os.path.exists(args.groupsfile))
     if args.groups == 'yes' or os.path.exists(args.groupsfile):
         if len(targets.columns) > 2:
             targets = targets[['SAMPLE', 'GROUP']].copy()
@@ -2468,10 +2448,6 @@ def contnorm(args):
 
     logging.info('Starting content normalization')
 
-    # TODO Proper timing
-    print('--> Getting lane-specific normfactor and applying content ' +
-          'normalization. ' +
-          'Elapsed %s seconds ' % (time.time() - args.start_time))
     allgenes = getallgenesdf(args)
 
     names = args.refgenessel
@@ -2490,15 +2466,8 @@ def contnorm(args):
     rnormgenes = refnorm(normfactor, args)
     pathoutrnormgenes(rnormgenes, args)
 
-    # TODO Proper timing
-    print('--> Performing additional normalization. '
-          'Elapsed %s seconds ' % (time.time() - args.start_time))
     if args.adnormalization == 'standarization':
         adnormalization(rnormgenes, args)
-
-    # TODO Proper timing
-    print('--> Exporting normalization results. ' +
-          'Elapsed %s seconds ' % (time.time() - args.start_time))
 
     if args.logarizedoutput != 'no':
         rngg = logarizeoutput(rnormgenes, args)
@@ -2592,12 +2561,7 @@ def plotevalpcas(args):
 
 
 def evalnorm(args):
-    # TODO Proper timing
-    args.current_state = \
-        '--> Evaluating and plotting normalization results. ' +\
-        'Elapsed %s seconds ' + str((time.time() - args.start_time))
-    print(args.current_state)
-    logging.info(args.current_state)
+    args.start_time = time.time()
     rawcounts = pd.read_csv(args.outputfolder / 'otherfiles' / "rawcounts2.csv",
                             index_col=0)
 
@@ -2621,11 +2585,12 @@ def evalnorm(args):
 
     pdfreportnorm(args)
 
-    # TODO Proper timings
+    args.elapsed += time.time() - args.start_time
     args.current_state = '--> Finished. ' +\
-        'Elapsed %s seconds ' + str((time.time() - args.start_time))
-    print(args.current_state)
+        'Elapsed %s seconds ' + str(args.elapsed)
     logging.info(args.current_state)
+
+
 
     return (meaniqrraw, meaniqr)
 

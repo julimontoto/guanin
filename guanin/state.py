@@ -65,6 +65,7 @@ class ConfigData:
         self.deseq2_mor = True
         self.manual_remove = False
         self.badlanes = set()
+        self.elapsed = 0.0
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)

@@ -442,8 +442,6 @@ class CentralWidget(QWidget):
         self.doubleformtic1tn.setRowVisible(0, True)
 
         self.ticforaftertransformlowcounts.stateChanged.connect(self.change_ticdeseq2_mor)
-        logging.info(f'deseq2mor? {self.state.deseq2_mor}')
-        print(self.state.deseq2_mor)
 
         self.doublefortechnorm.addLayout(self.doubleformtic1tn)
 
@@ -668,6 +666,8 @@ class CentralWidget(QWidget):
         logging.debug(f"state.modeid = {self.state.modeid}")
 
     def change_showbrowserrawqc(self, checkbox):
+        ##DEBUG
+        #DUPLICATED TABS WHEN SHOWING INFO IN BROWSER
         self.state.showbrowserrawqc = (checkbox == 2)
         logging.debug(f"state.showbrowserrawqc = {self.state.showbrowserrawqc}")
 
@@ -736,7 +736,7 @@ class CentralWidget(QWidget):
 
     def changeminbd(self, value):
         ##DEBUG
-        # VER CON XABI OJO HAY COMO DOS COSAS QUE SON SELF.STATE.MINBD (CON TODAS ESTAS FUNCIONES)
+        #DUPLICATED SELF.STATE.MINBD
         self.state.change_float("minbd", value)
         self.state.minbd = float(value.replace(',', '.'))
         print(self.state.minbd)
@@ -893,7 +893,6 @@ class CentralWidget(QWidget):
         logging.debug(f"state.groupsfile = {self.state.groupsfile}")
         guanin.pipeline2(self.state)
         self.next_tab()
-        print(self.state.pipeline)
         self.parent.statusBar().showMessage(
             "Content normalization done, ready to evaluate normalization. ")
 
