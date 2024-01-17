@@ -28,7 +28,7 @@
 * [Acknowledgments](#acknowledgements)
 
 
-![Guanin Screen Shot]([img]https://i.imgur.com/Bz6Yvpd.png[/img])
+![Guanin Screen Shot](https://i.imgur.com/Bz6Yvpd.png)
 
 ## Getting started
 
