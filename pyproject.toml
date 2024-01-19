@@ -1,6 +1,6 @@
 [project]
 name = "Guanin"
-version = "1.2.6"
+version = "1.2.6.1"
 authors = [
   { name="Julián Montoto-Louzao", email="juli.mlouzao@gmail.com" },
   { name="Xabier Bello", email="xbello@gmail.com" },
@@ -41,11 +41,11 @@ guanin-gui = "guanin.gui:main"
 
 [tool.poetry]
 name = "guanin"
-version = "1.2.6"
+version = "1.2.6.1"
 description = ""
 authors = ["Julián Montoto-Louzao"]
 readme = "README.md"
-include = ["image", "icons", "examples", "reports"]
+include = ["image", "icons", "examples", "reports", "changelog.md"]
 packages = [
     {include="guanin"}
 ]
