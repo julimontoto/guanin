@@ -892,7 +892,7 @@ def pdfreportnorm(args):
 
     pdf.image(
         str(Path(__file__).parent /
-            "reports" / "images" / "qc_template_report.png"),
+            "reports" / "images" / "norm_template_report.png"),
         0,
         0,
         h=297)
@@ -1359,13 +1359,10 @@ def findrefend(args, selhkes):
         print('Most promising endogenous genes: ', bestend)
 
         refgenesnames = selhkes.index.tolist() + bestend
+        refgenes = dfgenes.loc[refgenesnames]
+        refgenes = filter50chkes(refgenes, args)
     else:
         refgenesnames = selhkes.index.tolist()
-
-    if args.refendgenes == 'endhkes':
-        refgenes = dfgenes.loc[refgenesnames]
-
-    else:
         refgenes = dfgenes.loc[selhkes.index.tolist()]
 
     return refgenes
@@ -1771,12 +1768,17 @@ def getnormfactor(refgenesdf, eme, args):
         eme2 = eme
 
         eme2['M'] = eme2['M'] * len(eme['M']) / sum(eme['M'])
-        for i in refgenesdf.index:
-            refgenesdf.loc[i] = refgenesdf.loc[i] * float(eme2.loc[i])
+        
+        for i in refgenesdf:
+            
+            a = (refgenesdf[i] * eme2['M']).sum() / eme2['M'].sum()
+            geomeans1[i] = a
 
-    for i in refgenesdf.columns:
-        igeomean = gmean(refgenesdf[i])
-        geomeans1[i] = igeomean
+    else:
+        for i in refgenesdf.columns:
+            igeomean = gmean(refgenesdf[i])
+            geomeans1[i] = igeomean
+    
     prenormfactor = np.mean(list((geomeans1.values())))
     normfactor = {}
     for i, j in geomeans1.items():
@@ -1846,7 +1848,6 @@ def RLEcal(rnormgenes, args):
 
 def getmeaniqr(rlegenes):
     iqrlist = []
-    iqrlist2 = []
     if 'group' in rlegenes.index:
         rlegenesng = rlegenes.drop('group', axis=0)
     else:
@@ -1854,15 +1855,8 @@ def getmeaniqr(rlegenes):
     for i in rlegenesng:
         iqr = stats.iqr(rlegenesng[i])
         iqrlist.append(iqr)
-    for i in rlegenesng:
-        iqr2 = stats.iqr(rlegenesng[i], rng=(10, 90))
-        iqrlist2.append(iqr2)
-    meaniqr1 = np.mean(iqrlist)
-    meaniqr2 = np.mean(iqrlist2)
-    meaniqr = np.mean([meaniqr1, meaniqr2])
-
-    meaniqr = meaniqr * 100
-
+    meaniqr = np.mean(iqrlist)
+    
     return meaniqr
 
 
