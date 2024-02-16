@@ -188,14 +188,12 @@ class CentralWidget(QWidget):
         loadtitle.setFont(headerfont)
         layload.addRow(loadtitle)
 
-
         rccfolderbutton = QPushButton('Select folder containing RCC')
         rccfolderbutton.clicked.connect(self.openselectfolder)
         layload.addRow('RCC files location folder', rccfolderbutton)
 
         self.showfoldertextbox = QLabel(str(self.state.folder))
         layload.addRow('Selected input folder: ', self.showfoldertextbox)
-
 
         csvgroupsbutton = QPushButton('Select csv file')
         csvgroupsbutton.clicked.connect(self.opencsvfile)
@@ -635,17 +633,18 @@ class CentralWidget(QWidget):
         # mainlayout.addLayout(layout1)
         self.setLayout(layout)
 
-
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.folder = pathlib.Path(folder)
-        self.showfoldertextbox.setText(folder)
-        logging.debug(f"Folder {folder} selected succesfully")
+        if folder:
+            self.state.folder = pathlib.Path(folder)
+            self.showfoldertextbox.setText(folder)
+            logging.debug(f"Folder {folder} selected succesfully")
 
     def openselectoutputfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.outputfolder = pathlib.Path(folder)
-        self.showoutputfoldertextbox.setText(folder)
+        if folder:
+            self.state.outputfolder = pathlib.Path(folder)
+            self.showoutputfoldertextbox.setText(folder)
 
     def opencsvfile(self):
         file = QFileDialog.getOpenFileName(self)
@@ -666,8 +665,7 @@ class CentralWidget(QWidget):
         logging.debug(f"state.modeid = {self.state.modeid}")
 
     def change_showbrowserrawqc(self, checkbox):
-        ##DEBUG
-        #DUPLICATED TABS WHEN SHOWING INFO IN BROWSER
+        # DEBUG: DUPLICATED TABS WHEN SHOWING INFO IN BROWSER
         self.state.showbrowserrawqc = (checkbox == 2)
         logging.debug(f"state.showbrowserrawqc = {self.state.showbrowserrawqc}")
 
@@ -735,11 +733,10 @@ class CentralWidget(QWidget):
         self.state.change_float("maxfov", value)
 
     def changeminbd(self, value):
-        ##DEBUG
-        #DUPLICATED SELF.STATE.MINBD
+        # DEBUG: DUPLICATED SELF.STATE.MINBD
         self.state.change_float("minbd", value)
         self.state.minbd = float(value.replace(',', '.'))
-        print(self.state.minbd)
+        logging.debug(f"state.minbd = {self.state.mindb}")
 
     def changemaxbd(self, value):
         self.state.change_float("maxbd", value)

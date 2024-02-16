@@ -39,21 +39,24 @@ guanin-gui = "guanin.gui:main"
 "Homepage" = "https://github.com/julimontoto/guanin"
 "Bug Tracker" = "https://github.com/julimontoto/guanin/issues"
 
+[tool.black]
+line_length=79
+
 [tool.poetry]
 name = "guanin"
 version = "1.2.7.1"
 description = ""
 authors = ["Julián Montoto-Louzao"]
 readme = "README.md"
-include = ["image", "icons", "examples", "reports", "changelog.md"]
+include = ["src", "image", "icons", "examples", "reports", "changelog.md"]
 packages = [
     {include="guanin"}
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pip = "^23.0.0"
-setuptools = "^65.5"
+pip = "^24.0.0"
+setuptools = "^69.1.0"
 numpy = "^1.23"
 pandas = "1.5.3"
 scipy = "^1.9"
