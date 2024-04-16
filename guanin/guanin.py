@@ -123,7 +123,6 @@ def loadrccs(args, start_time = 0):
             dfend = df[df["CodeClass"].isin(endvals)]
             dfhke = df[df.CodeClass =='Housekeeping']
 
-
             convert_dict = {'CodeClass': str,
                             'Name': str,
                             'Accession': str,
@@ -792,14 +791,16 @@ def plothkel(args, infolanes, dfhkecount):
     hkelplot = plt.figure()
     ax1 = hkelplot.add_subplot(111)
     number_of_plots = len(dfhkecount.columns)
-    colors = sns.color_palette("hls", number_of_plots)
+    colors = sns.color_palette("tab10", number_of_plots)
     ax1.set_prop_cycle('color', colors)
+    dfhkecount = dfhkecount[dfhkecount < bbmax/3]
     for i in dfhkecount.columns:
-        ax1.plot(dfhkecount.index, dfhkecount[i], 'o', label=i)
+        if len(dfhkecount[i].dropna()) != 0:
+            ax1.plot(dfhkecount.index, dfhkecount[i], 'o', label=i)
     plt.plot(infolanes.index, bblist, 'r')
     plt.xlabel('ID')
     plt.ylabel('counts')
-    plt.ylim(0, 2 * bbmax)
+    plt.ylim(0, bbmax/3)
     plt.legend(loc='upper left', ncol=3, mode='expand')
     plt.tick_params(
         axis='x',
@@ -918,7 +919,6 @@ def flagqc(args):
         index_col='ID')
 
     flagged = set([])
-    ### TODO ASK XABI ABOUT THIS LINE
     # (args.outputfolder / "reports" / "QCflags.txt").unlink(missing_ok=False)
 
     qc_flags_report = args.outputfolder / "reports" / "QCflags.txt"
@@ -1988,6 +1988,7 @@ def argParser():
     parser.add_argument('-nbl', '--nbadlanes', type=str, default='No badlanes detected')
     parser.add_argument('-bl', '--badlanes', type=set, default=set())
     parser.add_argument('-e', '--elapsed', type=float, default=0.0)
+    parser.add_argument('-pb', '--pcaby', type=str, default='group')
     return parser.parse_args()
 
 
@@ -2209,7 +2210,7 @@ def pipeline2(args):
     args.start_time = time.time()
     if args.pipeline == 'ruvgnorm':
         selecting_refgenes(args)
-        RUVgnorm2(args)
+        RUVg3(args)
     elif args.pipeline == 'scalingfactors':
         selecting_refgenes(args)
         contnorm(args)
@@ -2217,49 +2218,90 @@ def pipeline2(args):
     args.current_state = f"Elapsed performing content normalization: {args.elapsed} seconds"
     logging.info(args.current_state)
 
-def RUVgnorm2(args, center=True, round=False, epsilon=1, tolerance=1e-8, isLog=False):
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    gene_matrix = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
+def RUVg3(args):
+    """
+    Normalize gene expression data using the RUVg method.
 
-    refgenes = args.refgenessel
+    Args:
+        x (pandas.DataFrame): Gene expression data with genes as rows and samples as columns.
+        cIdx (list): List of gene names to be used as negative controls.
+        k (int): Number of factors of unwanted variation to be estimated.
 
+    Returns:
+        dict: A dictionary containing the following keys:
+            'W' (pandas.DataFrame): Factors of unwanted variation.
+            'normalizedCounts' (pandas.DataFrame): Normalized gene expression data.
+    """
+    x = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
+    x = x.round()
+    cIdx = args.refgenessel
     k = args.kvalue
-    drop = 0
 
-    if isLog:
-        Y = gene_matrix.T
-    else:
-        Y = gene_matrix.applymap(lambda x: math.log(x + epsilon)).T
+    # Check if input data contains counts
+    # x.values: 2D NumPy array (n_genes, n_samples)
+    if np.all(np.ceil(x.values) != x.values):
+        print("Warning: The expression matrix does not contain counts.\n"
+              "Please, pass a matrix of counts or set isLog to True to skip the log transformation")
 
-    if center:
-        Ycenter = Y.apply(lambda col: scale(col, with_mean=True, with_std=False), axis=0)
-    else:
-        Ycenter = Y
+    # Log-transform the data
+    # Y: 2D NumPy array (n_samples, n_genes)
+    Y = np.log(x.values + 1).T
 
-    if drop >= k:
-        raise ValueError("'drop' must be less than 'k'.")
+    # Center the data
+    # Ycenter: 2D NumPy array (n_samples, n_genes)
+    Ycenter = np.apply_along_axis(lambda x: (x - np.mean(x)) / np.std(x), 0, Y)
 
-    svdWau, svdWad, svdWauv = svd(Ycenter.loc[:, gene_matrix.index.isin(refgenes)], full_matrices=False)
-    first = 1 + drop
-    k = min(k, max([i for i, val in enumerate(svdWad) if val > tolerance], default=0))
-    W = svdWau[:, first-1:k]
+    # Get row indices for control genes
+    # gene_to_row: dictionary {gene_name: row_index}
+    # cIdx_rows: list of row indices for control genes
+    gene_to_row = {gene: row for row, gene in enumerate(x.index)}
+    cIdx_rows = [gene_to_row[gene] for gene in cIdx]
 
-    alpha = (W.T @ W) @ W.T @ Y
-    correctedY = np.subtract(Y, W @ alpha)
+    # Perform SVD on control genes
+    # svdWa: tuple (U, s, Vh)
+    # U: 2D NumPy array (n_control_genes, n_control_genes)
+    # s: 1D NumPy array (n_control_genes,)
+    # Vh: 2D NumPy array (n_control_genes, n_samples)
+    svdWa = np.linalg.svd(Ycenter[:, cIdx_rows], full_matrices=False)
 
+    # Determine the number of factors to use
+    # k: integer (number of factors to use)
+    k = min(k, np.max(np.where(svdWa[1] > 1e-8)) + 1)
 
-    if not isLog:
-        if round:
-            correctedY = np.exp(correctedY).subtract(epsilon).round()
-            correctedY[correctedY < 0] = 0
-        else:
-            correctedY = np.exp(correctedY).subtract(epsilon)
+    # Compute the factors of unwanted variation (W)
+    # W: 2D NumPy array (n_control_genes, k)
+    W = svdWa[0][:, 0:k]
 
-    rnormgenes = correctedY.T
+    # Compute the coefficients (alpha)
+    # alpha: 2D NumPy array (n_genes, k)
+    alpha = np.linalg.solve(W.T @ W, W.T @ Y)
+
+    # Normalize the data
+    # correctedY: 2D NumPy array (n_samples, n_genes)
+    correctedY = Y - W @ alpha
+
+    # Round the normalized data to obtain pseudo-counts
+    # correctedY: 2D NumPy array (n_samples, n_genes)
+    correctedY = np.round(np.exp(correctedY) - 1)
+    correctedY[correctedY < 0] = 0
+
+    # Create a DataFrame for W with gene names as row labels
+    # W: pandas DataFrame (n_samples, k)
+    colnames = ["W_" + str(i + 1) for i in range(W.shape[1])]
+    W = pd.DataFrame(W, columns=colnames, index=x.columns)
+
+    # Create a DataFrame for normalized counts with gene names as row labels and sample names as column labels
+    # rnormgenes: pandas DataFrame (n_genes, n_samples)
+    rnormgenes = pd.DataFrame(correctedY.T, columns=x.columns, index=x.index)
+
     rngg = logarizeoutput(rnormgenes, args)
     rngg.to_csv(args.outputfolder / 'otherfiles' / 'rngg.csv', index=True)
     exportdfgenes(rnormgenes, args)
     pathoutrnormgenes(rnormgenes, args)
+
+    ## TO DO EXPORT W FOR LATER ANALYSIS
+    return {"W": W, "normalizedCounts": rnormgenes}
+
 
 def technorm(args):
     dfgenes = pd.read_csv(args.outputfolder / 'otherfiles' / 'dfgenes_qc.csv', index_col=0)
@@ -2501,7 +2543,7 @@ def plotpcaraw(df, group, args):
 
     conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
 
-    if 'BATCH' in conditions.columns:
+    if args.pcaby == 'batch':
         group = 'BATCH'
     else:
         group = group
@@ -2535,6 +2577,11 @@ def plotpcanorm(df, group, args):
     )
 
     conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
+
+    if args.pcaby == 'batch':
+        group = 'BATCH'
+    else:
+        group = group
 
     a = pd.merge(pca_df, conditions, left_index=True, right_index=True)
     custom_palette = sns.mpl_palette("turbo", n_colors=len(a[group].unique()))

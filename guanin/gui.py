@@ -562,9 +562,15 @@ class CentralWidget(QWidget):
         runevalbutton.setIcon(QIcon(str(imgs_path / "logoguanin_96x96.png")))
         runevalbutton.clicked.connect(self.runeval)
 
+        selectpcaby = QComboBox()
+        selectpcaby.addItem('Group')
+        selectpcaby.addItem('Batch')
+        selectpcaby.currentIndexChanged.connect(self.change_selectpcaby)
+
+        doubleforeval.addWidget(selectpcaby)
         doubleforeval.addWidget(runevalbutton)
 
-        self.layeval.addRow(doubleforeval)
+        self.layeval.addRow('Show PCA by: ', doubleforeval)
 
         doubleforevaltext = QHBoxLayout()
         self.labeltext1 = QLabel('Raw RLE plot')
@@ -951,6 +957,13 @@ class CentralWidget(QWidget):
     def change_scaling_factor(self, index):
         self.state.tecnormeth = self.list_scaf_tecnormeth[index]
         print(self.state.tecnormeth)
+
+    def change_selectpcaby(self, checkbox):
+        if checkbox == 0:
+            self.state.pcaby = 'group'
+        elif checkbox == 1:
+            self.state.pcaby = 'batch'
+
 
 class logger(logging.Handler):
     def __init__(self, parent):

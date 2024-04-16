@@ -62,10 +62,11 @@ class ConfigData:
         self.whatrefgenes = []
         self.eme = None
         self.grouppca = 'GROUP'
-        self.deseq2_mor = True
+        self.deseq2_mor = False
         self.manual_remove = False
         self.badlanes = set()
         self.elapsed = 0.0
+        self.pcaby = 'group'
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)
