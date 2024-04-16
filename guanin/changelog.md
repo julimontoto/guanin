@@ -1,5 +1,17 @@
 # Change Log
  
+## [1.2.7] - 2024-01-19
+Stable version
+
+### Changed
+ - GUI text to become more clear
+
+### Fixed
+- Install in Windows/Mac/Linux working properly in Python >3.9 (3.12.1 still might arise some dependencies problems)
+- Proper template for normalization report
+- 50 counts filter applies now to housekeeping and endogenous genes
+- Ponderated mean calculation from refgenes for content normalization scaling factor
+
 ## [1.2.6] - 2024-01-19
 Stable version
 ### Added

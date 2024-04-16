@@ -1,6 +1,6 @@
 [project]
 name = "Guanin"
-version = "1.2.6.1"
+version = "1.2.6.2"
 authors = [
   { name="Julián Montoto-Louzao", email="juli.mlouzao@gmail.com" },
   { name="Xabier Bello", email="xbello@gmail.com" },
@@ -11,7 +11,7 @@ dependencies = [
     "matplotlib>=3.7.0",
     "mlxtend>=0.22.0",
     "numpy>=1.25.0",
-    "pandas>=2.0",
+    "pandas==1.5.3",
     "scipy>=1.11.0",
     "scikit-learn>=1.3.0",
     "seaborn>=0.12.0",
@@ -39,23 +39,26 @@ guanin-gui = "guanin.gui:main"
 "Homepage" = "https://github.com/julimontoto/guanin"
 "Bug Tracker" = "https://github.com/julimontoto/guanin/issues"
 
+[tool.black]
+line_length=79
+
 [tool.poetry]
 name = "guanin"
-version = "1.2.6.1"
+version = "1.2.7.1"
 description = ""
 authors = ["Julián Montoto-Louzao"]
 readme = "README.md"
-include = ["image", "icons", "examples", "reports", "changelog.md"]
+include = ["src", "image", "icons", "examples", "reports", "changelog.md"]
 packages = [
     {include="guanin"}
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pip = "^23.0.0"
-setuptools = "^65.5"
+pip = "^24.0.0"
+setuptools = "^69.1.0"
 numpy = "^1.23"
-pandas = "^1.5"
+pandas = "1.5.3"
 scipy = "^1.9"
 ergene = "^1.2"
 fpdf = "^1.7"
@@ -66,7 +69,7 @@ PyQt6-Qt6 = "^6.4"
 PyQt6-sip = "^13.4"
 PyQt6 = "^6.4"
 jinja2 = "^3.0"
-matplotlib = "3.7"
+matplotlib = "^3.7"
 pydeseq2 = "0.4.3"
 
 [tool.poetry.scripts]

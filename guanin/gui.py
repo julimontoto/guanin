@@ -188,18 +188,16 @@ class CentralWidget(QWidget):
         loadtitle.setFont(headerfont)
         layload.addRow(loadtitle)
 
-
         rccfolderbutton = QPushButton('Select folder containing RCC')
         rccfolderbutton.clicked.connect(self.openselectfolder)
-        layload.addRow('Select RCC files', rccfolderbutton)
+        layload.addRow('RCC files location folder', rccfolderbutton)
 
         self.showfoldertextbox = QLabel(str(self.state.folder))
         layload.addRow('Selected input folder: ', self.showfoldertextbox)
 
-
         csvgroupsbutton = QPushButton('Select csv file')
         csvgroupsbutton.clicked.connect(self.opencsvfile)
-        layload.addRow('Select groups file', csvgroupsbutton)
+        layload.addRow('Groups file location', csvgroupsbutton)
 
         self.showfiletextbox = QLabel(str(self.state.groupsfile))
         layload.addRow('Selected groups file: ', self.showfiletextbox)
@@ -213,7 +211,7 @@ class CentralWidget(QWidget):
 
         outputfolderbutton = QPushButton('Select folder to generate output')
         outputfolderbutton.clicked.connect(self.openselectoutputfolder)
-        layload.addRow('Select output folder', outputfolderbutton)
+        layload.addRow('Output folder location', outputfolderbutton)
 
         self.showoutputfoldertextbox = QLabel(str(self.state.outputfolder))
 
@@ -254,7 +252,7 @@ class CentralWidget(QWidget):
         qctitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         qctitle.setFont(headerfont)
         layqc.addRow(qctitle)
-        layqc.addRow('Choose background', backgroundbutton)
+        layqc.addRow('Background calculation method', backgroundbutton)
 
         manualbackground = QSpinBox()
         manualbackground.valueChanged.connect(self.changingmanualbackground)
@@ -266,7 +264,7 @@ class CentralWidget(QWidget):
         backgroundcorrection.addItem('Skip background correction')
         backgroundcorrection.currentIndexChanged.connect(self.changingbackgroundcorrection)
 
-        layqc.addRow('Background correction (low counts)', backgroundcorrection)
+        layqc.addRow('Background correction method (low counts)', backgroundcorrection)
 
         removelanes = QSpinBox()
         removelanes.setValue(80)
@@ -364,7 +362,7 @@ class CentralWidget(QWidget):
         sampleremovercombobox.addItem('Keep all samples, only flag bad samples')
         sampleremovercombobox.addItem('Remove manually selected samples')
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
-        layqc.addRow('Remove bad samples?', sampleremovercombobox)
+        layqc.addRow('Method to remove low QC samples ', sampleremovercombobox)
 
         manualremoveselection = QLineEdit()
         manualremoveselection.textChanged.connect(self.changemanualremoveinput)
@@ -469,7 +467,7 @@ class CentralWidget(QWidget):
         filhousekeepingsmincounts.setMaximum(1000)
         filhousekeepingsmincounts.textChanged.connect(
             self.change_filhousekeepingmincounts)
-        self.laycnorm.addRow('Filter housekeeping panel genes by min counts',
+        self.laycnorm.addRow('Min counts for housekeeping genes (all lanes) to not be filtered out of the analysis',
                         filhousekeepingsmincounts)
 
         includeerg = QCheckBox()
@@ -482,7 +480,7 @@ class CentralWidget(QWidget):
         howmanyergs.setValue(6)
         howmanyergs.setMaximum(999)
         howmanyergs.textChanged.connect(self.change_howmanyergs)
-        self.laycnorm.addRow('How many best endogenous genes to include', howmanyergs)
+        self.laycnorm.addRow('Number of top endogenous genes to include', howmanyergs)
 
         whatrefgenestouse = QComboBox()
         whatrefgenestouse.addItem('Genorm auto selection (default)')
@@ -493,13 +491,13 @@ class CentralWidget(QWidget):
         whatrefgenestouse.addItem('Manual selection of genes')
         whatrefgenestouse.currentIndexChanged.connect(self.change_contnormmethod)
 
-        self.laycnorm.addRow('What reference genes selection to use?', whatrefgenestouse)
+        self.laycnorm.addRow('Reference genes selection method', whatrefgenestouse)
 
         inputngenes = QSpinBox()
         inputngenes.setValue(6)
         inputngenes.setMaximum(50000)
         inputngenes.textChanged.connect(self.change_nrefgenes)
-        self.laycnorm.addRow('If n genes to be set from last option: ', inputngenes)
+        self.laycnorm.addRow('Number of reference genes (if  is selected from last option)', inputngenes)
 
         inputrefgenesline = QLineEdit()
         inputrefgenesline.textChanged.connect(self.change_inputnamesrefgenes)
@@ -641,17 +639,18 @@ class CentralWidget(QWidget):
         # mainlayout.addLayout(layout1)
         self.setLayout(layout)
 
-
     def openselectfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.folder = pathlib.Path(folder)
-        self.showfoldertextbox.setText(folder)
-        logging.debug(f"Folder {folder} selected succesfully")
+        if folder:
+            self.state.folder = pathlib.Path(folder)
+            self.showfoldertextbox.setText(folder)
+            logging.debug(f"Folder {folder} selected succesfully")
 
     def openselectoutputfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        self.state.outputfolder = pathlib.Path(folder)
-        self.showoutputfoldertextbox.setText(folder)
+        if folder:
+            self.state.outputfolder = pathlib.Path(folder)
+            self.showoutputfoldertextbox.setText(folder)
 
     def opencsvfile(self):
         file = QFileDialog.getOpenFileName(self)
@@ -672,8 +671,7 @@ class CentralWidget(QWidget):
         logging.debug(f"state.modeid = {self.state.modeid}")
 
     def change_showbrowserrawqc(self, checkbox):
-        ##DEBUG
-        #DUPLICATED TABS WHEN SHOWING INFO IN BROWSER
+        # DEBUG: DUPLICATED TABS WHEN SHOWING INFO IN BROWSER
         self.state.showbrowserrawqc = (checkbox == 2)
         logging.debug(f"state.showbrowserrawqc = {self.state.showbrowserrawqc}")
 
@@ -741,11 +739,10 @@ class CentralWidget(QWidget):
         self.state.change_float("maxfov", value)
 
     def changeminbd(self, value):
-        ##DEBUG
-        #DUPLICATED SELF.STATE.MINBD
+        # DEBUG: DUPLICATED SELF.STATE.MINBD
         self.state.change_float("minbd", value)
         self.state.minbd = float(value.replace(',', '.'))
-        print(self.state.minbd)
+        logging.debug(f"state.minbd = {self.state.mindb}")
 
     def changemaxbd(self, value):
         self.state.change_float("maxbd", value)

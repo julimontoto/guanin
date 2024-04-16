@@ -82,7 +82,7 @@ Assuming python ^3.9 is installed.
 ### Windows
 
 Install python3 and pip.
-Visual Studio Build Tools 14+ required.
+Visual Studio Build Tools 14+ might be required.
 
 > pip install guanin
 
