@@ -694,7 +694,8 @@ def plotfovvalue(args, infolanes):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "fovplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "fovplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "fovplot.svg"))
     plt.close()
 
 
@@ -716,7 +717,8 @@ def plotbd(args, infolanes):
     )
     plt.legend()
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "bdplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "bdplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "bdplot.svg"))
     plt.close()
 
 
@@ -735,7 +737,8 @@ def plotgenbackground(args, infolanes):
     plt.xlabel("ID")
     plt.ylabel("genes")
     plt.title("Genes above background")
-    plt.savefig(str(args.outputfolder / "images" / "genbackground.png"))
+    plt.savefig(str(args.outputfolder / "images" / "genbackground.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "genbackground.svg"))
     plt.close()
 
 
@@ -759,7 +762,8 @@ def plotld(args, infolanes):
     plt.ylabel("0,5 fm")
     plt.legend()
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "ldplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "ldplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "ldplot_hq.svg"))
     plt.close()
 
 
@@ -789,7 +793,8 @@ def plotocn(args, infolanes, dfnegcount):
     plt.ylabel("counts")
     plt.legend(loc="lower right", ncol=4, mode="expand")
     plt.title("Outliers in neg_controls")
-    plt.savefig(str(args.outputfolder / "images" / "ocnplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "ocnplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "ocnplot.svg"))
     plt.close()
 
 
@@ -832,7 +837,9 @@ def plotlin(args, infolanes):
     plt.ylabel("genes")
     plt.xticks(rotation=45)
     plt.title("Linearity and genes above background")
-    plt.savefig(str(args.outputfolder / "images" / "linplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "linplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "linplot.svg"))
+    plt.savefig(str(args.outputfolder / "images" / "linplot.svg"))
     plt.close()
 
 
@@ -848,7 +855,8 @@ def plothke(args, infolanes, dfhkecount):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.title("Housekeeping genes")
-    plt.savefig(str(args.outputfolder / "images" / "hkeplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "hkeplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "hkeplot.svg"))
     plt.close()
 
 
@@ -880,7 +888,8 @@ def plothkel(args, infolanes, dfhkecount):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.title("Housekeeping genes close to background")
-    plt.savefig(str(args.outputfolder / "images" / "hkelplot.png"))
+    plt.savefig(str(args.outputfolder / "images" / "hkelplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "hkelplot.svg"))
     plt.close()
 
 
@@ -911,7 +920,8 @@ def plotsca(args, infolanes):
     plt.xlabel("samples")
     plt.ylabel("scaling factor")
     plt.title("scaling factor")
-    plt.savefig(args.outputfolder / "images" / "scaplot.png")
+    plt.savefig(args.outputfolder / "images" / "scaplot.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "scaplot_hq.svg")
     plt.close()
 
 
@@ -1756,7 +1766,8 @@ def ploteme(eme, args):
     plt.ylabel("measured M")
     plt.xticks(rotation=45)
     plt.title("measure M")
-    plt.savefig(args.outputfolder / "images" / "eme.png")
+    plt.savefig(args.outputfolder / "images" / "eme.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "eme.svg")
     plt.close()
 
 
@@ -1768,7 +1779,8 @@ def plotavgm(genorm, args):
     plt.ylabel("Avg. M")
     plt.xticks(rotation=45)
     plt.title("Genorm result")
-    plt.savefig(args.outputfolder / "images" / "avgm.png")
+    plt.savefig(args.outputfolder / "images" / "avgm.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "avgm.svg")
     plt.close()
 
 
@@ -1780,7 +1792,8 @@ def plotuve(uve, args):
     plt.ylabel("pairwise variation")
     plt.xticks(rotation=45)
     plt.title("Pairwise variation")
-    plt.savefig(args.outputfolder / "images" / "uve.png")
+    plt.savefig(args.outputfolder / "images" / "uve.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "uve.svg")
     plt.close()
 
 
@@ -2025,7 +2038,8 @@ def plotevalnorm(matrix, what, meaniqr, args):
     plt.ylabel("RLE", fontsize=36)
     plt.xlabel("Samples", fontsize=40)
     sns.stripplot(data=matrix, size=2, palette="dark:black")
-    plt.savefig(args.outputfolder / "images" / "rlenormplot.png")
+    plt.savefig(args.outputfolder / "images" / "rlenormplot.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "rlenormplot.svg")
     plt.savefig(args.outputfolder / "images" / "rlenormplot2.png", dpi=17)
     plt.close()
 
@@ -2057,7 +2071,8 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     plt.ylim(-1, 1)
     sns.stripplot(data=matrix, size=2, palette="dark:black")
 
-    plt.savefig(args.outputfolder / "images" / "rlerawplot.png")
+    plt.savefig(args.outputfolder / "images" / "rlerawplot.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "rlerawplot.svg")
     plt.savefig(args.outputfolder / "images" / "rlerawplot2.png", dpi=17)
     plt.close()
 
@@ -2727,7 +2742,8 @@ def plotpcaraw(df, group, args):
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA raw counts")
-    plt.savefig(args.outputfolder / "images" / "pcaraw.png")
+    plt.savefig(args.outputfolder / "images" / "pcaraw.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "pcaraw.svg")
     plt.savefig(args.outputfolder / "images" / "pcaraw2.png", dpi=80)
     plt.close()
 
@@ -2774,7 +2790,8 @@ def plotpcanorm(df, group, args):
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA normalized counts")
-    plt.savefig(args.outputfolder / "images" / "pcanorm.png")
+    plt.savefig(args.outputfolder / "images" / "pcanorm.png", dpi=180)
+    plt.savefig(args.outputfolder / "images" / "pcanorm.svg")
     plt.savefig(args.outputfolder / "images" / "pcanorm2.png", dpi=80)
     plt.close()
 
