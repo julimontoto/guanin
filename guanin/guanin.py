@@ -114,17 +114,21 @@ def loadrccs(args, start_time=0):
         "0,5fm",
     ]
     infolanes = pd.DataFrame(columns=columns)
+    infolig = pd.DataFrame(columns=['ID', 'posgeomean', 'min_poslig', 'max_neglig'])
 
     dfgenes = pd.DataFrame()  # counts
     dfposneg = {}  # posnegs
 
     geomeans = []
     logconc = [7, 5, 3, 1, -1]
+    ligposgeomeans = []
 
     dfnegcount = pd.DataFrame()
     negnames = []
     dfhkecount = pd.DataFrame()
     hkenames = []
+
+    dfligcount = pd.DataFrame()
 
     a = 0
     for file in os.listdir(getfolderpath(args.folder)):
@@ -135,7 +139,10 @@ def loadrccs(args, start_time=0):
                 (getfolderpath(args.folder) / file),
                 names=["CodeClass", "Name", "Accession", "Count"],
             )
+
             df = df.dropna()
+            df["Count"] = pd.to_numeric(df["Count"], errors='coerce')
+            df["Count"].replace([0, 0.0], 1, inplace=True)
 
             # Separate dataframe for gene class
             posvals = ["Positive", "Positive1", "Positive2"]
@@ -213,7 +220,6 @@ def loadrccs(args, start_time=0):
             topneg = 3 * (np.mean(dfneg["Count"]))
 
             dfnegin = dfneg[dfneg.Count <= topneg]
-
             background = (np.mean(dfnegin.Count)) + 2 * (np.std(dfnegin.Count))
             thislane.append(background)
 
@@ -241,6 +247,35 @@ def loadrccs(args, start_time=0):
             for i in hkes:
                 rowhkes.append(i)
             dfhkecount[id1] = rowhkes
+
+            if df['CodeClass'].isin(['Ligation']).any():
+                args.miRNAassay = True
+                ligvals = ['Ligation']
+                dflig = df[df['CodeClass'].isin(ligvals)]
+
+                thisligs = []
+                thisligs.append(id1)
+
+                poslignames = ['LIG_POS_A', 'LIG_POS_B', 'LIG_POS_C']
+                dfposlig = dflig[dflig["Name"].isin(poslignames)]
+                ligposgeomean = gmean(dfposlig.Count)
+                ligposgeomeans.append(ligposgeomean)
+                thisligs.append(ligposgeomean)
+
+                minposlig = min(dfposlig.Count)
+                thisligs.append(minposlig)
+
+                neglignames = ['LIG_NEG_A', 'LIG_NEG_B', 'LIG_NEG_C']
+                dfneglig = dflig[dflig["Name"].isin(neglignames)]
+                maxneglig = max(dfneglig.Count)
+                thisligs.append(maxneglig)
+
+                infolig.loc[a] = thisligs
+
+                if a == 0:
+                    dfligcount.index = dflig["Name"]
+
+                dfligcount[id1] = list(dflig["Count"])
 
             dfin = dff[dff.Count >= background]
             dfout = dff[dff.Count < background]
@@ -297,7 +332,10 @@ def loadrccs(args, start_time=0):
 
             # log2 counts
             for i in thiscountnolow:
-                thislog = math.log(i, 2)
+                if i != 0:
+                    thislog = math.log(i, 2)
+                elif i == 0:
+                    thislog = 0
                 thislogsconc.append(thislog)
 
             # r2 score calculation
@@ -344,9 +382,22 @@ def loadrccs(args, start_time=0):
     infolanes["manual background"] = manualbglist
 
     for i in infolanes["posGEOMEAN"]:
+        if i == 0:
+            i = 0.001
         scaling = meangeomeans / i
         scalingf.append(scaling)
     infolanes["scaling factor"] = scalingf
+
+    if args.miRNAassay:
+        meanposliggeomeans = np.mean(infolig["posgeomean"])
+        ligscalingfactor = []
+        for i in infolig["posgeomean"]:
+            scalinglig = meanposliggeomeans / i
+            ligscalingfactor.append(scalinglig)
+
+        infolig['lig_scalingfactor'] = ligscalingfactor
+        pathinfolig = args.outputfolder / "info" / "infolig.csv"
+        infolig.to_csv(pathinfolig, index=False)
 
     dfnegcount = dfnegcount.T
     negnames.append("maxoutlier")
@@ -354,6 +405,11 @@ def loadrccs(args, start_time=0):
 
     dfhkecount = dfhkecount.T
     dfhkecount.columns = hkenames
+
+    if args.miRNAassay:
+        dfligcount = dfligcount.T
+        pathdfligcount = args.outputfolder / "otherfiles" / "dflig.csv"
+        dfligcount.to_csv(pathdfligcount, index=True)
 
     infolanes.set_index("ID", inplace=True)
     dfgenes.drop("Name", axis=1, inplace=True)
@@ -452,6 +508,8 @@ def condformat(
     elif top * 1.15 >= val >= bot * 0.85:
         color = colorreg
     elif (bot * 0.85 > val) | (val > top * 1.15):
+        color = colormal
+    else:
         color = colormal
 
     return f"background-color: {color}"
@@ -1503,6 +1561,10 @@ def pathoutrefgenes(refgenes, args):
     pathrefgenes = args.outputfolder / "otherfiles" / "refgenes.csv"
     refgenes.to_csv(pathrefgenes, header=True, index=True)
 
+def pathoutw(W, args):
+    path_w = args.outputfolder / "otherfiles" / "W.csv"
+    W.to_csv(path_w, header=True, index=True)
+
 
 def getgroups(args):
     refgenes = pd.read_csv(
@@ -2132,6 +2194,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     parser.add_argument('-bl', '--badlanes', type=set, default=set())
     parser.add_argument('-e', '--elapsed', type=float, default=0.0)
     parser.add_argument('-pb', '--pcaby', type=str, default='group')
+    parser.add_argument('-miR', '--miRNAassay', type=bool, default=False)
     return parser.parse_args()
 
 
@@ -2139,9 +2202,9 @@ def plotevalraw(matrix, what, meaniqrraw, args):
 def showinfolanes(args):
     """Load RCCS and show infolanes."""
 
+    createoutputfolder(args)
     infolanes, dfgenes, dfnegcount, dfhkecount, dfposneg = loadrccs(args)
 
-    createoutputfolder(args)
     exportrawcounts(dfgenes, args)
 
     dfgenes2 = dfgenes.drop(["CodeClass", "Accession"], axis=1)
@@ -2343,7 +2406,7 @@ def runQCfilter(args):
 
 def pipeline1(args):
     args.start_time = time.time()
-    if args.pipeline == "ruvgnorm" and args.deseq2_mor:
+    if args.pipeline == "ruvgnorm":
         apply_deseq2_mor(args)
     elif args.pipeline == "scalingfactors":
         technorm(args)
@@ -2414,6 +2477,7 @@ def RUVgnorm2(
     # gene_to_row: dictionary {gene_name: row_index}
     # cIdx_rows: list of row indices for control genes
     gene_to_row = {gene: row for row, gene in enumerate(x.index)}
+    print(cIdx)
     cIdx_rows = [gene_to_row[gene] for gene in cIdx]
 
     # Perform SVD on control genes
@@ -2457,8 +2521,8 @@ def RUVgnorm2(
     rngg.to_csv(args.outputfolder / "otherfiles" / "rngg.csv", index=True)
     exportdfgenes(rnormgenes, args)
     pathoutrnormgenes(rnormgenes, args)
+    pathoutw(W, args)
 
-    ## TO DO EXPORT W FOR LATER ANALYSIS
     return {"W": W, "normalizedCounts": rnormgenes}
 
 
@@ -2558,7 +2622,6 @@ def selecting_refgenes(args):
 
         flaggedgenes = flagkrus(reskrus)
         flaggedwilcox = flagwilcox(reswilcopairs)
-        flaggedwilcox = flagwilcox(reswilcopairs)
 
         flaggedboth = set(flaggedgenes).intersection(set(flaggedwilcox))
 
@@ -2576,6 +2639,8 @@ def selecting_refgenes(args):
             "Ref genes present in analysis after applying kruskal-wallis "
             + f"or wilcoxon filtering: {list(refgenes.columns)}"
         )
+    else:
+        refgenes = refgenes.T
 
     datarefgenes = refgenes
 
@@ -2595,10 +2660,9 @@ def selecting_refgenes(args):
 
     args.current_state = "--> Calculating optimal number of reference genes"
     logging.info(args.current_state)
-
+    print(args.chooserefgenes)
     if args.chooserefgenes is None:
         names = getnamesrefgenes(uve, genorm, args)
-
         if args.nrefgenes is None:
             args.current_state = f"Ref. genes selected (auto): {names}"
             args.refgenessel = names
@@ -2694,7 +2758,10 @@ def apply_deseq2_mor(args):
     dfgenes = pd.read_csv(
         args.outputfolder / "otherfiles" / "dfgenes_qc.csv", index_col=0
     )
-    counts, sizefactors = deseq2_norm(dfgenes)
+    if args.deseq2_mor:
+        counts, sizefactors = deseq2_norm(dfgenes)
+    else:
+        counts = dfgenes
     exporttnormgenes(counts, args)
     exportdfgenes(counts, args)
 
@@ -2713,9 +2780,8 @@ def plotpcaraw(df, group, args):
         index=df.T.index,
         columns=["PC1", "PC2"],
     )
-
-    conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
-
+    if args.groups == 'yes':
+        conditions = pd.read_csv(args.groupsfile, header=0, index_col=0)
 
     if args.pcaby == 'batch':
         group = 'BATCH'
@@ -2837,7 +2903,8 @@ def evalnorm(args):
     plotevalnorm(rnormcounts, "Fully normalized counts", meaniqr, args)
     logging.info("Plotted normalized plots")
 
-    plotevalpcas(args)
+    if args.groups == 'yes':
+        plotevalpcas(args)
 
     pdfreportnorm(args)
 

@@ -67,6 +67,7 @@ class ConfigData:
         self.badlanes = set()
         self.elapsed = 0.0
         self.pcaby = 'group'
+        self.miRNAassay = False
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)

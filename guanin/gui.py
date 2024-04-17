@@ -901,7 +901,7 @@ class CentralWidget(QWidget):
 
     def runeval(self):
         self.parent.statusBar().showMessage(
-            'Performing evaluation, plotting RLE...')
+            'Performing evaluation, plotting RLE... (Generating plots and reports, it might take a while)')
         self.parent.statusBar().repaint()
         self.next_tab()
         (rawiqr, normiqr) = guanin.evalnorm(self.state)
