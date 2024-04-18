@@ -1065,6 +1065,10 @@ def flagqc(args):
     infolanes = pd.read_csv(
         args.outputfolder / "info" / "rawinfolanes.csv", index_col="ID"
     )
+    if args.miRNAassay:
+        infolig = pd.read_csv(
+        args.outputfolder / "info" / "infolig.csv", index_col="ID"
+    )
 
     flagged = set([])
     # This line REMOVES the file QCflags.txt if it exists from previous runs.
@@ -1097,6 +1101,25 @@ def flagqc(args):
                 _ <= args.pbelowbackground
                 for _ in infolanes.loc[:, "Genes below backg %"]
             )
+            and ((not args.miRNAassay) or ((args.miRNAassay) and all(
+                args.maxscalingfactor > float(_) > args.minscalingfactor
+                for _ in infolig.loc[:, "lig_scalingfactor"]
+            )
+            and all(
+                i >= j
+                for i, j in zip(
+                    infolanes.loc[:, "Background"], infolig.loc[:, "max_neglig"]
+                )
+            )
+            and (args.posligqc == 'no') or (all(
+                i <= j
+                for i, j in zip(
+                    infolanes.loc[:, "Background"], infolig.loc[:, args.posligqc]
+                )
+            )
+
+            ))
+        )
         ):
             info = "Appropiate QC values for all samples. \n"
             args.current_state = info
@@ -1115,6 +1138,44 @@ def flagqc(args):
                 this05 = infolanes.at[i, "0,5fm"]
                 thisSF = infolanes.at[i, "scaling factor"]
                 thisgbb = infolanes.at[i, "Genes below backg %"]
+
+                if args.miRNAassay:
+                    thisligscaf = infolig.at[i, 'lig_scalingfactor']
+                    if args.posligqc != 'no':
+                        thisposligqc = infolig.at[i, args.posligqc]
+                    if args.negligqc != 'no':
+                        thisnegligqc = infolig.at[i, args.negligqc]
+
+                    if thisligscaf > 3 or thisligscaf < 0.3:
+                        slfinfo = (
+                                "Wrong ligation scaling factor value "
+                                + f"({thisligscaf}) in {i}. "
+                                + "Sample is flagged/discarded."
+                        )
+                        logging.warning(slfinfo)
+                        f.writelines(slfinfo)
+                        flagged.add(i)
+
+                    if thisposligqc < thisBG:
+                        splfinfo = (
+                                "Low positive ligation control value "
+                                + f"({thisposligqc}) in {i}. "
+                                + "Sample is flagged/discarded."
+                        )
+                        logging.warning(splfinfo)
+                        f.writelines(splfinfo)
+                        flagged.add(i)
+
+                    if thisnegligqc > thisBG:
+                        snlfinfo = (
+                                "High negative ligation control value "
+                                + f"({thisnegligqc}) in {i}. "
+                                + "Sample is flagged/discarded."
+                        )
+                        logging.warning(snlfinfo)
+                        f.writelines(snlfinfo)
+                        flagged.add(i)
+
                 if thisFOV < args.minfov:
                     fovinfo = (
                         f"Low FOV value ({thisFOV}) in {i}. "
@@ -1152,7 +1213,7 @@ def flagqc(args):
                 if thisSF > 3 or thisSF < 0.3:
                     sfinfo = (
                         "Wrong scaling factor value "
-                        + f"({thisSF}) in {i}"
+                        + f"({thisSF}) in {i}. "
                         + "Sample is flagged/discarded."
                     )
                     logging.warning(sfinfo)
@@ -2195,6 +2256,9 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     parser.add_argument('-e', '--elapsed', type=float, default=0.0)
     parser.add_argument('-pb', '--pcaby', type=str, default='group')
     parser.add_argument('-miR', '--miRNAassay', type=bool, default=False)
+    parser.add_argument('-ls', '--apply_ligscaf', type=bool, default=False)
+    parser.add_argument('-plq', '--posligqc', type=str, default='min_neglig')
+    parser.add_argument('-nlq', '--negligqc', type=str, default='max_neglig')
     return parser.parse_args()
 
 

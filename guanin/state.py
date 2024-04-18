@@ -68,6 +68,9 @@ class ConfigData:
         self.elapsed = 0.0
         self.pcaby = 'group'
         self.miRNAassay = False
+        self.apply_ligscaf = False
+        self.posligqc = 'min_poslig'
+        self.negligqc = 'max_neglig'
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)

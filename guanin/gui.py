@@ -239,7 +239,7 @@ class CentralWidget(QWidget):
 
         self.tabs.addTab(bigtabload, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Loading data')
 
-        layqc = QFormLayout()
+        self.layqc = QFormLayout()
         backgroundbutton = QComboBox()
         backgroundbutton.addItem('Mean+2std of neg ctrls')
         backgroundbutton.addItem('Max of neg controls')
@@ -251,12 +251,12 @@ class CentralWidget(QWidget):
         qctitle = QLabel('- Quality Control parameters -')
         qctitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         qctitle.setFont(headerfont)
-        layqc.addRow(qctitle)
-        layqc.addRow('Background calculation method', backgroundbutton)
+        self.layqc.addRow(qctitle)
+        self.layqc.addRow('Background calculation method', backgroundbutton)
 
         manualbackground = QSpinBox()
         manualbackground.valueChanged.connect(self.changingmanualbackground)
-        layqc.addRow('Set manual background', manualbackground)
+        self.layqc.addRow('Set manual background', manualbackground)
 
         backgroundcorrection = QComboBox()
         backgroundcorrection.addItem('Subtract background value')
@@ -264,14 +264,14 @@ class CentralWidget(QWidget):
         backgroundcorrection.addItem('Skip background correction')
         backgroundcorrection.currentIndexChanged.connect(self.changingbackgroundcorrection)
 
-        layqc.addRow('Background correction method (low counts)', backgroundcorrection)
+        self.layqc.addRow('Background correction method (low counts)', backgroundcorrection)
 
         removelanes = QSpinBox()
         removelanes.setValue(80)
         removelanes.setMinimum(0)
         removelanes.setMaximum(100)
         removelanes.valueChanged.connect(self.changingpbelowbackground)
-        layqc.addRow('% of low counts for lane remove', removelanes)
+        self.layqc.addRow('% of low counts for lane remove', removelanes)
 
 
         doubleforfov = QHBoxLayout()
@@ -292,7 +292,7 @@ class CentralWidget(QWidget):
 
         doubleforfov.addLayout(minfovlay)
         doubleforfov.addLayout(maxfovlay)
-        layqc.addRow(doubleforfov)
+        self.layqc.addRow(doubleforfov)
 
         doubleforbd = QHBoxLayout()
         minbdlay = QFormLayout()
@@ -313,7 +313,7 @@ class CentralWidget(QWidget):
 
         doubleforbd.addLayout(minbdlay)
         doubleforbd.addLayout(maxbdlay)
-        layqc.addRow(doubleforbd)
+        self.layqc.addRow(doubleforbd)
 
         doubleforlin = QHBoxLayout()
         minlinlay = QFormLayout()
@@ -334,7 +334,7 @@ class CentralWidget(QWidget):
 
         doubleforlin.addLayout(minlinlay)
         doubleforlin.addLayout(maxlinlay)
-        layqc.addRow(doubleforlin)
+        self.layqc.addRow(doubleforlin)
 
         doubleforscaf = QHBoxLayout()
         minscaflay = QFormLayout()
@@ -355,18 +355,46 @@ class CentralWidget(QWidget):
 
         doubleforscaf.addLayout(minscaflay)
         doubleforscaf.addLayout(maxscaflay)
-        layqc.addRow(doubleforscaf)
+        self.layqc.addRow(doubleforscaf)
+
+        tripleforligation = QHBoxLayout()
+        apply_ligscaf_lay = QFormLayout()
+        apply_ligscaf_check = QCheckBox()
+        apply_ligscaf_check.stateChanged.connect(self.change_apply_ligscaf)
+        apply_ligscaf_lay.addRow('Filter by POS ligation scaling factor', apply_ligscaf_check)
+
+        poslig_filter_lay = QFormLayout()
+        poslig_filter_combo = QComboBox()
+        poslig_filter_combo.addItem('All higher than background')
+        poslig_filter_combo.addItem('Mean higher than background')
+        poslig_filter_combo.addItem('No filter low posLIG values')
+        poslig_filter_combo.currentIndexChanged.connect(self.change_posligQC)
+        poslig_filter_lay.addRow('POS ligation controls:', poslig_filter_combo)
+
+        neglig_filter_lay = QFormLayout()
+        neglig_filter_combo = QComboBox()
+        neglig_filter_combo.addItem('All lower than background')
+        neglig_filter_combo.addItem('No filter high negLIG values')
+        neglig_filter_combo.currentIndexChanged.connect(self.change_negligQC)
+        neglig_filter_lay.addRow('NEG ligation controls:', neglig_filter_combo)
+
+        tripleforligation.addLayout(apply_ligscaf_lay)
+        tripleforligation.addLayout(poslig_filter_lay)
+        tripleforligation.addLayout(neglig_filter_lay)
+        container_ligation = QWidget()
+        container_ligation.setLayout(tripleforligation)
+        self.layqc.addRow(container_ligation)
 
         sampleremovercombobox = QComboBox()
         sampleremovercombobox.addItem('Remove auto-QC flagged')
         sampleremovercombobox.addItem('Keep all samples, only flag bad samples')
         sampleremovercombobox.addItem('Remove manually selected samples')
         sampleremovercombobox.currentIndexChanged.connect(self.changesampleremoving)
-        layqc.addRow('Method to remove low QC samples ', sampleremovercombobox)
+        self.layqc.addRow('Method to remove low QC samples ', sampleremovercombobox)
 
         manualremoveselection = QLineEdit()
         manualremoveselection.textChanged.connect(self.changemanualremoveinput)
-        layqc.addRow('Manual input lanes to remove:', manualremoveselection)
+        self.layqc.addRow('Manual input lanes to remove:', manualremoveselection)
 
         doubleforqcfiltering = QHBoxLayout()
         doubleforticksqcfiltering = QHBoxLayout()
@@ -385,13 +413,13 @@ class CentralWidget(QWidget):
                                 popoutinfolanescheck)
         doubleforticksqcfiltering.addLayout(doubleformtic1qc)
 
-        layqc.addRow(doubleforqcfiltering)
+        self.layqc.addRow(doubleforqcfiltering)
 
         self.showingflaggedlanes = QLabel(self.state.nbadlanes)
-        layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
+        self.layqc.addRow('Flagged lanes: ', self.showingflaggedlanes)
 
         bigtabqc = QWidget()
-        bigtabqc.setLayout(layqc)
+        bigtabqc.setLayout(self.layqc)
 
         self.tabs.addTab(bigtabqc, QIcon(str(imgs_path / "logoguanin_96x96.png")), 'Quality Control')
 
@@ -695,6 +723,7 @@ class CentralWidget(QWidget):
         logging.debug(f"state.folder = {self.state.folder}")
         self.next_tab()
         guanin.runQCview(self.state)
+        self.layqc.setRowVisible(9, self.state.miRNAassay)
         self.parent.statusBar().showMessage(self.state.current_state)
 
 
@@ -760,6 +789,28 @@ class CentralWidget(QWidget):
 
     def changemaxscaf(self, value):
         self.state.change_float("maxscaf", value)
+
+    def change_apply_ligscaf(self, checkbox):
+        self.state.apply_ligscaf = (checkbox == 2)
+        logging.debug(f"state.apply_ligscaf = {self.state.apply_ligscaf}")
+
+    def change_posligQC(self, checkbox):
+        if checkbox == 0:
+            self.state.posligqc = 'min_poslig'
+        elif checkbox == 1:
+            self.state.posligqc = 'posgeomean'
+        elif checkbox == 2:
+            self.state.posligqc = 'no'
+        print(f'posligQC: {self.state.posligqc}')
+        logging.debug(f"state.posligqc = {self.state.posligqc}")
+
+    def change_negligQC(self, checkbox):
+        if checkbox == 0:
+            self.state.negligqc = 'max_neglig'
+        elif checkbox == 1:
+            self.state.negligqc = 'no'
+        print(f'negligQC: {self.state.negligqc}')
+        logging.debug(f"state.negligqc = {self.state.negligqc}")
 
     def changesampleremoving(self, checkbox):
         if checkbox == 0:
