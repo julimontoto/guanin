@@ -950,6 +950,43 @@ def plothkel(args, infolanes, dfhkecount):
     plt.savefig(str(args.outputfolder / "images" / "hkelplot.svg"))
     plt.close()
 
+def plotlig(args, infolanes, dflig):
+    """Ligation plot and b background plot."""
+    bb = np.mean(infolanes["Background"])
+
+    bbmax = 6 * bb
+    bblist = []
+    dflig = dflig.reindex(sorted(dflig.columns), axis=1)
+    for i in infolanes.index:
+        bblist.append(bb)
+    ligplot = plt.figure()
+    ax1 = ligplot.add_subplot(111)
+    ncontrols = len(dflig.columns)
+    colors = sns.color_palette(palette='coolwarm', n_colors=ncontrols)
+    colors = [colors[0], colors[1], colors[2], colors[5], colors[4], colors[3]]
+    for i, j in zip(dflig.columns, range(ncontrols)):
+        print(i,j)
+        if len(dflig[i].dropna()) != 0:
+            print(j, ncontrols, ncontrols/2)
+            color = colors[j]
+            if j < ncontrols/2:
+                marker = 'v'
+            elif j >= ncontrols/2:
+                marker = '^'
+            print(color)
+            ax1.plot(dflig.index, dflig[i], 'o', marker = marker, markersize=5, markeredgewidth = 0.7, markeredgecolor='black', color=color, label=i)
+    plt.plot(infolanes.index, bblist, 'r')
+    plt.xlabel('ID')
+    plt.ylabel('counts')
+    plt.legend(loc='upper left', ncol=3, mode='expand')
+    plt.ylim(0, 0.6*bbmax)
+    plt.tick_params(
+        axis="x", which="both", bottom=False, top=False, labelbottom=False
+    )
+    plt.title("Ligation controls")
+    plt.savefig(str(args.outputfolder / "images" / "ligplot.png"), dpi=180)
+    plt.savefig(str(args.outputfolder / "images" / "ligplot.svg"))
+    plt.close()
 
 def plotsca(args, infolanes):
     scalingflist = infolanes["scaling factor"]
@@ -2340,6 +2377,14 @@ def plotandreport(args, whatinfolanes="rawinfolanes", rawreport=True):
         plothke(args, infolanes, dfhkecount)
         plothkel(args, infolanes, dfhkecount)
         plotsca(args, infolanes)
+        if args.miRNAassay:
+            infolig = pd.read_csv(
+                args.outputfolder / "info" / "infolig.csv", index_col=0
+            )
+            dflig = pd.read_csv(
+                args.outputfolder / "otherfiles" / "dflig.csv", index_col=0
+            )
+            plotlig(args, infolanes, dflig)
 
     args.current_state = "--> Generating pdf report"
     logging.info(args.current_state)
