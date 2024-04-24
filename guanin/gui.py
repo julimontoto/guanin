@@ -101,6 +101,11 @@ class MainWindow(QMainWindow):
             'Summary and infolanes', self)
         viewsummaryandinfolanesAct.triggered.connect(self.viewsummaryandinfolanes)
 
+        viewoutputfolderAct = QAction(QIcon(
+            str(icons_path / 'blue-folder-horizontal-open.png')),
+            'Open output folder', self)
+        viewoutputfolderAct.triggered.connect(self.viewoutputfolder)
+
         filemenu = menubar.addMenu('Guanin')
         viewmenu = menubar.addMenu('View')
         aboutmenu = menubar.addMenu('About')
@@ -113,13 +118,14 @@ class MainWindow(QMainWindow):
         viewmenu.addAction(viewlogAct)
         viewmenu.addAction(viewpdfreportAct)
         viewmenu.addAction(viewsummaryandinfolanesAct)
+        viewmenu.addAction(viewoutputfolderAct)
 
         aboutmenu.addAction(aboutgenvipAct)
         aboutmenu.addAction(aboutgenpobTeam)
 
     def viewlog(self):
         webbrowser.open(
-            str(self.state.outputfolder / "info" / "analysis_description.log"))
+            str(self.state.outputfolder / "analysis_description.log"))
 
     def viewpdfreport(self):
         webbrowser.open(
@@ -132,6 +138,9 @@ class MainWindow(QMainWindow):
 
     def viewsummaryandinfolanes(self):
         webbrowser.open(str(self.state.outputfolder / "info" / "rawsummary.html"))
+
+    def viewoutputfolder(self):
+        webbrowser.open(str(self.state.outputfolder))
 
     def popupgenpobteam(self):
         webbrowser.open('https://genpob.eu/team/')
@@ -644,6 +653,13 @@ class CentralWidget(QWidget):
 
         self.layeval.addRow(doubleforevalpca2)
 
+        open_output_folder_button = QPushButton('Open analysis output folder')
+        open_output_folder_button.setIcon(QIcon(
+            str(imgs_path / "logoguanin_96x96.png")))
+        open_output_folder_button.clicked.connect(self.viewoutputfoldereval)
+
+        self.layeval.addRow(' ', open_output_folder_button)
+
         bigtabeval = QWidget()
         bigtabeval.setLayout(self.layeval)
 
@@ -962,14 +978,14 @@ class CentralWidget(QWidget):
             "Evaluation and data export ready, check 'output' folder")
 
         pixmap1 = QPixmap(str(self.state.outputfolder
-                              / "images" / "rlerawplot2.png"))
+                              / "images/other" / "rlerawplot2.png"))
         pixmap2 = QPixmap(str(self.state.outputfolder
-                              / "images" / "rlenormplot2.png"))
+                              / "images/other" / "rlenormplot2.png"))
         self.labelpix1.setPixmap(pixmap1)
         self.labelpix2.setPixmap(pixmap2)
 
-        pixmappca1 = QPixmap(str(self.state.outputfolder / "images" / "pcaraw2.png"))
-        pixmappca2 = QPixmap(str(self.state.outputfolder / "images" / "pcanorm2.png"))
+        pixmappca1 = QPixmap(str(self.state.outputfolder / "images/other" / "pcaraw2.png"))
+        pixmappca2 = QPixmap(str(self.state.outputfolder / "images/other" / "pcanorm2.png"))
         self.labelpixpca1.setPixmap(pixmappca1)
         self.labelpixpca2.setPixmap(pixmappca2)
 
@@ -1011,6 +1027,9 @@ class CentralWidget(QWidget):
             self.state.pcaby = 'group'
         elif checkbox == 1:
             self.state.pcaby = 'batch'
+
+    def viewoutputfoldereval(self):
+        webbrowser.open(str(self.state.outputfolder))
 
 
 class logger(logging.Handler):

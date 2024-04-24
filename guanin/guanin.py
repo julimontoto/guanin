@@ -423,6 +423,10 @@ def createoutputfolder(args):
     pathout.mkdir(parents=True, exist_ok=True)
     pathoutimages = args.outputfolder / "images"
     pathoutimages.mkdir(parents=True, exist_ok=True)
+    pathoutimagessvg = args.outputfolder / "images/" / "vectors"
+    pathoutimagessvg.mkdir(parents=True, exist_ok=True)
+    pathoutimagesother = args.outputfolder / "images/" / "other"
+    pathoutimagesother.mkdir(parents=True, exist_ok=True)
     pathoutotherfiles = args.outputfolder / "otherfiles"
     pathoutotherfiles.mkdir(parents=True, exist_ok=True)
     pathoutinfo = args.outputfolder / "info"
@@ -753,7 +757,7 @@ def plotfovvalue(args, infolanes):
     )
     plt.grid(True)
     plt.savefig(str(args.outputfolder / "images" / "fovplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "fovplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "fovplot.svg"))
     plt.close()
 
 
@@ -776,28 +780,35 @@ def plotbd(args, infolanes):
     plt.legend()
     plt.grid(True)
     plt.savefig(str(args.outputfolder / "images" / "bdplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "bdplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "bdplot.svg"))
     plt.close()
 
 
 def plotgenbackground(args, infolanes):
     ngenlist = []
+    gab = [] # n of genes above background
     ngen = infolanes["nGenes"][0]
     for i in infolanes.index:
         ngenlist.append(ngen)
+        gab.append(ngen - (ngen * (infolanes.at[i, "Genes below backg %"]/100)))
     plt.figure()
     plt.bar(
-        infolanes.index, infolanes["nGenes"] - infolanes["Genes below backg %"]
+        infolanes.index, gab
     )
     plt.plot(infolanes.index, ngenlist, "ro", label="total genes")
     plt.legend()
     plt.xticks(rotation=45)
+    plt.tick_params(
+        axis="x", which="both", bottom=False, top=False, labelbottom=False
+    )
     plt.xlabel("ID")
     plt.ylabel("genes")
     plt.title("Genes above background")
     plt.savefig(str(args.outputfolder / "images" / "genbackground.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "genbackground.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "genbackground.svg"))
     plt.close()
+    gab = [x / ngen for x in gab]
+    return gab
 
 
 def plotld(args, infolanes):
@@ -821,7 +832,7 @@ def plotld(args, infolanes):
     plt.legend()
     plt.grid(True)
     plt.savefig(str(args.outputfolder / "images" / "ldplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "ldplot_hq.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "ldplot_hq.svg"))
     plt.close()
 
 
@@ -852,11 +863,11 @@ def plotocn(args, infolanes, dfnegcount):
     plt.legend(loc="lower right", ncol=4, mode="expand")
     plt.title("Outliers in neg_controls")
     plt.savefig(str(args.outputfolder / "images" / "ocnplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "ocnplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "ocnplot.svg"))
     plt.close()
 
 
-def plotlin(args, infolanes):
+def plotlin(args, infolanes, gab):
     minlin = []
     optlin = []
     for i in infolanes.index:
@@ -869,12 +880,7 @@ def plotlin(args, infolanes):
         ngenlist.append(ngen)
     plt.figure()
     plt.bar(
-        infolanes.index,
-        (
-            (infolanes["nGenes"] - infolanes["Genes below backg %"])
-            / infolanes["nGenes"]
-        ),
-        color="cyan",
+        infolanes.index, gab, color="cyan",
     )
     plt.plot(infolanes.index, infolanes["R2"], "o", color="blue")
     plt.plot(infolanes.index, minlin, "m")
@@ -896,8 +902,7 @@ def plotlin(args, infolanes):
     plt.xticks(rotation=45)
     plt.title("Linearity and genes above background")
     plt.savefig(str(args.outputfolder / "images" / "linplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "linplot.svg"))
-    plt.savefig(str(args.outputfolder / "images" / "linplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "linplot.svg"))
     plt.close()
 
 
@@ -914,7 +919,7 @@ def plothke(args, infolanes, dfhkecount):
     )
     plt.title("Housekeeping genes")
     plt.savefig(str(args.outputfolder / "images" / "hkeplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "hkeplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "hkeplot.svg"))
     plt.close()
 
 
@@ -947,7 +952,7 @@ def plothkel(args, infolanes, dfhkecount):
     )
     plt.title("Housekeeping genes close to background")
     plt.savefig(str(args.outputfolder / "images" / "hkelplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "hkelplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "hkelplot.svg"))
     plt.close()
 
 def plotlig(args, infolanes, dflig):
@@ -965,15 +970,12 @@ def plotlig(args, infolanes, dflig):
     colors = sns.color_palette(palette='coolwarm', n_colors=ncontrols)
     colors = [colors[0], colors[1], colors[2], colors[5], colors[4], colors[3]]
     for i, j in zip(dflig.columns, range(ncontrols)):
-        print(i,j)
         if len(dflig[i].dropna()) != 0:
-            print(j, ncontrols, ncontrols/2)
             color = colors[j]
             if j < ncontrols/2:
                 marker = 'v'
             elif j >= ncontrols/2:
                 marker = '^'
-            print(color)
             ax1.plot(dflig.index, dflig[i], 'o', marker = marker, markersize=5, markeredgewidth = 0.7, markeredgecolor='black', color=color, label=i)
     plt.plot(infolanes.index, bblist, 'r')
     plt.xlabel('ID')
@@ -985,7 +987,7 @@ def plotlig(args, infolanes, dflig):
     )
     plt.title("Ligation controls")
     plt.savefig(str(args.outputfolder / "images" / "ligplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images" / "ligplot.svg"))
+    plt.savefig(str(args.outputfolder / "images/vectors" / "ligplot.svg"))
     plt.close()
 
 def plotsca(args, infolanes):
@@ -1016,7 +1018,7 @@ def plotsca(args, infolanes):
     plt.ylabel("scaling factor")
     plt.title("scaling factor")
     plt.savefig(args.outputfolder / "images" / "scaplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "scaplot_hq.svg")
+    plt.savefig(args.outputfolder / "images/vectors" / "scaplot_hq.svg")
     plt.close()
 
 
@@ -1203,15 +1205,16 @@ def flagqc(args):
                         f.writelines(splfinfo)
                         flagged.add(i)
 
-                    if thisnegligqc > thisBG:
-                        snlfinfo = (
-                                "High negative ligation control value "
-                                + f"({thisnegligqc}) in {i}. "
-                                + "Sample is flagged/discarded."
-                        )
-                        logging.warning(snlfinfo)
-                        f.writelines(snlfinfo)
-                        flagged.add(i)
+                    if args.negligqc != 'no':
+                        if thisnegligqc > thisBG:
+                            snlfinfo = (
+                                    "High negative ligation control value "
+                                    + f"({thisnegligqc}) in {i}. "
+                                    + "Sample is flagged/discarded."
+                            )
+                            logging.warning(snlfinfo)
+                            f.writelines(snlfinfo)
+                            flagged.add(i)
 
                 if thisFOV < args.minfov:
                     fovinfo = (
@@ -1598,7 +1601,6 @@ def exporttnormgenes(normgenes, args):
     pathnormgenes = args.outputfolder / "otherfiles" / "tnormcounts.csv"
     normgenes.to_csv(pathnormgenes, index=True)
 
-
 def getallhkes(args):
     dfhkegenes = pd.read_csv(
         args.outputfolder / "otherfiles" / "dfhkecount.csv", index_col=0
@@ -1927,7 +1929,7 @@ def ploteme(eme, args):
     plt.xticks(rotation=45)
     plt.title("measure M")
     plt.savefig(args.outputfolder / "images" / "eme.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "eme.svg")
+    plt.savefig(args.outputfolder / "images/vectors" / "eme.svg")
     plt.close()
 
 
@@ -1940,7 +1942,7 @@ def plotavgm(genorm, args):
     plt.xticks(rotation=45)
     plt.title("Genorm result")
     plt.savefig(args.outputfolder / "images" / "avgm.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "avgm.svg")
+    plt.savefig(args.outputfolder / "images/vectors" / "avgm.svg")
     plt.close()
 
 
@@ -1953,7 +1955,7 @@ def plotuve(uve, args):
     plt.xticks(rotation=45)
     plt.title("Pairwise variation")
     plt.savefig(args.outputfolder / "images" / "uve.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "uve.svg")
+    plt.savefig(args.outputfolder / "images/vectors" / "uve.svg")
     plt.close()
 
 
@@ -2199,8 +2201,8 @@ def plotevalnorm(matrix, what, meaniqr, args):
     plt.xlabel("Samples", fontsize=40)
     sns.stripplot(data=matrix, size=2, palette="dark:black")
     plt.savefig(args.outputfolder / "images" / "rlenormplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "rlenormplot.svg")
-    plt.savefig(args.outputfolder / "images" / "rlenormplot2.png", dpi=17)
+    plt.savefig(args.outputfolder / "images/vectors" / "rlenormplot.svg")
+    plt.savefig(args.outputfolder / "images/other" / "rlenormplot2.png", dpi=17)
     plt.close()
 
     return estoo
@@ -2232,8 +2234,8 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     sns.stripplot(data=matrix, size=2, palette="dark:black")
 
     plt.savefig(args.outputfolder / "images" / "rlerawplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "rlerawplot.svg")
-    plt.savefig(args.outputfolder / "images" / "rlerawplot2.png", dpi=17)
+    plt.savefig(args.outputfolder / "images/vectors" / "rlerawplot.svg")
+    plt.savefig(args.outputfolder / "images/other" / "rlerawplot2.png", dpi=17)
     plt.close()
 
 
@@ -2370,10 +2372,10 @@ def plotandreport(args, whatinfolanes="rawinfolanes", rawreport=True):
     if args.modeview != "justrun":
         plotfovvalue(args, infolanes)
         plotbd(args, infolanes)
-        plotgenbackground(args, infolanes)
+        gab = plotgenbackground(args, infolanes)
         plotld(args, infolanes)
         plotocn(args, infolanes, dfnegcount)
-        plotlin(args, infolanes)
+        plotlin(args, infolanes, gab)
         plothke(args, infolanes, dfhkecount)
         plothkel(args, infolanes, dfhkecount)
         plotsca(args, infolanes)
@@ -2545,14 +2547,6 @@ def RUVg3(args):
     """
     Normalize gene expression data using the RUVg method.
 
-def RUVgnorm2(
-    args, center=True, round=False, epsilon=1, tolerance=1e-8, isLog=False
-):
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    gene_matrix = pd.read_csv(
-        args.outputfolder / "otherfiles" / "tnormcounts.csv", index_col=0
-    )
-
     Args:
         x (pandas.DataFrame): Gene expression data with genes as rows and samples as columns.
         cIdx (list): List of gene names to be used as negative controls.
@@ -2566,6 +2560,13 @@ def RUVgnorm2(
     x = pd.read_csv(args.outputfolder / 'otherfiles' / 'tnormcounts.csv', index_col=0)
     x = x.round()
     cIdx = args.refgenessel
+    if len(cIdx) <=2:
+        args.current_state = "ERROR: Low number of reference genes for RUVg normalization, change selection method and try again."
+        logging.error(args.current_state)
+    if len(x.columns) <= 2:
+        args.current_state = "ERROR: Low number of samples in analysis. Reconsider QC filtering "
+        logging.error(args.current_state)
+
     k = args.kvalue
 
     # Check if input data contains counts
@@ -2586,7 +2587,6 @@ def RUVgnorm2(
     # gene_to_row: dictionary {gene_name: row_index}
     # cIdx_rows: list of row indices for control genes
     gene_to_row = {gene: row for row, gene in enumerate(x.index)}
-    print(cIdx)
     cIdx_rows = [gene_to_row[gene] for gene in cIdx]
 
     # Perform SVD on control genes
@@ -2693,12 +2693,14 @@ def selecting_refgenes(args):
 
     try:
         refgenes = findrefend(args, selhkes)
-
-        args.current_state = (
-            "Refgenes in analysis including housekeepings + best "
-            + f"endogenous selected: {list(refgenes.index)}"
-        )
-        logging.info(args.current_state)
+        if len(refgenes) >= 2:
+            args.current_state = (
+                "Refgenes in analysis including housekeepings + best "
+                + f"endogenous selected: {list(refgenes.index)}"
+            )
+            logging.info(args.current_state)
+        else:
+            raise Exception('Not enough candidate reference genes suitable to perform normalization')
     except Exception as e:
         logging.warning(
             "Unable to retrieve candidate ref genes from endogenous, "
@@ -2918,8 +2920,8 @@ def plotpcaraw(df, group, args):
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA raw counts")
     plt.savefig(args.outputfolder / "images" / "pcaraw.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "pcaraw.svg")
-    plt.savefig(args.outputfolder / "images" / "pcaraw2.png", dpi=80)
+    plt.savefig(args.outputfolder / "images/vectors" / "pcaraw.svg")
+    plt.savefig(args.outputfolder / "images/other" / "pcaraw2.png", dpi=80)
     plt.close()
 
 
@@ -2966,8 +2968,8 @@ def plotpcanorm(df, group, args):
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA normalized counts")
     plt.savefig(args.outputfolder / "images" / "pcanorm.png", dpi=180)
-    plt.savefig(args.outputfolder / "images" / "pcanorm.svg")
-    plt.savefig(args.outputfolder / "images" / "pcanorm2.png", dpi=80)
+    plt.savefig(args.outputfolder / "images/vectors" / "pcanorm.svg")
+    plt.savefig(args.outputfolder / "images/other" / "pcanorm2.png", dpi=80)
     plt.close()
 
 
