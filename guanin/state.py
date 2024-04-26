@@ -71,6 +71,7 @@ class ConfigData:
         self.apply_ligscaf = False
         self.posligqc = 'min_poslig'
         self.negligqc = 'max_neglig'
+        self.generatesvgs = False
 
     def change_float(self, name, value):
         attr = getattr(self, name, None)

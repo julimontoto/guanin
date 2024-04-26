@@ -524,6 +524,14 @@ def condformat_LOD(val, colorbien="#a3c771", colormal="#e3689b"):
 
     return f"background-color: {color}"
 
+def changeimageresandsvg(args):
+    if args.generatesvgs == True:
+        dpi = 240
+    else:
+        dpi = 90
+
+    return dpi
+
 
 def summarizerawinfolanes(args):
     rawinfolanes = pd.read_csv(
@@ -756,8 +764,10 @@ def plotfovvalue(args, infolanes):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "fovplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "fovplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "fovplot.png"), dpi = dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "fovplot.svg"))
     plt.close()
 
 
@@ -779,8 +789,10 @@ def plotbd(args, infolanes):
     )
     plt.legend()
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "bdplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "bdplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "bdplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "bdplot.svg"))
     plt.close()
 
 
@@ -804,8 +816,10 @@ def plotgenbackground(args, infolanes):
     plt.xlabel("ID")
     plt.ylabel("genes")
     plt.title("Genes above background")
-    plt.savefig(str(args.outputfolder / "images" / "genbackground.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "genbackground.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "genbackground.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "genbackground.svg"))
     plt.close()
     gab = [x / ngen for x in gab]
     return gab
@@ -831,8 +845,10 @@ def plotld(args, infolanes):
     plt.ylabel("0,5 fm")
     plt.legend()
     plt.grid(True)
-    plt.savefig(str(args.outputfolder / "images" / "ldplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "ldplot_hq.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "ldplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "ldplot_hq.svg"))
     plt.close()
 
 
@@ -862,8 +878,10 @@ def plotocn(args, infolanes, dfnegcount):
     plt.ylabel("counts")
     plt.legend(loc="lower right", ncol=4, mode="expand")
     plt.title("Outliers in neg_controls")
-    plt.savefig(str(args.outputfolder / "images" / "ocnplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "ocnplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "ocnplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "ocnplot.svg"))
     plt.close()
 
 
@@ -901,8 +919,10 @@ def plotlin(args, infolanes, gab):
     plt.ylabel("genes")
     plt.xticks(rotation=45)
     plt.title("Linearity and genes above background")
-    plt.savefig(str(args.outputfolder / "images" / "linplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "linplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "linplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "linplot.svg"))
     plt.close()
 
 
@@ -918,8 +938,10 @@ def plothke(args, infolanes, dfhkecount):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.title("Housekeeping genes")
-    plt.savefig(str(args.outputfolder / "images" / "hkeplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "hkeplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "hkeplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "hkeplot.svg"))
     plt.close()
 
 
@@ -951,8 +973,10 @@ def plothkel(args, infolanes, dfhkecount):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.title("Housekeeping genes close to background")
-    plt.savefig(str(args.outputfolder / "images" / "hkelplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "hkelplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "hkelplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "hkelplot.svg"))
     plt.close()
 
 def plotlig(args, infolanes, dflig):
@@ -986,8 +1010,10 @@ def plotlig(args, infolanes, dflig):
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
     plt.title("Ligation controls")
-    plt.savefig(str(args.outputfolder / "images" / "ligplot.png"), dpi=180)
-    plt.savefig(str(args.outputfolder / "images/vectors" / "ligplot.svg"))
+    dpi = changeimageresandsvg(args)
+    plt.savefig(str(args.outputfolder / "images" / "ligplot.png"), dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(str(args.outputfolder / "images/vectors" / "ligplot.svg"))
     plt.close()
 
 def plotsca(args, infolanes):
@@ -1017,8 +1043,10 @@ def plotsca(args, infolanes):
     plt.xlabel("samples")
     plt.ylabel("scaling factor")
     plt.title("scaling factor")
-    plt.savefig(args.outputfolder / "images" / "scaplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "scaplot_hq.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "scaplot.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "scaplot_hq.svg")
     plt.close()
 
 
@@ -1928,8 +1956,10 @@ def ploteme(eme, args):
     plt.ylabel("measured M")
     plt.xticks(rotation=45)
     plt.title("measure M")
-    plt.savefig(args.outputfolder / "images" / "eme.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "eme.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "eme.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "eme.svg")
     plt.close()
 
 
@@ -1941,8 +1971,10 @@ def plotavgm(genorm, args):
     plt.ylabel("Avg. M")
     plt.xticks(rotation=45)
     plt.title("Genorm result")
-    plt.savefig(args.outputfolder / "images" / "avgm.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "avgm.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "avgm.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "avgm.svg")
     plt.close()
 
 
@@ -1954,8 +1986,10 @@ def plotuve(uve, args):
     plt.ylabel("pairwise variation")
     plt.xticks(rotation=45)
     plt.title("Pairwise variation")
-    plt.savefig(args.outputfolder / "images" / "uve.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "uve.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "uve.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "uve.svg")
     plt.close()
 
 
@@ -2200,8 +2234,10 @@ def plotevalnorm(matrix, what, meaniqr, args):
     plt.ylabel("RLE", fontsize=36)
     plt.xlabel("Samples", fontsize=40)
     sns.stripplot(data=matrix, size=2, palette="dark:black")
-    plt.savefig(args.outputfolder / "images" / "rlenormplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "rlenormplot.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "rlenormplot.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "rlenormplot.svg")
     plt.savefig(args.outputfolder / "images/other" / "rlenormplot2.png", dpi=17)
     plt.close()
 
@@ -2232,9 +2268,10 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     plt.xlabel("Samples", fontsize=40)
     plt.ylim(-1, 1)
     sns.stripplot(data=matrix, size=2, palette="dark:black")
-
-    plt.savefig(args.outputfolder / "images" / "rlerawplot.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "rlerawplot.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "rlerawplot.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "rlerawplot.svg")
     plt.savefig(args.outputfolder / "images/other" / "rlerawplot2.png", dpi=17)
     plt.close()
 
@@ -2298,6 +2335,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     parser.add_argument('-ls', '--apply_ligscaf', type=bool, default=False)
     parser.add_argument('-plq', '--posligqc', type=str, default='min_neglig')
     parser.add_argument('-nlq', '--negligqc', type=str, default='max_neglig')
+    parser.add_argument('-gs', '--generatesvgs', type=bool, default=False)
     return parser.parse_args()
 
 
@@ -2919,8 +2957,10 @@ def plotpcaraw(df, group, args):
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA raw counts")
-    plt.savefig(args.outputfolder / "images" / "pcaraw.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "pcaraw.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "pcaraw.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "pcaraw.svg")
     plt.savefig(args.outputfolder / "images/other" / "pcaraw2.png", dpi=80)
     plt.close()
 
@@ -2967,8 +3007,10 @@ def plotpcanorm(df, group, args):
     plt.xlabel(f"PC1({pca_ve[0]}%)")
     plt.ylabel(f"PC2({pca_ve[1]}%)")
     plt.title("PCA normalized counts")
-    plt.savefig(args.outputfolder / "images" / "pcanorm.png", dpi=180)
-    plt.savefig(args.outputfolder / "images/vectors" / "pcanorm.svg")
+    dpi = changeimageresandsvg(args)
+    plt.savefig(args.outputfolder / "images" / "pcanorm.png", dpi=dpi)
+    if args.generatesvgs:
+        plt.savefig(args.outputfolder / "images/vectors" / "pcanorm.svg")
     plt.savefig(args.outputfolder / "images/other" / "pcanorm2.png", dpi=80)
     plt.close()
 

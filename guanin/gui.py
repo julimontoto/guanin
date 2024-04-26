@@ -88,6 +88,10 @@ class MainWindow(QMainWindow):
             str(icons_path / "license-key.png")), 'GPL3 license', self)
         aboutlicenseAct.triggered.connect(self.popuplicenseinfo)
 
+        viewuserguideAct = QAction(QIcon(
+            str(icons_path / "logoguanin_32x32.png")), 'User GUIDE', self)
+        viewuserguideAct.triggered.connect(self.popupviewuserguide)
+
         viewlogAct = QAction(QIcon(
             str(icons_path / "information.png")), 'Analysis information', self)
         viewlogAct.triggered.connect(self.viewlog)
@@ -115,6 +119,7 @@ class MainWindow(QMainWindow):
         aboutmenu.addAction(aboutlicenseAct)
         filemenu.addAction(exitAct)
 
+        viewmenu.addAction(viewuserguideAct)
         viewmenu.addAction(viewlogAct)
         viewmenu.addAction(viewpdfreportAct)
         viewmenu.addAction(viewsummaryandinfolanesAct)
@@ -135,6 +140,9 @@ class MainWindow(QMainWindow):
 
     def popuplicenseinfo(self):
         webbrowser.open('https://www.gnu.org/licenses/gpl-3.0.html')
+
+    def popupviewuserguide(self):
+        webbrowser.open('https://github.com/julimontoto/guanin/blob/master/GUANIN_userguide_latest.pdf')
 
     def viewsummaryandinfolanes(self):
         webbrowser.open(str(self.state.outputfolder / "info" / "rawsummary.html"))
@@ -221,6 +229,10 @@ class CentralWidget(QWidget):
         outputfolderbutton = QPushButton('Select folder to generate output')
         outputfolderbutton.clicked.connect(self.openselectoutputfolder)
         layload.addRow('Output folder location', outputfolderbutton)
+
+        ticgeneratesvgs = QCheckBox()
+        ticgeneratesvgs.stateChanged.connect(self.change_generatesvgs)
+        layload.addRow('Generate HQ and vector images (high execution time): ', ticgeneratesvgs)
 
         self.showoutputfoldertextbox = QLabel(str(self.state.outputfolder))
 
@@ -1016,7 +1028,10 @@ class CentralWidget(QWidget):
     def change_ticdeseq2_mor(self, checkbox):
         self.state.deseq2_mor = (checkbox == 2)
         self.state.tnormbeforebackgcorr = (checkbox == 2)
-        print(self.state.tnormbeforebackgcorr)
+
+    def change_generatesvgs(self, checkbox):
+        self.state.generatesvgs = (checkbox == 2)
+        print(self.state.generatesvgs)
 
     def change_scaling_factor(self, index):
         self.state.tecnormeth = self.list_scaf_tecnormeth[index]
