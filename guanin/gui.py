@@ -704,9 +704,14 @@ class CentralWidget(QWidget):
 
     def openselectoutputfolder(self):
         folder = QFileDialog.getExistingDirectory(self)
-        if folder:
-            self.state.outputfolder = pathlib.Path(folder)
-            self.showoutputfoldertextbox.setText(folder)
+        try:
+            os.remove(pathlib.Path(folder) / 'goto_analysis_description.log')
+        except OSError:
+            pass
+        os.symlink(self.state.outputfolder / 'analysis_description.log', pathlib.Path(folder) / 'goto_analysis_description.log')
+        self.state.outputfolder = pathlib.Path(folder)
+        self.showoutputfoldertextbox.setText(folder)
+        logging.info('Output dir set to ' + str(self.state.outputfolder))
 
     def opencsvfile(self):
         file = QFileDialog.getOpenFileName(self)
