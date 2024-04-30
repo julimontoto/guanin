@@ -66,7 +66,7 @@ GUANIN should run under Linux, MacOS and Windows. You'll need Python >= 3.9 inst
 
 In case this is not working properly, you will need to find where Guanin has been installed and add it to Path environment variable. This is a common procedure usually fixed by:
 ```
-    $ export PATH=/path/where/guanin/is/installed:$PATH
+$ export PATH=/path/where/guanin/is/installed:$PATH
 ```
 
 This will add it to path for this session, but can be made permanent by adding the above command to the bottom of your `.bashrc` file (usually located in your home directory (`/home/yourusername/.bashrc`)).
@@ -95,7 +95,8 @@ Visual Studio Build Tools 14+ might be required.
 
 #### Run
 
-  > guanin
+> guanin
+
 In case this is not working properly, you will need to find where Guanin has been installed and add it to Path environment variable. (Usually ~/Pythonxxx/scripts)
 
 Check INSTALL.txt for further details.
