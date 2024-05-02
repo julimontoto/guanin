@@ -119,6 +119,11 @@ From a console, launch the GUI with:
 
 This *executable* is installed in your PATH. You can find it and launch it with a double-click. Although, running it through the console will provide further information about the execution of the program.
 
+In case something went wrong with PATH installation, GUANIN can also be run with:
+```
+$ python3 /path/to/where/guanin/is/installed/guanin/gui.py
+```
+
 ## Workflow
 
 <img src="https://i.imgur.com/UZBcIN5.png" height="500">
