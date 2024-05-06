@@ -1,5 +1,37 @@
 # Change Log
+
+## [1.2.10] [WIP] - 2024-05-xx
  
+### Added
+
+### Changed
+- Updated user guide
+
+### Fixed
+
+
+## [1.2.9] - 2024-05-02
+ 
+### Added
+- miRNA specific preprocessing, QC and plots both in backend and GUI.
+- Possibility to generate svg files and HQ image resolution.
+- miRNA example dataset
+- Evaluation visualization option to choose plot PCA by batch or by group.
+- Access to relevant directories, files and user guide from GUI
+   
+### Changed
+
+### Fixed
+- Log file can be accessed from changed output folder via symlink
+
+## [1.2.8] - 2024-02-16
+ 
+### Added
+   
+### Changed
+- Minor functional changes, mainly "Black" formatting
+### Fixed
+
 ## [1.2.7] - 2024-01-19
 Stable version
 
