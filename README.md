@@ -73,7 +73,7 @@ This will add it to path for this session, but can be made permanent by adding t
 
 ### MAC
 
-Assuming python ^3.9 is installed.
+Assuming python ^3.8 is installed.
 
     % pip install python3-pip
   
