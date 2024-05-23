@@ -2820,7 +2820,7 @@ def selecting_refgenes(args):
             args.refgenessel = names
 
     else:
-        names = args.chooserefgenes
+        names = set(args.chooserefgenes.split())
 
         args.current_state = f"Ref. genes selected (manual): {names}"
     args.refgenessel = names
