@@ -1677,7 +1677,6 @@ def findrefend(args, selhkes):
         refgenes = dfgenes.loc[refgenesnames]
         refgenes = filter50chkes(refgenes, args)
     else:
-        refgenesnames = selhkes.index.tolist()
         refgenes = dfgenes.loc[selhkes.index.tolist()]
 
     return refgenes
@@ -2172,9 +2171,9 @@ def logarizeoutput(rnormgenes, args):
         rnormgenes.drop("group", axis=0, inplace=True)
     with np.errstate(divide="ignore"):
         if args.logarizedoutput == "2":
-            logarizedgenes = rnormgenes.applymap(lambda x: np.log2(x))
+            logarizedgenes = rnormgenes.applymap(lambda x: np.log2(x) if x > 0 else 0)
         if args.logarizedoutput == "10":
-            logarizedgenes = rnormgenes.applymap(lambda x: np.log10(x))
+            logarizedgenes = rnormgenes.applymap(lambda x: np.log10(x) if x > 0 else 0)
 
     pathlogarized = (
         args.outputfolder / "otherfiles" / "logarized_rnormcounts.csv"
@@ -2212,8 +2211,7 @@ def getmeaniqr(rlegenes):
 
 
 def plotevalnorm(matrix, what, meaniqr, args):
-    matrix = matrix.apply(lambda x: x + 1)
-    matrix = matrix.applymap(lambda x: np.log10(x))
+    matrix = matrix.applymap(lambda x: np.log10(x) if x > 0 else 0)
 
     matrix = matrix.T
     for i in matrix.columns:
@@ -2233,7 +2231,7 @@ def plotevalnorm(matrix, what, meaniqr, args):
     plt.ylim(-1, 1)
     plt.ylabel("RLE", fontsize=36)
     plt.xlabel("Samples", fontsize=40)
-    sns.stripplot(data=matrix, size=2, palette="dark:black")
+    #sns.stripplot(data=matrix, size=2, palette="dark:black")
     dpi = changeimageresandsvg(args)
     plt.savefig(args.outputfolder / "images" / "rlenormplot.png", dpi=dpi)
     if args.generatesvgs:
@@ -2245,8 +2243,7 @@ def plotevalnorm(matrix, what, meaniqr, args):
 
 
 def plotevalraw(matrix, what, meaniqrraw, args):
-    matrix = matrix.apply(lambda x: x + 1)
-    matrix = matrix.applymap(lambda x: np.log10(x))
+    matrix = matrix.applymap(lambda x: np.log10(x) if x > 0 else 0)
 
     matrix = matrix.T
     for i in matrix.columns:
@@ -2267,7 +2264,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     plt.ylabel("RLE", fontsize=36)
     plt.xlabel("Samples", fontsize=40)
     plt.ylim(-1, 1)
-    sns.stripplot(data=matrix, size=2, palette="dark:black")
+    #sns.stripplot(data=matrix, size=2, palette="dark:black")
     dpi = changeimageresandsvg(args)
     plt.savefig(args.outputfolder / "images" / "rlerawplot.png", dpi=dpi)
     if args.generatesvgs:
@@ -2907,6 +2904,9 @@ def apply_deseq2_mor(args):
     dfgenes = pd.read_csv(
         args.outputfolder / "otherfiles" / "dfgenes_qc.csv", index_col=0
     )
+    dfgenes = transformlowcounts(dfgenes, args)
+    reinfolanes(args)
+
     if args.deseq2_mor:
         counts, sizefactors = deseq2_norm(dfgenes)
     else:
