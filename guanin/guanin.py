@@ -2001,10 +2001,25 @@ def getnrefgenes(uvedf):
 
 
 def getnamesrefgenes(uvedf, genorm, args):
-    if args.nrefgenes is not None:
-        n = args.nrefgenes
-    elif args.nrefgenes is None:
+    if args.contnorm == 'nrefgenes':
+        try:
+            n = args.nrefgenes
+        except Exception as e:
+            args.current_state = (
+                    "Something went wrong selecting n genes as reference genes. "
+                    + f"Error: {e}"
+            )
+            traceback.print_exception()
+            logging.error(args.current_state)
+
+    elif args.contnorm in ['refgenes', 'ponderaterefgenes']:
         n = getnrefgenes(uvedf)
+    elif args.contnorm in ['topn', 'all', 'manualrefgenes']:
+        n = 3
+
+    if n > len(genorm.index):
+        logging.info(f"Selected n for ref genes is higher than candidates, proceeding with all candidates as refgenes (n: {len(genorm.index)})")
+        n = len(genorm.index)
 
     names = []
     for i in np.arange(start=1, stop=n + 1):
@@ -2301,7 +2316,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     parser.add_argument('-g', '--groups', type=str, default='yes', choices=['yes','no'], help='defining groups for kruskal/wilcox/fs analysis?')
     parser.add_argument('-ne', '--numend', type=int, default=6, help='number of endogenous tofind by ERgene to include in analysis to check viability as refgenes')
     parser.add_argument('-ar', '--autorename', type=bool, default=False, help='turn on when sample IDs are not unique, be careful on sample identification detail')
-    parser.add_argument('-cn', '--contnorm', type=str, default='refgenes', choices=['ponderaterefgenes', 'refgenes', 'all', 'topn'])
+    parser.add_argument('-cn', '--contnorm', type=str, default='refgenes', choices=['ponderaterefgenes', 'refgenes', 'all', 'topn', 'nrefgenes', 'manualrefgenes'])
     parser.add_argument('-an', '--adnormalization', type=str, default='no', choices=['no', 'standarization'], help='perform additional normalization? standarization available')
     parser.add_argument('-tn', '--topngenestocontnorm', type=int, default=100, help='set n genes to compute for calculating norm factor from top n expressed endogenous genes')
     parser.add_argument('-mch', '--mincounthkes', type=int, default=80, help='set n min counts to filter hkes candidate as refgenes')
@@ -2710,163 +2725,179 @@ def selecting_refgenes(args):
         f"Housekeeping genes present in analysis: {list(allhkes.index)}"
     )
 
-    selhkes = filter50chkes(allhkes, args)
-    if len(selhkes.index) <= 2:
-        selhkes = allhkes
+    if args.contnorm in ['refgenes', 'nrefgenes', 'ponderaterefgenes', 'topn', 'all', 'manualrefgenes']:
+        selhkes = filter50chkes(allhkes, args)
+        if len(selhkes.index) <= 2:
+            selhkes = allhkes
 
-        args.current_state = (
-            "All or almost all housekeeping genes are low expressed. "
-            + "Consider re-design experiment. Proceeding with all hkes"
-        )
-        logging.warning(args.current_state)
-    else:
-        args.current_state = (
-            "Housekeeping genes with more than 50 counts for all lanes: "
-            + f"{list(selhkes.index)}"
-        )
-        logging.info(args.current_state)
-
-    try:
-        refgenes = findrefend(args, selhkes)
-        if len(refgenes) >= 2:
             args.current_state = (
-                "Refgenes in analysis including housekeepings + best "
-                + f"endogenous selected: {list(refgenes.index)}"
+                    "All or almost all housekeeping genes are low expressed. "
+                    + "Consider re-design experiment. Proceeding with all hkes"
+            )
+            logging.warning(args.current_state)
+        else:
+            args.current_state = (
+                    "Housekeeping genes with more than 50 counts for all lanes: "
+                    + f"{list(selhkes.index)}"
             )
             logging.info(args.current_state)
+
+        try:
+            refgenes = findrefend(args, selhkes) #check for args.refendgenes == 'endhkes' inside function
+            if len(refgenes) >= 2:
+                args.current_state = (
+                    "Refgenes in analysis including housekeepings + best "
+                    + f"endogenous (if selected): {list(refgenes.index)}"
+                )
+                logging.info(args.current_state)
+            else:
+                raise Exception('Not enough candidate reference genes suitable to perform normalization')
+        except Exception as e:
+            logging.warning(
+                "Unable to retrieve candidate ref genes from endogenous, "
+                + f"ERROR: {e}"
+            )
+            refgenes = selhkes
+
+        if args.contnorm == 'manualrefgenes':
+            try:
+                names = set(args.chooserefgenes.split())
+                args.current_state = f"Ref. genes selected (manual): {names}"
+                logging.info(args.current_state)
+                args.refgenessel = names
+            except Exception as e:
+                names = list(allhkes.index)
+                args.refgenessel = names
+                args.current_state = f"Failed selecting {names} as reference genes, change selection. Error: {e}"
+                logging.info(args.current_state)
+
+        pathoutrefgenes(refgenes, args) #pre-filtering
+
+        if os.path.isfile(args.groupsfile):
+            targets = pd.read_csv(args.groupsfile)
+            groups = set(targets["GROUP"])
+            if len(groups) > 1:
+                args.groups = "yes"
+
+        if ((args.groups == "yes") and (args.filtergroupvariation != 'nofilter')):
+            args.current_state = "--> Performing kruskal-wallis analysis"
+            logging.info(args.current_state)
+            ddf = getgroups(args)
+
+            ddfc = list(ddf.items())
+
+            ddfb = list(ddf.values())
+
+            reskrus = calkruskal(*ddfb)
+
+            args.current_state = "--> Performing wilcoxon analysis"
+            logging.info(args.current_state)
+            reswilcopairs = calwilcopairs(*ddfc)
+
+            flaggedgenes = flagkrus(reskrus)
+            flaggedwilcox = flagwilcox(reswilcopairs)
+
+            flaggedboth = set(flaggedgenes).intersection(set(flaggedwilcox))
+
+            logging.info(
+                f"Flagged genes by kruskal-wallis and/or wilcoxon: {flaggedboth}"
+            )
+
+            if args.filtergroupvariation == "filterkrus":
+                refgenes = filterkruskal(flaggedgenes, args)
+            elif args.filtergroupvariation == "filterwilcox":
+                refgenes = filterwilcox(flaggedwilcox, args)
+            else:
+                refgenes = filterkruskal([], args)
+            logging.info(
+                "Ref genes present in analysis after applying kruskal-wallis "
+                + f"or wilcoxon filtering: {list(refgenes.columns)}"
+            )
         else:
-            raise Exception('Not enough candidate reference genes suitable to perform normalization')
-    except Exception as e:
-        logging.warning(
-            "Unable to retrieve candidate ref genes from endogenous, "
-            + f"ERROR: {e}"
-        )
-        refgenes = selhkes
+            refgenes = refgenes.T
 
-    pathoutrefgenes(refgenes, args)
+        datarefgenes = refgenes
 
-    if os.path.isfile(args.groupsfile):
-        targets = pd.read_csv(args.groupsfile)
-        groups = set(targets["GROUP"])
-        if len(groups) > 1:
-            args.groups = "yes"
+        eme = measureM(datarefgenes)
 
-    if args.groups == "yes":
-        args.current_state = "--> Performing kruskal-wallis analysis"
+        genorm = geNorm(datarefgenes)
+
+        uve = pairwiseV(datarefgenes)
+
+        logging.info("--> Performing geNorm calculations")
+
+        ploteme(eme, args)
+
+        plotavgm(genorm, args)
+
+        plotuve(uve, args)
+
+        args.eme = eme
+
+        args.current_state = "--> Calculating optimal number of reference genes"
         logging.info(args.current_state)
-        ddf = getgroups(args)
+        names = getnamesrefgenes(uve, genorm, args) #check for nrefgenes inside the function
 
-        ddfc = list(ddf.items())
-
-        ddfb = list(ddf.values())
-
-        reskrus = calkruskal(*ddfb)
-
-        args.current_state = "--> Performing wilcoxon analysis"
-        logging.info(args.current_state)
-        reswilcopairs = calwilcopairs(*ddfc)
-
-        flaggedgenes = flagkrus(reskrus)
-        flaggedwilcox = flagwilcox(reswilcopairs)
-
-        flaggedboth = set(flaggedgenes).intersection(set(flaggedwilcox))
-
-        logging.info(
-            f"Flagged genes by kruskal-wallis and/or wilcoxon: {flaggedboth}"
-        )
-
-        if args.filtergroupvariation == "filterkrus":
-            refgenes = filterkruskal(flaggedgenes, args)
-        elif args.filtergroupvariation == "filterwilcox":
-            refgenes = filterwilcox(flaggedwilcox, args)
-        else:
-            refgenes = filterkruskal([], args)
-        logging.info(
-            "Ref genes present in analysis after applying kruskal-wallis "
-            + f"or wilcoxon filtering: {list(refgenes.columns)}"
-        )
-    else:
-        refgenes = refgenes.T
-
-    datarefgenes = refgenes
-
-    eme = measureM(datarefgenes)
-
-    genorm = geNorm(datarefgenes)
-
-    uve = pairwiseV(datarefgenes)
-
-    logging.info("--> Performing geNorm calculations")
-
-    ploteme(eme, args)
-
-    plotavgm(genorm, args)
-
-    plotuve(uve, args)
-
-    args.current_state = "--> Calculating optimal number of reference genes"
-    logging.info(args.current_state)
-    print(args.chooserefgenes)
-    if args.chooserefgenes is None:
-        names = getnamesrefgenes(uve, genorm, args)
-        if args.nrefgenes is None:
+        if args.contnorm in ['ponderaterefgenes', 'refgenes', ]:
             args.current_state = f"Ref. genes selected (auto): {names}"
             args.refgenessel = names
-        elif args.nrefgenes is not None:
+        elif args.contnorm == 'nrefgenes':
             args.current_state = f"Ref. genes selected (n_manual): {names}"
             args.refgenessel = names
 
-    else:
-        names = set(args.chooserefgenes.split())
+        logging.info(args.current_state)
 
-        args.current_state = f"Ref. genes selected (manual): {names}"
-    args.refgenessel = names
-
-    logging.info(
-        "--> Performing feature selection for refgenes evaluation and control."
-    )
-    if args.groups == "yes" or os.path.exists(args.groupsfile):
-        if len(targets.columns) > 2:
-            targets = targets[["SAMPLE", "GROUP"]].copy()
-
-        metrics = rankfeaturegenes(datarefgenes, targets, args)
-        ranking = rankstatsrefgenes(reskrus, reswilcopairs)
-
-        ranking2 = ranking.style.applymap(
-            condformat, top=1, bot=0.05, subset="Kruskal p-value"
+        logging.info(
+            "--> Performing feature selection for refgenes evaluation and control."
         )
-        for i in ranking2.columns:
-            ranking2 = ranking2.applymap(condformat, top=1, bot=0.05, subset=i)
+        if args.groups == "yes" or os.path.exists(args.groupsfile):
+            if len(targets.columns) > 2:
+                targets = targets[["SAMPLE", "GROUP"]].copy()
 
-        ranking2.to_html(
-            args.outputfolder / "info" / "ranking_kruskal_wilcox.html"
-        )
-        ranking.to_csv(
-            args.outputfolder / "info" / "ranking_kruskal_wilcox.csv"
-        )
+            metrics = rankfeaturegenes(datarefgenes, targets, args)
+            ranking = rankstatsrefgenes(reskrus, reswilcopairs)
 
-    if args.showbrowsercnorm:
-        webbrowser.open(
-            str(args.outputfolder / "info" / "ranking_kruskal_wilcox.html")
-        )
+            ranking2 = ranking.style.applymap(
+                condformat, top=1, bot=0.05, subset="Kruskal p-value"
+            )
+            for i in ranking2.columns:
+                ranking2 = ranking2.applymap(condformat, top=1, bot=0.05, subset=i)
 
-    if args.groups == "yes":
-        metrics2 = metrics.style.applymap(
-            condformat,
-            top=1.5 / len(groups),
-            bot=0.5 / len(groups),
-            subset="avg_score",
-        )
-
-        metrics2_html = "metrics_reverse_feature_selection.html"
-        metrics2_csv = "metrics_reverse_feature_selection.csv"
-        metrics2.to_html(args.outputfolder / "reports" / metrics2_html)
-        metrics.to_csv(args.outputfolder / "reports" / metrics2_csv)
+            ranking2.to_html(
+                args.outputfolder / "info" / "ranking_kruskal_wilcox.html"
+            )
+            ranking.to_csv(
+                args.outputfolder / "info" / "ranking_kruskal_wilcox.csv"
+            )
 
         if args.showbrowsercnorm:
-            webbrowser.open(str(args.outputfolder / "reports" / metrics2_html))
+            webbrowser.open(
+                str(args.outputfolder / "info" / "ranking_kruskal_wilcox.html")
+            )
 
-    args.eme = eme
+        if args.groups == "yes":
+            metrics2 = metrics.style.applymap(
+                condformat,
+                top=1.5 / len(groups),
+                bot=0.5 / len(groups),
+                subset="avg_score",
+            )
+
+            metrics2_html = "metrics_reverse_feature_selection.html"
+            metrics2_csv = "metrics_reverse_feature_selection.csv"
+            metrics2.to_html(args.outputfolder / "reports" / metrics2_html)
+            metrics.to_csv(args.outputfolder / "reports" / metrics2_csv)
+
+            if args.showbrowsercnorm:
+                webbrowser.open(str(args.outputfolder / "reports" / metrics2_html))
+
+        if args.contnorm == 'topn':
+            topngenes = gettopngenesdf(args) #check for n inside the function
+            args.refgenessel = list(topngenes.index)
+            logging.info(f"Top {args.topngenestocontnorm} genes from most expressed endogenous selected for {args.pipeline} normalization: {args.refgenessel}")
+
+        if args.contnorm == 'all':
+            logging.info(f"All endogenous genes selected for {args.pipeline} normalization. (This option will only work for scalingfactor normalization)")
 
 
 def contnorm(args):

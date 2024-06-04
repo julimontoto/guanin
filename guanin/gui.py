@@ -535,15 +535,15 @@ class CentralWidget(QWidget):
         whatrefgenestouse.addItem('Genorm auto selection (default)')
         whatrefgenestouse.addItem('Top best n genes from genorm ranking')
         whatrefgenestouse.addItem('Top n most expressed endogenous')
-        whatrefgenestouse.addItem('All endogenous genes')
-        whatrefgenestouse.addItem('Ponderated genorm selection')
+        whatrefgenestouse.addItem('All endogenous genes (scalingfactor method only)')
+        whatrefgenestouse.addItem('Ponderated genorm selection (scalingfactor method only)')
         whatrefgenestouse.addItem('Manual selection of genes')
         whatrefgenestouse.currentIndexChanged.connect(self.change_contnormmethod)
 
         self.laycnorm.addRow('Reference genes selection method', whatrefgenestouse)
 
         inputngenes = QSpinBox()
-        inputngenes.setValue(6)
+        inputngenes.setValue(0)
         inputngenes.setMaximum(50000)
         inputngenes.textChanged.connect(self.change_nrefgenes)
         self.laycnorm.addRow('Number of reference genes (if  is selected from last option)', inputngenes)
@@ -927,7 +927,7 @@ class CentralWidget(QWidget):
         if checkbox == 0:
             self.state.contnorm = 'refgenes'
         elif checkbox == 1:
-            self.state.contnorm = 'refgenes'
+            self.state.contnorm = 'nrefgenes'
         elif checkbox == 2:
             self.state.contnorm = 'topn'
         elif checkbox == 3:
@@ -935,11 +935,11 @@ class CentralWidget(QWidget):
         elif checkbox == 4:
             self.state.contnorm = 'ponderaterefgenes'
         elif checkbox == 5:
-            self.state.contnorm = 'refgenes'
+            self.state.contnorm = 'manualrefgenes'
         logging.debug(f"state.contnorm = {self.state.contnorm}")
 
     def change_nrefgenes(self, value):
-        if self.state.contnorm == 'refgenes':
+        if self.state.contnorm == 'nrefgenes':
             self.state.nrefgenes = int(value)
             logging.debug(f"state.nrefgenes = {self.state.nrefgenes}")
         elif self.state.contnorm == 'ponderaterefgenes':
