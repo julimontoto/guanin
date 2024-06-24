@@ -2686,16 +2686,13 @@ def RUVg3(args):
     W = pd.DataFrame(W, columns=colnames, index=x.columns)
 
     exprs = x
-    print(x)
 
     # Ensure columns of exprs match index of w
     exprs_sorted = exprs.reindex(columns=W.index)
     exprs_sorted = exprs_sorted.replace(0, 0.01)
-    print(x)
 
     # Remove batch effects with log2 transformation
     regressed = removeBatchEffect(exprs_sorted, W)
-    print(regressed)
 
     regressed.to_csv(args.outputfolder / "otherfiles" / "rngg.csv", index=True)
     exportdfgenes(regressed, args)
