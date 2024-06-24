@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+import patsy
 from scipy.stats.mstats import gmean
 from scipy import stats
 from scipy.linalg import svd
@@ -1681,6 +1682,18 @@ def findrefend(args, selhkes):
 
     return refgenes
 
+# def removebatcheffect(pheno, exprs, covariate_formula, design_formula='1'):
+#     design_matrix = patsy.dmatrix(design_formula, pheno)
+#
+#     design_matrix = design_matrix[:,1:]
+#     rowsum = design_matrix.sum(axis=1) -1
+#     design_matrix=(design_matrix.T+rowsum).T
+#
+#     covariate_matrix = patsy.dmatrix(covariate_formula, pheno)
+#     design_batch = np.hstack((covariate_matrix,design_matrix))
+#     coefficients, res, rank, s = np.linalg.lstsq(design_batch, exprs.T, rcond=1e-8)
+#     beta = coefficients[-design_matrix.shape[1]:]
+#     return exprs - design_matrix.dot(beta).T
 
 def pathoutrefgenes(refgenes, args):
     pathrefgenesview = args.outputfolder / "otherfiles" / "refgenesview.csv"
@@ -2239,7 +2252,7 @@ def plotevalnorm(matrix, what, meaniqr, args):
 
     plt.figure(figsize=(30, 12))
     sns.boxplot(data=matrix, showfliers=False, showmeans=True)
-    plt.title(what + ". IQR: " + str(meaniqr), fontsize=40)
+    plt.title(what + ".", fontsize=40)
     plt.tick_params(
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
@@ -2275,7 +2288,7 @@ def plotevalraw(matrix, what, meaniqrraw, args):
     plt.tick_params(
         axis="x", which="both", bottom=False, top=False, labelbottom=False
     )
-    plt.title(f"{what}. IQR: {meaniqrraw}", fontsize=40)
+    plt.title(f"{what}.", fontsize=40)
     plt.ylabel("RLE", fontsize=36)
     plt.xlabel("Samples", fontsize=40)
     plt.ylim(-1, 1)
@@ -2672,17 +2685,69 @@ def RUVg3(args):
     colnames = ["W_" + str(i + 1) for i in range(W.shape[1])]
     W = pd.DataFrame(W, columns=colnames, index=x.columns)
 
-    # Create a DataFrame for normalized counts with gene names as row labels and sample names as column labels
-    # rnormgenes: pandas DataFrame (n_genes, n_samples)
-    rnormgenes = pd.DataFrame(correctedY.T, columns=x.columns, index=x.index)
+    exprs = x
+    print(x)
 
-    rngg = logarizeoutput(rnormgenes, args)
-    rngg.to_csv(args.outputfolder / "otherfiles" / "rngg.csv", index=True)
-    exportdfgenes(rnormgenes, args)
-    pathoutrnormgenes(rnormgenes, args)
+    # Ensure columns of exprs match index of w
+    exprs_sorted = exprs.reindex(columns=W.index)
+    exprs_sorted = exprs_sorted.replace(0, 0.01)
+    print(x)
+
+    # Remove batch effects with log2 transformation
+    regressed = removeBatchEffect(exprs_sorted, W)
+    print(regressed)
+
+    regressed.to_csv(args.outputfolder / "otherfiles" / "rngg.csv", index=True)
+    exportdfgenes(regressed, args)
+    pathoutrnormgenes(regressed, args)
     pathoutw(W, args)
 
-    return {"W": W, "normalizedCounts": rnormgenes}
+    return {"W": W, "normalizedCounts": regressed}
+
+
+def removeBatchEffect(exprs, covariates, rcond=1e-8):
+    """
+    Correct batch effects in expression data. Only covariates effect, inspired in limma::removeBatchEffect()
+
+    Parameters:
+    - exprs: pandas DataFrame, expression matrix with genes as rows and samples as columns.
+    - covariates: pandas DataFrame, dataframe with unwanted variation factors (samples as rows, factors as columns). Tipically factors of unwanted variation.
+    - rcond: float, cut-off ratio for small singular values in the least squares. Default is 1e-8.
+
+    Returns:
+    - pandas DataFrame, expression data.
+    """
+    # Ensure the samples are aligned between exprs columns and covariates index
+    if not exprs.columns.equals(covariates.index):
+        raise ValueError("Samples in exprs columns and covariates index must match.")
+
+    # Create covariate matrix
+    covariate_matrix = patsy.dmatrix('~ ' + ' + '.join(covariates.columns), covariates, return_type='dataframe')
+    covariate_matrix = covariate_matrix.drop(columns='Intercept')
+
+    # Transform exprs to logform
+    exprs = np.log2(exprs)
+
+    # Perform least squares fit
+    coefficients, res, rank, s = np.linalg.lstsq(covariate_matrix, exprs.T, rcond=rcond)
+
+    # Extract beta coefficients corresponding to the covariate matrix
+    # Since we are only interested in the coefficients related to the covariates, we exclude the intercept if it is present
+    # Adjust this part to correctly extract beta for covariates
+    beta = coefficients[:covariate_matrix.shape[1], :]
+
+    # Calculate the batch effect to subtract
+    batch_effect = np.dot(covariate_matrix, beta).T
+
+    # Ensure the batch effect matrix has the same shape as exprs
+
+    # Subtract batch effects
+    corrected_exprs = exprs.values - batch_effect
+
+    # Ensure the corrected expression matrix is aligned correctly
+    corrected_exprs_df = pd.DataFrame(corrected_exprs, index=exprs.index, columns=exprs.columns)
+
+    return corrected_exprs_df
 
 
 def technorm(args):
@@ -3073,8 +3138,11 @@ def evalnorm(args):
         args.outputfolder / "results" / "rnormcounts.csv", index_col=0
     )
 
-    rlegenes = RLEcal(logarizeoutput(rnormcounts, args), args)
-    rleraw = RLEcal(logarizeoutput(rawcounts, args), args)
+    if args.pipeline == 'ruvgnorm':
+        rlegenes = RLEcal(rnormcounts, args)
+    else:
+       rlegenes = RLEcal(rnormcounts, args)
+    rleraw = RLEcal(rawcounts, args)
 
     meaniqr = getmeaniqr(rlegenes)
     meaniqrraw = getmeaniqr(rleraw)
